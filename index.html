@@ -3,9 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Ethan Jerla</title>
+    <meta name="description" content="Rick Huijser, a fullstack developer.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon" sizes="16x16">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <meta name="google-site-verification" content="avswJYiF7oygs0kPHNtSETH676b5-FWcgIE96iRejlY" />
 </head>
 <body>
-    Bro
+    
+    <main class="container animate-in">
+        <div class="header" id="header">
+            <p class="location">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                  <path d="M2 12h20"></path>
+                </svg>
+                <a href="https://maps.app.goo.gl/YiYRqPJ9z8CiuYJq5" class="text-hover">Houston</a>, Texas
+              </p>
+              <div class="header-right">
+                <button class="theme-switch" id="theme-toggle" aria-label="Toggle dark/light mode">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon">
+                      <circle class="sun-circle" cx="12" cy="12" r="5"/>
+                      <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                      <g class="sun-rays">
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                      </g>
+                    </svg>
+                  </button>
+                <div class="clock">
+                    <p class="clock-time" id="current-time">0:00:00 PM</p>
+                </div>
+              </div>
+        </div>
+
+        <div class="profile">
+            <p class="profile-name">Hi, I'm Ethan Jerla</p>
+            <p class="profile-title">Passionate | Student • Athlete • Developer</p>
+            <div class="button-row">
+                <div class="popup-button">
+                    <div class="social-button-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2 h-4 w-4"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><line x1="8" x2="16" y1="12" y2="12"></line></svg>
+                    </div>
+                    <div class="popup-indicator">
+                      <span class="popup-text">Socials</span>
+                    </div>
+                </div>
+                
+                <a href="mailto:ethanjerla08@gmail.com" download class="social-button popup-button">
+                    <div class="social-button-bg"></div>
+                    <div class="social-button-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="social-icon">
+                            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                          </svg>
+                    </div>
+                    <div class="popup-indicator">
+                      <span class="popup-text">Email</span>
+                    </div>
+                  </a>
+
+                <a href="/path-to-your-cv.pdf" download class="social-button popup-button">
+                    <div class="social-button-bg"></div>
+                    <div class="social-button-inner">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="social-icon">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                    </div>
+                    <div class="popup-indicator">
+                      <span class="popup-text">CV</span>
+                    </div>
+                  </a>
+                
+                <a href="https://github.com/Q2x38b" download class="social-button popup-button">
+                    <div class="social-button-bg"></div>
+                    <div class="social-button-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="social-icon">
+                            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                            <path d="M9 18c-4.51 2-5-2-7-2"></path>
+                          </svg>
+                    </div>
+                    <div class="popup-indicator">
+                      <span class="popup-text">Github</span>
+                    </div>
+                  </a>
+              </div>
+            <div class="profile-bio">
+                <span>
+                    Just your friendly neighborhood fullstack developer <span class="italic-serif">crafting delightful digital experiences</span>.
+                    When I'm not busy <span class="italic-serif underline">coding</span> or <span class="italic-serif underline">designing</span>, you can find me perfecting my coffee brewing skills
+                    or arguing with my cat <kbd>waterpolo</kbd> about the best way to use a mouse. Currently freelancing and
+                    making magic happen one project at a time!
+                </span>
+            </div>
+        </div>
+
+        <div class="sections">
+            <div class="section">
+                <p class="section-title">My Work</p>
+                <div class="project-grid">
+                    <div class="project" data-project-id="extracurriculars">
+                        <div class="project-hover"></div>
+                        <div class="project-header">
+                            <p class="project-title">Extracurriculars</p>
+                            <p class="project-date"></p>
+                        </div>
+                        <p class="project-description">The sports, clubs, and organizations I am apart of.</p>
+                    </div>
+
+                    <div class="project" data-project-id="hobbies">
+                        <div class="project-hover"></div>
+                        <div class="project-header">
+                            <p class="project-title">Hobbies</p>
+                            <p class="project-date"></p>
+                        </div>
+                        <p class="project-description">My most influencial and favorite hobbys.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="styled-divider"></hr>
+
+        <div class="about">
+            <p class="about-title">My Past, Present, Future</p>
+            <div class="about-content">
+                <span>
+                    I did stuff<br><br>
+                    For the past four years, I've worked at <span class="italic-serif underline">Nijdeken</span> and recently joined <span class="italic-serif underline">Dextop Models</span>. As an 18-year-old student, I'm also starting my own company as a fun side project.<br><br>
+                    Currently, I'm working with a powerful coding <span class="italic-serif underline">Stack</span> that helps me solve complex problems. I'm excited to explore new technologies and embrace the endless possibilities ahead!<br><br>
+                    I plan to attend the University of Texas at Austin. Where I plan to study <span class="italic-serif underline">Aerospace Engineering</span>.
+                </span>
+                <br><br>
+                <span>
+                    <kbd><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60" width="12" height="12"><path d="M0,36.3v-16c0-11.3,8-20.3,19.3-20.3v10c-5.3,0-9.3,4-9.3,9.3v1h10v16H0z" fill="currentColor" />  <path d="M40,36.3v-16c0-11.3,8-20.3,19.3-20.3v10c-5.3,0-9.3,4-9.3,9.3v1h10v16H40z" fill="currentColor" /></svg>
+                        In life, growth shapes us, purpose guides us, and dreams carry us
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60" width="12" height="12"><path d="M20,0v16c0,11.3-8,20.3-19.3,20.3v-10c5.3,0,9.3-4,9.3-9.3v-1H0V0H20z" fill="currentColor" /><path d="M60,0v16c0,11.3-8,20.3-19.3,20.3v-10c5.3,0,9.3-4,9.3-9.3v-1H40V0H60z" fill="currentColor" /></svg>
+                    </kbd>
+                </span>
+            </div>
+        </div>
+
+        <div class="footer-form">
+            <p class="footer-form-title">Connect with me</p>
+            <form id="contactForm" class="footer-contact-form" novalidate>
+            <div class="footer-form-row">
+                <div class="form-field">
+                <input type="text" id="name" name="entry.1352200020" placeholder="Name" required autocomplete="off">
+                <div class="error-message">Please enter your name</div>
+                </div>
+                <div class="form-field">
+                <input type="email" id="email" name="entry.841149298" placeholder="Email" required autocomplete="off">
+                <div class="error-message">Please enter a valid email</div>
+                </div>
+            </div>
+            <div class="footer-form-row">
+                <div class="form-field message-field">
+                <textarea id="message" name="entry.293034358" placeholder="Message" required autocomplete="off"></textarea>
+                <div class="error-message">Please enter a message</div>
+                </div>
+                <button type="submit" class="footer-form-submit">Send</button>
+            </div>
+            </form>
+            <div id="form-response" class="footer-form-response"></div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-border footer-border-right"></div>
+            <div class="footer-border footer-border-left"></div>
+            <div class="footer-border footer-border-left-vert"></div>
+            <div class="footer-border footer-border-right-vert"></div>
+
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="button-row">
+                        <a href="mailto:ethanjerla08@gmail.com" download class="social-button popup-button" style="border: none;">
+                            <div class="social-button-bg"></div>
+                            <div class="social-button-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="social-icon">
+                                    <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                </svg>
+                            </div>
+                            <div class="popup-indicator">
+                                <span class="popup-text">Email</span>
+                            </div>
+                        </a>
+
+                        <a href="/path-to-your-cv.pdf" download class="social-button popup-button" style="border: none;">
+                            <div class="social-button-bg"></div>
+                            <div class="social-button-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="social-icon">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </div>
+                            <div class="popup-indicator">
+                                <span class="popup-text">CV</span>
+                            </div>
+                        </a>
+                        
+                        <a href="https://github.com/Q2x38b" download class="social-button popup-button" style="border: none;">
+                            <div class="social-button-bg"></div>
+                            <div class="social-button-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="social-icon">
+                                    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                                    <path d="M9 18c-4.51 2-5-2-7-2"></path>
+                                </svg>
+                            </div>
+                            <div class="popup-indicator">
+                                <span class="popup-text">Github</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-right">
+                    <a href="#" class="scroll-top" title="Scroll to top">
+                        <i class="fa-solid fa-caret-up"></i>
+                    </a>
+                    <p class="copyright">Ethan Jerla • <a href="https://github.com/Q2x38b" target="_blank" class="text-hover">@e108</a> • 伊森</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="popup-overlay" class="popup-overlay">
+        <div class="project-popup">
+            <div class="popup-header">
+                <p class="popup-title"></p>
+                <p class="popup-date"></p>
+            </div>
+            <div class="popup-content">
+                <p class="popup-description"></p>
+                <p class="popup-details"></p>
+                <div class="popup-technologies"></div>
+                <a href="#" class="project-link" target="_blank">
+                    Visit project
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14 21 3"></path>
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup" id="tooltip-popup"></div>
+    <script src="script.js"></script>
 </body>
 </html>
