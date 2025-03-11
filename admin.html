@@ -1,59 +1,301 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <title>Google Sheets Admin Console</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Updated Content Security Policy: allow content-sheets.googleapis.com for framing -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://apis.google.com https://accounts.google.com https://www.gstatic.com https://content-sheets.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; frame-src https://content-sheets.googleapis.com;">
+    <!-- Combined and relaxed CSP and COOP -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self' https://apis.google.com https://accounts.google.com https://www.gstatic.com https://content-sheets.googleapis.com https://content.googleapis.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://www.gstatic.com;
+      style-src 'self' 'unsafe-inline';
+      frame-src https://content-sheets.googleapis.com https://content.googleapis.com;
+    ">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+    <title>Google Sheets Admin Console</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-      /* Basic styling for the admin console */
-      body {
-        font-family: Arial, sans-serif;
-        background: #f2f2f2;
-        color: #333;
+      /* Custom Font Loading */
+      @font-face {
+        font-family: 'Satoshi';
+        src: url('fonts/Satoshi-Light.woff') format('woff');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Satoshi';
+        src: url('fonts/Satoshi-Regular.woff') format('woff');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Satoshi';
+        src: url('fonts/Satoshi-Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Satoshi';
+        src: url('fonts/Satoshi-Bold.woff') format('woff');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* Root Variables for Theming */
+      :root {
+        --background: #141414;
+        --foreground: #ebebeb;
+        --kbd-background: #222;
+        --text-primary: #d4d4d8;
+        --text-secondary: #737373;
+        --border-color: #404040;
+        --border-subtle: #262626;
+        --hover-bg: rgba(64, 64, 64, 0.2);
+        --font-geist-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        --font-satoshi: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      }
+      [data-theme="light"] {
+        --background: #f5f5f5;
+        --foreground: #171717;
+        --text-primary: #171717;
+        --text-secondary: #525252;
+        --border-color: #d4d4d4;
+        --border-subtle: #e5e5e5;
+        --hover-bg: rgba(0, 0, 0, 0.05);
+      }
+
+      /* Basic Reset */
+      *, *::before, *::after {
+        box-sizing: border-box;
         margin: 0;
-        padding: 20px;
+        padding: 0;
       }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: var(--font-satoshi);
+        background-color: var(--background);
+        color: var(--foreground);
+        line-height: 1.5;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Container Layout */
       .container {
-        max-width: 960px;
-        margin: auto;
-        background: #fff;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+        position: relative;
+        min-height: 100vh;
       }
+      @media (min-width: 640px) {
+        .container {
+          padding: 4rem 0;
+        }
+      }
+
+      /* Header Styling */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 0;
+        width: 100%;
+        font-size: 0.875rem;
+        font-family: var(--font-geist-mono);
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: 2rem;
+      }
+      h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-family: var(--font-satoshi);
+        margin: 0;
+      }
+
+      /* Auth Button Styling */
+      #auth-status {
+        display: flex;
+        gap: 0.75rem;
+      }
+      button {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-family: var(--font-geist-mono);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: 0.375rem;
+        border: 1px solid var(--border-color);
+        background-color: transparent;
+        transition: all 0.15s ease;
+        cursor: pointer;
+        overflow: hidden;
+      }
+      button:hover {
+        background-color: var(--hover-bg);
+        transform: translateY(-2px);
+      }
+
+      /* Sheet Selection Styling */
+      #sheet-selection {
+        margin: 2rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      #sheet-selection label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-family: var(--font-geist-mono);
+      }
+      select {
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        border: 1px solid var(--border-color);
+        background-color: var(--background);
+        color: var(--text-primary);
+        font-family: var(--font-geist-mono);
+        font-size: 0.75rem;
+        cursor: pointer;
+        min-width: 150px;
+      }
+      select:focus {
+        outline: none;
+        border-color: var(--text-secondary);
+      }
+
+      /* Controls Styling */
+      .controls {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+      }
+
+      /* Table Styling */
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 20px;
+        margin-bottom: 2rem;
+        font-family: var(--font-satoshi);
       }
-      th,
-      td {
-        padding: 10px;
-        border: 1px solid #ddd;
+      th, td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-subtle);
       }
       th {
-        background: #f4f4f4;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-family: var(--font-geist-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
-      input[type="text"],
-      textarea {
-        width: 100%;
-        padding: 5px;
-        box-sizing: border-box;
+      td {
+        font-size: 0.875rem;
+        color: var(--text-primary);
       }
-      button {
-        padding: 10px 20px;
-        margin: 5px;
-        cursor: pointer;
+      tr:hover td {
+        background-color: var(--hover-bg);
       }
-      .controls {
-        margin-bottom: 20px;
+
+      /* Modal Popup for Edit Form */
+      #form-section.modal {
+        position: fixed;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--background);
+        padding: 2rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        z-index: 10000;
+        width: 90%;
+        max-width: 600px;
       }
+
+      /* Form Styling */
       #form-section {
-        margin-top: 20px;
-        border: 1px solid #ddd;
-        padding: 15px;
-        background: #fafafa;
+        display: none;
+      }
+      #form-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+      }
+      form label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-family: var(--font-geist-mono);
+        margin-bottom: 0.5rem;
+      }
+      input[type="text"], textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid var(--border-color);
+        background-color: transparent;
+        color: var(--text-primary);
+        font-family: var(--font-satoshi);
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.15s ease;
+      }
+      input[type="text"]:focus, textarea:focus {
+        outline: none;
+        border-color: var(--text-secondary);
+        background-color: var(--hover-bg);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+      .form-buttons {
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      /* Action Buttons in Table */
+      .action-button {
+        padding: 0.4rem 0.75rem;
+        margin-right: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.7rem;
+      }
+
+      /* Styled Divider */
+      .styled-divider {
+        border: none;
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          var(--border-color),
+          var(--border-color),
+          var(--border-color),
+          transparent
+        );
+        margin: 2rem auto;
+        width: 80%;
       }
     </style>
     <!-- Load the Google API client library for Sheets API -->
@@ -62,55 +304,93 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <div class="container">
-      <h1>Google Sheets Admin Console</h1>
+    <div class="container animate-in">
+      <div class="header">
+        <h1>Google Sheets Admin Console</h1>
+        <div id="theme-toggle" class="theme-switch" aria-label="Toggle dark/light mode">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon">
+            <circle class="sun-circle" cx="12" cy="12" r="5"/>
+            <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            <g class="sun-rays">
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      
       <div id="auth-status">
         <button id="authorize_button">Authorize</button>
         <button id="signout_button" style="display: none;">Sign Out</button>
       </div>
+      
+      <!-- Sheet Selection Dropdown -->
+      <div id="sheet-selection">
+        <label for="sheetSelector">Select Sheet:</label>
+        <select id="sheetSelector" onchange="cancelForm(); listSheetData();">
+          <option value="Form Responses">Form Responses</option>
+          <option value="Blog">Blog</option>
+        </select>
+      </div>
+      
+      <!-- Editing controls -->
       <div class="controls" id="controls" style="display: none;">
         <button onclick="listSheetData()">Refresh Data</button>
         <button onclick="showNewRowForm()">Add New Entry</button>
       </div>
+      
       <div id="content"></div>
-      <div id="form-section" style="display: none;">
+      
+      <!-- Edit Form Modal Popup -->
+      <div id="form-section">
         <h2 id="form-title">Add/Edit Entry</h2>
         <form id="edit-form">
-          <!-- Adjust these fields to match your sheet's columns -->
-          <label>
-            Date:
-            <input type="text" id="entry_date" name="date" placeholder="YYYY-MM-DD" required />
-          </label>
-          <br /><br />
-          <label>
-            Title:
-            <input type="text" id="entry_title" name="title" required />
-          </label>
-          <br /><br />
-          <label>
-            Content:
-            <textarea id="entry_content" name="content" rows="4" required></textarea>
-          </label>
-          <br /><br />
-          <button type="submit">Save Entry</button>
-          <button type="button" onclick="cancelForm()">Cancel</button>
+          <label for="entry_date">Date:</label>
+          <input type="text" id="entry_date" name="date" placeholder="YYYY-MM-DD" required />
+          
+          <label for="entry_title">Title:</label>
+          <input type="text" id="entry_title" name="title" required />
+          
+          <label for="entry_content">Content:</label>
+          <textarea id="entry_content" name="content" rows="4" required></textarea>
+          
+          <div class="form-buttons">
+            <button type="submit">Save Entry</button>
+            <button type="button" onclick="cancelForm()">Cancel</button>
+          </div>
         </form>
       </div>
+      
+      <hr class="styled-divider">
     </div>
 
     <script>
-      // Replace these with your own API credentials
+      // Replace these with your own API credentials.
       const CLIENT_ID = '936331083814-8hv2h12vfd021st5frrvhav875mucps3.apps.googleusercontent.com';
       const API_KEY = 'AIzaSyApvQuAABFbVVDVWTOdVSrWWXhLAYeXyZo';
 
-      // Discovery doc URL for Sheets API.
+      // Scopes include openid and email for default sign-in.
+      const SCOPES = "https://www.googleapis.com/auth/spreadsheets openid email";
       const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
-      // Authorization scopes required by the API.
-      const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
-      // Your Google Sheet ID and sheet name.
+      // Your Google Sheet ID.
       const spreadsheetId = '1jyPppl4fiQeUUkPchckMdm4Q8m-PLLyNK7cV64ggMx0';
-      const sheetName = 'Sheet1';
+
+      // Helper: Get the currently selected sheet name.
+      function getCurrentSheetName() {
+        return document.getElementById("sheetSelector").value;
+      }
+
+      // Helper: Build the full range string (e.g., "SheetName!A:Z")
+      function getFullRange() {
+        return getCurrentSheetName() + "!A:Z";
+      }
 
       const authorizeButton = document.getElementById('authorize_button');
       const signoutButton = document.getElementById('signout_button');
@@ -118,7 +398,7 @@
       let tokenClient;
       let accessToken = null;
 
-      // Initialize gapi.client and then the GIS token client once the window is fully loaded.
+      // Initialize gapi.client and the GIS token client once the window is loaded.
       function handleClientLoad() {
         gapi.load('client', initClient);
       }
@@ -128,20 +408,18 @@
           apiKey: API_KEY,
           discoveryDocs: DISCOVERY_DOCS,
         }).then(() => {
-          // Initialize the GIS token client once gapi is ready.
           if (google?.accounts?.oauth2?.initTokenClient) {
             tokenClient = google.accounts.oauth2.initTokenClient({
               client_id: CLIENT_ID,
               scope: SCOPES,
               callback: (resp) => {
                 if (resp.error) {
-                  console.error(resp);
+                  console.error("Token error:", resp);
                   return;
                 }
                 accessToken = resp.access_token;
                 gapi.client.setToken({ access_token: accessToken });
-                // Show controls and load data once token is received.
-                document.getElementById('controls').style.display = 'block';
+                document.getElementById('controls').style.display = 'flex';
                 listSheetData();
                 authorizeButton.style.display = 'none';
                 signoutButton.style.display = 'block';
@@ -153,7 +431,6 @@
         });
       }
 
-      // Trigger token request on auth button click.
       function handleAuthClick() {
         if (tokenClient) {
           tokenClient.requestAccessToken();
@@ -162,7 +439,6 @@
         }
       }
 
-      // Revoke token on sign-out.
       function handleSignoutClick() {
         if (accessToken) {
           google.accounts.oauth2.revoke(accessToken, () => {
@@ -183,7 +459,7 @@
       function listSheetData() {
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: spreadsheetId,
-          range: sheetName,
+          range: getFullRange(),
         }).then(
           function (response) {
             const range = response.result;
@@ -194,13 +470,13 @@
             }
           },
           function (response) {
-            console.error('Error: ' + response.result.error.message);
+            console.error('Error fetching data: ' + response.result.error.message);
           }
         );
       }
 
       function displayData(data) {
-        // Assume first row is headers.
+        const currentSheet = getCurrentSheetName();
         let html = '<table><thead><tr>';
         data[0].forEach(header => {
           html += '<th>' + header + '</th>';
@@ -208,39 +484,75 @@
         html += '<th>Actions</th></tr></thead><tbody>';
         for (let i = 1; i < data.length; i++) {
           html += '<tr>';
-          data[i].forEach(cell => {
-            html += '<td>' + cell + '</td>';
+          data[i].forEach((cell, index) => {
+            // For Blog sheet, make the content column collapsible (assuming column index 2).
+            if (currentSheet === "Blog" && index === 2) {
+              html += '<td><button onclick="toggleContent(this)">Show Content</button>';
+              html += '<div class="content-collapsible" style="display:none; margin-top:0.5rem;">' + cell + '</div></td>';
+            } else {
+              html += '<td>' + cell + '</td>';
+            }
           });
-          html += '<td><button onclick="editRow(' + i + ')">Edit</button> ' +
-                  '<button onclick="deleteRow(' + i + ')">Delete</button></td>';
+          html += '<td><button class="action-button" onclick="editRow(' + i + ')">Edit</button>' +
+                  '<button class="action-button" onclick="deleteRow(' + i + ')">Delete</button></td>';
           html += '</tr>';
         }
         html += '</tbody></table>';
         document.getElementById('content').innerHTML = html;
       }
 
-      // Show the form for a new row.
+      // Toggle the collapsible content for Blog entries.
+      function toggleContent(button) {
+        const div = button.nextElementSibling;
+        if (div.style.display === "none") {
+          div.style.display = "block";
+          button.textContent = "Hide Content";
+        } else {
+          div.style.display = "none";
+          button.textContent = "Show Content";
+        }
+      }
+
+      // Show the modal popup for a new row.
       function showNewRowForm() {
         currentRowIndex = null;
         document.getElementById('form-title').textContent = 'Add New Entry';
         document.getElementById('edit-form').reset();
+        // Add modal class to form-section to style it as a popup.
+        document.getElementById('form-section').classList.add('modal');
         document.getElementById('form-section').style.display = 'block';
       }
 
       // Edit an existing row.
       function editRow(rowIndex) {
+        console.log("Editing row:", rowIndex);
         currentRowIndex = rowIndex;
         document.getElementById('form-title').textContent = 'Edit Entry';
-        // Get the row data (assumes columns A:C).
+        const currentSheet = getCurrentSheetName();
+        const range = currentSheet + '!A' + (rowIndex + 1) + ':C' + (rowIndex + 1);
+        console.log("Fetching range:", range);
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: spreadsheetId,
-          range: sheetName + '!A' + (rowIndex + 1) + ':C' + (rowIndex + 1),
+          range: range,
         }).then(function (response) {
+          console.log("Edit row response:", response);
           const rowData = response.result.values[0];
-          document.getElementById('entry_date').value = rowData[0] || '';
-          document.getElementById('entry_title').value = rowData[1] || '';
-          document.getElementById('entry_content').value = rowData[2] || '';
-          document.getElementById('form-section').style.display = 'block';
+          if (rowData) {
+            document.getElementById('entry_date').value = rowData[0] || '';
+            document.getElementById('entry_title').value = rowData[1] || '';
+            document.getElementById('entry_content').value = rowData[2] || '';
+            document.getElementById('form-section').classList.add('modal');
+            document.getElementById('form-section').style.display = 'block';
+            console.log("Form values set:", {
+              date: document.getElementById('entry_date').value,
+              title: document.getElementById('entry_title').value,
+              content: document.getElementById('entry_content').value
+            });
+          } else {
+            console.error("No data returned for row", rowIndex);
+          }
+        }).catch(function (error) {
+          console.error("Error in editRow:", error);
         });
       }
 
@@ -251,23 +563,23 @@
         const title = document.getElementById('entry_title').value;
         const content = document.getElementById('entry_content').value;
         const values = [[date, title, content]];
+        const currentSheet = getCurrentSheetName();
 
         if (currentRowIndex === null) {
-          // Append new row.
           gapi.client.sheets.spreadsheets.values.append({
             spreadsheetId: spreadsheetId,
-            range: sheetName,
+            range: currentSheet,
             valueInputOption: 'USER_ENTERED',
             insertDataOption: 'INSERT_ROWS',
             resource: { values: values },
           }).then(function (response) {
             alert('Entry added successfully!');
             document.getElementById('form-section').style.display = 'none';
+            document.getElementById('form-section').classList.remove('modal');
             listSheetData();
           });
         } else {
-          // Update existing row.
-          const range = sheetName + '!A' + (currentRowIndex + 1) + ':C' + (currentRowIndex + 1);
+          const range = currentSheet + '!A' + (currentRowIndex + 1) + ':C' + (currentRowIndex + 1);
           gapi.client.sheets.spreadsheets.values.update({
             spreadsheetId: spreadsheetId,
             range: range,
@@ -276,6 +588,7 @@
           }).then(function (response) {
             alert('Entry updated successfully!');
             document.getElementById('form-section').style.display = 'none';
+            document.getElementById('form-section').classList.remove('modal');
             listSheetData();
           });
         }
@@ -283,11 +596,13 @@
 
       function cancelForm() {
         document.getElementById('form-section').style.display = 'none';
+        document.getElementById('form-section').classList.remove('modal');
       }
 
-      // Delete a row using batchUpdate (Sheets API doesn’t offer a direct delete row method).
+      // Delete a row using batchUpdate.
       function deleteRow(rowIndex) {
         if (!confirm('Are you sure you want to delete this entry?')) return;
+        const currentSheet = getCurrentSheetName();
         const requests = [{
           deleteDimension: {
             range: {
@@ -305,11 +620,10 @@
           alert('Entry deleted successfully!');
           listSheetData();
         }, function (error) {
-          console.error('Error deleting row: ', error);
+          console.error('Error deleting row:', error);
         });
       }
 
-      // Wait for the full window to load before initializing the client.
       window.addEventListener('load', handleClientLoad);
     </script>
   </body>
