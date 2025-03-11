@@ -95,11 +95,7 @@
         justify-content: center;
         align-items: center;
       }
-      #login-container button {
-        font-size: 1rem;
-        padding: 1rem 2rem;
-      }
-
+      
       /* Main Container: Hidden until signed in */
       #main-container {
         display: none;
@@ -140,8 +136,29 @@
         margin: 0;
       }
 
-      /* Auth Button Styling (inside login container) */
-      /* Additional styling can be added if needed */
+      /* Button Styling (restored to original) */
+      button {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-family: var(--font-geist-mono);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: 0.375rem;
+        border: 1px solid var(--border-color);
+        background-color: transparent;
+        transition: all 0.15s ease;
+        cursor: pointer;
+        overflow: hidden;
+      }
+      button:hover {
+        background-color: var(--hover-bg);
+        transform: translateY(-2px);
+      }
 
       /* Sheet Selection Styling */
       #sheet-selection {
