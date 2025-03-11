@@ -456,7 +456,12 @@
       signoutButton.onclick = handleSignoutClick;
 
       // List sheet data and display it in a table.
+      // Only fetch data if the user is logged in (i.e. accessToken exists)
       function listSheetData() {
+        if (!accessToken) {
+          document.getElementById('content').innerHTML = 'Please sign in with Google to view data.';
+          return;
+        }
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: spreadsheetId,
           range: getFullRange(),
@@ -518,7 +523,6 @@
         currentRowIndex = null;
         document.getElementById('form-title').textContent = 'Add New Entry';
         document.getElementById('edit-form').reset();
-        // Add modal class to form-section to style it as a popup.
         document.getElementById('form-section').classList.add('modal');
         document.getElementById('form-section').style.display = 'block';
       }
