@@ -36,6 +36,14 @@ const projectsData = {
         fullDesc: 'At Nijdeken, I was responsible for automating various processes in this Milling, Engraving, and Laser company.\n\nI created custom software solutions to streamline their production workflow and improve efficiency. The automation resulted in a 30% reduction in processing time and significantly improved quality control.',
         technologies: ['React', 'Node.js', 'Express', 'SQL', 'Automation'],
         link: 'https://nijdeken.nl'
+    },
+    'achievements': {
+        title: 'Achievements & Awards',
+        date: '2024 - 11',
+        shortDesc: 'Some of my comitments and acheivements that are worth sharing',
+        fullDesc: 'Waterpolo\n\nI worked on the marketing, website and dashboard. The project involved creating a seamless customer experience from browsing products to checkout and delivery tracking.\n\nI used Next.js, TailwindCSS, Framer Motion, and Stripe to create the website and the payment system.',
+        technologies: ['Next.js', 'TailwindCSS', 'Framer Motion', 'Stripe'],
+        link: 'https://dextopmodels.com'
     }
 };
 
