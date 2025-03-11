@@ -88,7 +88,24 @@
         -moz-osx-font-smoothing: grayscale;
       }
 
-      /* Container Layout */
+      /* Login Container: Shown only when not signed in */
+      #login-container {
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+      }
+      #login-container button {
+        font-size: 1rem;
+        padding: 1rem 2rem;
+      }
+
+      /* Main Container: Hidden until signed in */
+      #main-container {
+        display: none;
+      }
+
+      /* Container Layout for main content */
       .container {
         max-width: 42rem;
         margin: 0 auto;
@@ -123,33 +140,8 @@
         margin: 0;
       }
 
-      /* Auth Button Styling */
-      #auth-status {
-        display: flex;
-        gap: 0.75rem;
-      }
-      button {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.5rem 1rem;
-        font-family: var(--font-geist-mono);
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        text-decoration: none;
-        border-radius: 0.375rem;
-        border: 1px solid var(--border-color);
-        background-color: transparent;
-        transition: all 0.15s ease;
-        cursor: pointer;
-        overflow: hidden;
-      }
-      button:hover {
-        background-color: var(--hover-bg);
-        transform: translateY(-2px);
-      }
+      /* Auth Button Styling (inside login container) */
+      /* Additional styling can be added if needed */
 
       /* Sheet Selection Styling */
       #sheet-selection {
@@ -304,70 +296,80 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <div class="container animate-in">
-      <div class="header">
-        <h1>Google Sheets Admin Console</h1>
-        <div id="theme-toggle" class="theme-switch" aria-label="Toggle dark/light mode">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon">
-            <circle class="sun-circle" cx="12" cy="12" r="5"/>
-            <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-            <g class="sun-rays">
-              <line x1="12" y1="1" x2="12" y2="3"/>
-              <line x1="12" y1="21" x2="12" y2="23"/>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-              <line x1="1" y1="12" x2="3" y2="12"/>
-              <line x1="21" y1="12" x2="23" y2="12"/>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </g>
-          </svg>
-        </div>
+    <!-- Login Container: Shown only when not signed in -->
+    <div id="login-container">
+      <div id="auth-status" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <button id="authorize_button">Sign in with Google</button>
       </div>
-      
-      <div id="auth-status">
-        <button id="authorize_button">Authorize</button>
-        <button id="signout_button" style="display: none;">Sign Out</button>
-      </div>
-      
-      <!-- Sheet Selection Dropdown -->
-      <div id="sheet-selection">
-        <label for="sheetSelector">Select Sheet:</label>
-        <select id="sheetSelector" onchange="cancelForm(); listSheetData();">
-          <option value="Form Responses">Form Responses</option>
-          <option value="Blog">Blog</option>
-        </select>
-      </div>
-      
-      <!-- Editing controls -->
-      <div class="controls" id="controls" style="display: none;">
-        <button onclick="listSheetData()">Refresh Data</button>
-        <button onclick="showNewRowForm()">Add New Entry</button>
-      </div>
-      
-      <div id="content"></div>
-      
-      <!-- Edit Form Modal Popup -->
-      <div id="form-section">
-        <h2 id="form-title">Add/Edit Entry</h2>
-        <form id="edit-form">
-          <label for="entry_date">Date:</label>
-          <input type="text" id="entry_date" name="date" placeholder="YYYY-MM-DD" required />
-          
-          <label for="entry_title">Title:</label>
-          <input type="text" id="entry_title" name="title" required />
-          
-          <label for="entry_content">Content:</label>
-          <textarea id="entry_content" name="content" rows="4" required></textarea>
-          
-          <div class="form-buttons">
-            <button type="submit">Save Entry</button>
-            <button type="button" onclick="cancelForm()">Cancel</button>
+    </div>
+
+    <!-- Main Container: Hidden until user is signed in -->
+    <div id="main-container">
+      <div class="container animate-in">
+        <div class="header">
+          <h1>Google Sheets Admin Console</h1>
+          <div id="theme-toggle" class="theme-switch" aria-label="Toggle dark/light mode">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon">
+              <circle class="sun-circle" cx="12" cy="12" r="5"/>
+              <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+              <g class="sun-rays">
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </g>
+            </svg>
           </div>
-        </form>
+        </div>
+        
+        <div id="auth-status">
+          <button id="authorize_button" style="display:none;">Authorize</button>
+          <button id="signout_button" style="display: none;">Sign Out</button>
+        </div>
+        
+        <!-- Sheet Selection Dropdown -->
+        <div id="sheet-selection">
+          <label for="sheetSelector">Select Sheet:</label>
+          <select id="sheetSelector" onchange="cancelForm(); listSheetData();">
+            <option value="Form Responses">Form Responses</option>
+            <option value="Blog">Blog</option>
+          </select>
+        </div>
+        
+        <!-- Editing controls -->
+        <div class="controls" id="controls">
+          <button onclick="listSheetData()">Refresh Data</button>
+          <button onclick="showNewRowForm()">Add New Entry</button>
+        </div>
+        
+        <div id="content"></div>
+        
+        <!-- Edit Form Modal Popup -->
+        <div id="form-section">
+          <h2 id="form-title">Add/Edit Entry</h2>
+          <form id="edit-form">
+            <label for="entry_date">Date:</label>
+            <input type="text" id="entry_date" name="date" placeholder="YYYY-MM-DD" required />
+            
+            <label for="entry_title">Title:</label>
+            <input type="text" id="entry_title" name="title" required />
+            
+            <label for="entry_content">Content:</label>
+            <textarea id="entry_content" name="content" rows="4" required></textarea>
+            
+            <div class="form-buttons">
+              <button type="submit">Save Entry</button>
+              <button type="button" onclick="cancelForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+        
+        <hr class="styled-divider">
       </div>
-      
-      <hr class="styled-divider">
     </div>
 
     <script>
@@ -419,6 +421,9 @@
                 }
                 accessToken = resp.access_token;
                 gapi.client.setToken({ access_token: accessToken });
+                // Hide login container and show main container
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('main-container').style.display = 'block';
                 document.getElementById('controls').style.display = 'flex';
                 listSheetData();
                 authorizeButton.style.display = 'none';
@@ -444,6 +449,9 @@
           google.accounts.oauth2.revoke(accessToken, () => {
             accessToken = null;
             gapi.client.setToken(null);
+            // Show login container and hide main container
+            document.getElementById('login-container').style.display = 'flex';
+            document.getElementById('main-container').style.display = 'none';
             document.getElementById('controls').style.display = 'none';
             document.getElementById('content').innerHTML = '';
             authorizeButton.style.display = 'block';
@@ -456,7 +464,7 @@
       signoutButton.onclick = handleSignoutClick;
 
       // List sheet data and display it in a table.
-      // Only fetch data if the user is logged in (i.e. accessToken exists)
+      // Only fetch data if the user is signed in.
       function listSheetData() {
         if (!accessToken) {
           document.getElementById('content').innerHTML = 'Please sign in with Google to view data.';
