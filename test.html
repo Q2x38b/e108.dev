@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Google Sheets Editor</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background: #f9f9f9;
+            }
+            h1 {
+                text-align: center;
+            }
+            #authorize_button,
+            #signout_button {
+                display: block;
+                margin: 0 auto 20px;
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+            #content {
+                max-width: 800px;
+                margin: 0 auto;
+                background: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            th,
+            td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            input,
+            button {
+                padding: 8px;
+                margin: 5px;
+                font-size: 14px;
+            }
+            label {
+                margin: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Google Sheets Editor</h1>
+        <button id="authorize_button">Authorize</button>
+        <button id="signout_button" style="display: none;">Sign Out</button>
+        <div id="content" style="display: none;">
+            <h2>Sheet Data</h2>
+            <table id="sheet-table">
+                <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>Column A</th>
+                        <th>Column B</th>
+                        <th>Column C</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sheet data will be loaded here -->
+                </tbody>
+            </table>
+            <h2>Edit a Cell</h2>
+            <div>
+                <label for="row">Row:</label>
+                <input type="number" id="row" min="1" value="1" />
+                <label for="col">Column (A, B, etc.):</label>
+                <input type="text" id="col" value="A" maxlength="2" />
+                <label for="value">Value:</label>
+                <input type="text" id="value" placeholder="New cell value" />
+                <button id="update_button">Update Cell</button>
+            </div>
+        </div>
+
+        <!-- Load the Google API client library -->
+        <script src="https://apis.google.com/js/api.js"></script>
+        <script>
+            // TODO: Replace these placeholder values with your actual credentials.
+            const CLIENT_ID = "936331083814-8hv2h12vfd021st5frrvhav875mucps3.apps.googleusercontent.com.apps.googleusercontent.com";
+            const API_KEY = "AIzaSyApvQuAABFbVVDVWTOdVSrWWXhLAYeXyZo";
+            // The ID of the Google Sheet to edit (from your provided link).
+            const spreadsheetId = "1jyPppl4fiQeUUkPchckMdm4Q8m-PLLyNK7cV64ggMx0";
+            // The range to read initially (adjust as needed).
+            const readRange = "Sheet1!A1:C10";
+
+            // Discovery doc URL for Google Sheets API.
+            const DISCOVERY_DOC = "https://sheets.googleapis.com/$discovery/rest?version=v4";
+            // Authorization scopes required.
+            const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+
+            const authorizeButton = document.getElementById("authorize_button");
+            const signoutButton = document.getElementById("signout_button");
+            const content = document.getElementById("content");
+
+            // Load the API client and auth2 library.
+            function handleClientLoad() {
+                gapi.load("client:auth2", initClient);
+            }
+
+            // Initialize the API client library.
+            function initClient() {
+                gapi.client
+                    .init({
+                        apiKey: API_KEY,
+                        clientId: CLIENT_ID,
+                        discoveryDocs: [DISCOVERY_DOC],
+                        scope: SCOPES,
+                    })
+                    .then(
+                        function () {
+                            // Listen for sign-in state changes.
+                            gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+                            // Handle the initial sign-in state.
+                            updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+                            authorizeButton.onclick = handleAuthClick;
+                            signoutButton.onclick = handleSignoutClick;
+                        },
+                        function (error) {
+                            console.error(JSON.stringify(error, null, 2));
+                        }
+                    );
+            }
+
+            // Update UI sign-in state changes.
+            function updateSigninStatus(isSignedIn) {
+                if (isSignedIn) {
+                    authorizeButton.style.display = "none";
+                    signoutButton.style.display = "block";
+                    content.style.display = "block";
+                    loadSheetData();
+                } else {
+                    authorizeButton.style.display = "block";
+                    signoutButton.style.display = "none";
+                    content.style.display = "none";
+                }
+            }
+
+            // Sign in the user upon button click.
+            function handleAuthClick() {
+                gapi.auth2.getAuthInstance().signIn();
+            }
+
+            // Sign out the user upon button click.
+            function handleSignoutClick() {
+                gapi.auth2.getAuthInstance().signOut();
+            }
+
+            // Load sheet data and display it in the table.
+            function loadSheetData() {
+                gapi.client.sheets.spreadsheets.values
+                    .get({
+                        spreadsheetId: spreadsheetId,
+                        range: readRange,
+                    })
+                    .then(
+                        (response) => {
+                            const values = response.result.values;
+                            const tbody = document.getElementById("sheet-table").getElementsByTagName("tbody")[0];
+                            tbody.innerHTML = "";
+                            if (!values || values.length === 0) {
+                                tbody.innerHTML = '<tr><td colspan="4">No data found.</td></tr>';
+                            } else {
+                                values.forEach((row, index) => {
+                                    const tr = document.createElement("tr");
+                                    const rowNum = document.createElement("td");
+                                    rowNum.textContent = index + 1;
+                                    tr.appendChild(rowNum);
+                                    // Assuming 3 columns (A, B, C).
+                                    for (let i = 0; i < 3; i++) {
+                                        const td = document.createElement("td");
+                                        td.textContent = row[i] || "";
+                                        tr.appendChild(td);
+                                    }
+                                    tbody.appendChild(tr);
+                                });
+                            }
+                        },
+                        (error) => {
+                            console.error("Error: " + error.result.error.message);
+                        }
+                    );
+            }
+
+            // Update a specific cell in the sheet.
+            document.getElementById("update_button").addEventListener("click", function () {
+                const row = document.getElementById("row").value;
+                const col = document.getElementById("col").value.toUpperCase();
+                const value = document.getElementById("value").value;
+                const cellRange = `Sheet1!${col}${row}`;
+
+                const body = {
+                    values: [[value]],
+                };
+
+                gapi.client.sheets.spreadsheets.values
+                    .update(
+                        {
+                            spreadsheetId: spreadsheetId,
+                            range: cellRange,
+                            valueInputOption: "USER_ENTERED",
+                        },
+                        body
+                    )
+                    .then(
+                        (response) => {
+                            alert("Cell updated successfully!");
+                            loadSheetData();
+                        },
+                        (error) => {
+                            console.error("Error: " + error.result.error.message);
+                        }
+                    );
+            });
+
+            // Start the API client load process.
+            handleClientLoad();
+        </script>
+    </body>
+</html>
