@@ -483,20 +483,27 @@
       // List sheet data and display it in a table.
       // Only fetch data if the user is signed in.
       function listSheetData() {
-        var currentSheet = getCurrentSheetName();
-        // Build the URL with query parameters.
-        var url = 'https://script.google.com/macros/s/AKfycbzbXrQ60RA7fGVpGVbhv_50Z79udfgeufiCzKszH7aFiYH5JZkl-OvzY0qphz3VT38V/exec'
-                    + '?action=listSheetData'
-                    + '&sheetName=' + encodeURIComponent(currentSheet);
-                    
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-            displayData(data);
-            })
-            .catch(error => console.error('Error:', error));
+        if (!accessToken) {
+          document.getElementById('content').innerHTML = 'Please sign in with Google to view data.';
+          return;
         }
-
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: spreadsheetId,
+          range: getFullRange(),
+        }).then(
+          function (response) {
+            const range = response.result;
+            if (range.values && range.values.length > 0) {
+              displayData(range.values);
+            } else {
+              document.getElementById('content').innerHTML = 'No data found.';
+            }
+          },
+          function (response) {
+            console.error('Error fetching data: ' + response.result.error.message);
+          }
+        );
+      }
 
       function displayData(data) {
         const currentSheet = getCurrentSheetName();
