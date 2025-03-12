@@ -3,14 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Updated CSP: allow external fonts, styles, frames, and connections -->
+    <!-- Combined and relaxed CSP and COOP -->
     <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self' https://apis.google.com https://accounts.google.com https://www.gstatic.com https://cdnjs.cloudflare.com https://script.google.com https://content-sheets.googleapis.com https://content.googleapis.com;
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://www.gstatic.com;
-      style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://accounts.google.com/gsi/style;
-      font-src 'self' https://cdnjs.cloudflare.com;
-      frame-src 'self' https://accounts.google.com https://content-sheets.googleapis.com https://content.googleapis.com;
-      connect-src 'self' https://accounts.google.com https://script.google.com;
+      default-src 'self' https://script.google.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://script.google.com;
+      style-src 'self' 'unsafe-inline';
     ">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
     <title>Google Sheets Admin Console</title>
@@ -45,15 +42,18 @@
         font-style: normal;
         font-display: swap;
       }
-      
+
       /* Root Variables for Theming */
       :root {
         --background: #141414;
         --foreground: #ebebeb;
+        --kbd-background: #222;
         --text-primary: #d4d4d8;
         --text-secondary: #737373;
         --border-color: #404040;
+        --border-subtle: #262626;
         --hover-bg: rgba(64, 64, 64, 0.2);
+        --font-geist-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         --font-satoshi: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
       }
@@ -63,9 +63,10 @@
         --text-primary: #171717;
         --text-secondary: #525252;
         --border-color: #d4d4d4;
+        --border-subtle: #e5e5e5;
         --hover-bg: rgba(0, 0, 0, 0.05);
       }
-      
+
       /* Basic Reset */
       *, *::before, *::after {
         box-sizing: border-box;
@@ -80,26 +81,23 @@
         background-color: var(--background);
         color: var(--foreground);
         line-height: 1.5;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-      
-      /* Login Container: Shown only when not signed in */
-      #login-container {
-        display: flex;
-        height: 100vh;
-        justify-content: center;
-        align-items: center;
-      }
-      
-      /* Main Container: Hidden until signed in */
+
+      /* Main Container */
       #main-container {
-        display: none;
+        display: block;
       }
-      
+
       /* Container Layout for main content */
       .container {
         max-width: 42rem;
         margin: 0 auto;
         padding: 4rem 1.5rem;
+        position: relative;
         min-height: 100vh;
       }
       @media (min-width: 640px) {
@@ -107,24 +105,31 @@
           padding: 4rem 0;
         }
       }
-      
+
       /* Header Styling */
       .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 1.5rem 0;
-        border-bottom: 1px solid var(--border-color);
+        width: 100%;
+        font-size: 0.875rem;
+        font-family: var(--font-geist-mono);
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-subtle);
         margin-bottom: 2rem;
       }
       h1 {
         font-size: 1.25rem;
         font-weight: 600;
         color: var(--text-primary);
+        font-family: var(--font-satoshi);
+        margin: 0;
       }
-      
-      /* Button Styling (original style restored) */
+
+      /* Button Styling */
       button {
+        position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -133,17 +138,19 @@
         font-size: 0.75rem;
         font-weight: 600;
         color: var(--text-primary);
+        text-decoration: none;
         border-radius: 0.375rem;
         border: 1px solid var(--border-color);
         background-color: transparent;
         transition: all 0.15s ease;
         cursor: pointer;
+        overflow: hidden;
       }
       button:hover {
         background-color: var(--hover-bg);
         transform: translateY(-2px);
       }
-      
+
       /* Sheet Selection Styling */
       #sheet-selection {
         margin: 2rem 0;
@@ -155,6 +162,7 @@
         font-size: 0.8rem;
         font-weight: 600;
         color: var(--text-secondary);
+        font-family: var(--font-geist-mono);
       }
       select {
         padding: 0.5rem;
@@ -162,38 +170,42 @@
         border: 1px solid var(--border-color);
         background-color: var(--background);
         color: var(--text-primary);
+        font-family: var(--font-geist-mono);
         font-size: 0.75rem;
+        cursor: pointer;
         min-width: 150px;
       }
       select:focus {
         outline: none;
         border-color: var(--text-secondary);
       }
-      
+
       /* Controls Styling */
       .controls {
         display: flex;
         gap: 0.75rem;
         margin-bottom: 2rem;
       }
-      
+
       /* Table Styling */
       table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 2rem;
+        font-family: var(--font-satoshi);
       }
       th, td {
         padding: 0.75rem 1rem;
         text-align: left;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-subtle);
       }
       th {
         font-size: 0.75rem;
         font-weight: 600;
+        color: var(--text-secondary);
+        font-family: var(--font-geist-mono);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: var(--text-secondary);
       }
       td {
         font-size: 0.875rem;
@@ -202,7 +214,7 @@
       tr:hover td {
         background-color: var(--hover-bg);
       }
-      
+
       /* Modal Popup for Edit Form */
       #form-section.modal {
         position: fixed;
@@ -217,7 +229,11 @@
         width: 90%;
         max-width: 600px;
       }
-      #form-section { display: none; }
+
+      /* Form Styling */
+      #form-section {
+        display: none;
+      }
       #form-title {
         font-size: 1rem;
         font-weight: 600;
@@ -229,6 +245,7 @@
         font-size: 0.8rem;
         font-weight: 600;
         color: var(--text-secondary);
+        font-family: var(--font-geist-mono);
         margin-bottom: 0.5rem;
       }
       input[type="text"], textarea {
@@ -238,6 +255,7 @@
         border: 1px solid var(--border-color);
         background-color: transparent;
         color: var(--text-primary);
+        font-family: var(--font-satoshi);
         font-size: 0.875rem;
         margin-bottom: 1.5rem;
         transition: all 0.15s ease;
@@ -247,34 +265,42 @@
         border-color: var(--text-secondary);
         background-color: var(--hover-bg);
       }
-      textarea { resize: vertical; min-height: 100px; }
-      .form-buttons { display: flex; gap: 0.75rem; }
-      
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+      .form-buttons {
+        display: flex;
+        gap: 0.75rem;
+      }
+
       /* Action Buttons in Table */
-      .action-button { padding: 0.4rem 0.75rem; margin-right: 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; }
-      
+      .action-button {
+        padding: 0.4rem 0.75rem;
+        margin-right: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.7rem;
+      }
+
       /* Styled Divider */
       .styled-divider {
         border: none;
         height: 1px;
-        background: linear-gradient(to right, transparent, var(--border-color), var(--border-color), var(--border-color), transparent);
+        background: linear-gradient(
+          to right,
+          transparent,
+          var(--border-color),
+          var(--border-color),
+          var(--border-color),
+          transparent
+        );
         margin: 2rem auto;
         width: 80%;
       }
     </style>
-    <!-- Load the new Google Identity Services library -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <!-- Login Container: Shown only when not signed in -->
-    <div id="login-container">
-      <div id="auth-status" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <!-- The Google Sign-In button will be rendered here by GSI -->
-        <div id="g_id_signin"></div>
-      </div>
-    </div>
-
-    <!-- Main Container: Hidden until user is signed in -->
+    <!-- Main Container -->
     <div id="main-container">
       <div class="container animate-in">
         <div class="header">
@@ -295,10 +321,6 @@
               </g>
             </svg>
           </div>
-        </div>
-        
-        <div id="auth-status">
-          <button id="signout_button" style="display: none;">Sign Out</button>
         </div>
         
         <!-- Sheet Selection Dropdown -->
@@ -343,75 +365,49 @@
     </div>
 
     <script>
-      // --- Configuration ---
-      // Set your Apps Script web app URL (backend)
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzbXrQ60RA7fGVpGVbhv_50Z79udfgeufiCzKszH7aFiYH5JZkl-OvzY0qphz3VT38V/exec";
+      // Define the backend URL for the Apps Script web app.
+      const backendUrl = 'https://script.google.com/macros/s/AKfycbzbXrQ60RA7fGVpGVbhv_50Z79udfgeufiCzKszH7aFiYH5JZkl-OvzY0qphz3VT38V/exec';
 
-      // --- Global Variables ---
-      let idToken = null;    // The user's ID token after sign-in.
-      let currentRowIndex = null;  // For editing rows.
+      // Global variable to store fetched sheet data.
+      let sheetData = [];
+      // Current row index (actual spreadsheet row number) for editing; null means a new entry.
+      let currentRowIndex = null;
 
-      // --- Google Identity Services Initialization ---
-      window.onload = function() {
-        // Initialize the Google Sign-In button.
-        google.accounts.id.initialize({
-          client_id: "936331083814-8hv2h12vfd021st5frrvhav875mucps3.apps.googleusercontent.com", // Replace with your actual client ID.
-          callback: handleCredentialResponse,
-          auto_select: false,
-        });
-        google.accounts.id.renderButton(
-          document.getElementById("g_id_signin"),
-          { theme: "outline", size: "large" }
-        );
-        google.accounts.id.prompt(); // Optionally display One Tap.
-      };
-
-      // Called after a successful sign-in.
-      function handleCredentialResponse(response) {
-        idToken = response.credential;
-        // Hide the login container and show the main container.
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('main-container').style.display = 'block';
-        // Immediately list sheet data.
-        listSheetData();
+      // Helper: Get the currently selected sheet name.
+      function getCurrentSheetName() {
+        return document.getElementById("sheetSelector").value;
       }
 
-      // --- Data Operations via Apps Script Web App ---
+      // Fetch and display the sheet data.
       function listSheetData() {
-        const sheetName = document.getElementById("sheetSelector").value;
-        if (!idToken) {
-          document.getElementById('content').innerHTML = 'Please sign in with Google to view data.';
-          return;
-        }
-        fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            idToken: idToken,
-            sheetName: sheetName,
-            operation: "list"
+        const currentSheet = getCurrentSheetName();
+        const url = backendUrl + '?action=listSheetData'
+                  + '&sheetName=' + encodeURIComponent(currentSheet);
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            sheetData = data;
+            displayData(data);
           })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            displayData(data.values);
-          } else {
-            document.getElementById("content").innerHTML = "Error: " + data.error;
-          }
-        })
-        .catch(err => console.error("Error listing data:", err));
+          .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('content').innerHTML = 'Error fetching data.';
+          });
       }
 
-      function displayData(values) {
-        const currentSheet = document.getElementById("sheetSelector").value;
+      function displayData(data) {
+        const currentSheet = getCurrentSheetName();
         let html = '<table><thead><tr>';
-        values[0].forEach(header => { html += '<th>' + header + '</th>'; });
+        // Assume the first row is the header.
+        data[0].forEach(header => {
+          html += '<th>' + header + '</th>';
+        });
         html += '<th>Actions</th></tr></thead><tbody>';
-        for (let i = 1; i < values.length; i++) {
+        // Loop through data rows (skip header row at index 0).
+        for (let i = 1; i < data.length; i++) {
           html += '<tr>';
-          values[i].forEach((cell, index) => {
-            // For Blog sheet, make the content column collapsible (assumes column index 2).
+          data[i].forEach((cell, index) => {
+            // For Blog sheet, make the content column collapsible (assuming column index 2).
             if (currentSheet === "Blog" && index === 2) {
               html += '<td><button onclick="toggleContent(this)">Show Content</button>';
               html += '<div class="content-collapsible" style="display:none; margin-top:0.5rem;">' + cell + '</div></td>';
@@ -419,6 +415,7 @@
               html += '<td>' + cell + '</td>';
             }
           });
+          // Pass the row index (i) which corresponds to the position in sheetData.
           html += '<td><button class="action-button" onclick="editRow(' + i + ')">Edit</button>' +
                   '<button class="action-button" onclick="deleteRow(' + i + ')">Delete</button></td>';
           html += '</tr>';
@@ -427,6 +424,7 @@
         document.getElementById('content').innerHTML = html;
       }
 
+      // Toggle the collapsible content for Blog entries.
       function toggleContent(button) {
         const div = button.nextElementSibling;
         if (div.style.display === "none") {
@@ -438,6 +436,7 @@
         }
       }
 
+      // Show the modal popup for a new row.
       function showNewRowForm() {
         currentRowIndex = null;
         document.getElementById('form-title').textContent = 'Add New Entry';
@@ -446,100 +445,80 @@
         document.getElementById('form-section').style.display = 'block';
       }
 
+      // Edit an existing row.
       function editRow(rowIndex) {
-        currentRowIndex = rowIndex;
+        // rowIndex corresponds to the index in sheetData.
+        // Adjust currentRowIndex for the spreadsheet (header is at index 0).
+        currentRowIndex = rowIndex + 1;
         document.getElementById('form-title').textContent = 'Edit Entry';
-        const currentSheet = document.getElementById("sheetSelector").value;
-        fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            idToken: idToken,
-            sheetName: currentSheet,
-            operation: "getRow",
-            row: rowIndex
-          })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.row) {
-            document.getElementById('entry_date').value = data.row[0] || '';
-            document.getElementById('entry_title').value = data.row[1] || '';
-            document.getElementById('entry_content').value = data.row[2] || '';
-            document.getElementById('form-section').classList.add('modal');
-            document.getElementById('form-section').style.display = 'block';
-          } else {
-            console.error("Error fetching row data:", data.error);
-          }
-        })
-        .catch(err => console.error("Error in editRow:", err));
+        const rowData = sheetData[rowIndex];
+        if (rowData) {
+          document.getElementById('entry_date').value = rowData[0] || '';
+          document.getElementById('entry_title').value = rowData[1] || '';
+          document.getElementById('entry_content').value = rowData[2] || '';
+          document.getElementById('form-section').classList.add('modal');
+          document.getElementById('form-section').style.display = 'block';
+        } else {
+          console.error("No data found for row", rowIndex);
+        }
       }
 
-      document.getElementById('edit-form').addEventListener('submit', function(e) {
+      // Handle form submission to add or update a row.
+      document.getElementById('edit-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const date = document.getElementById('entry_date').value;
         const title = document.getElementById('entry_title').value;
         const content = document.getElementById('entry_content').value;
-        const currentSheet = document.getElementById("sheetSelector").value;
-        let operation = currentRowIndex === null ? "append" : "update";
-        let payload = {
-          idToken: idToken,
-          sheetName: currentSheet,
-          operation: operation,
-          date: date,
-          title: title,
-          content: content
-        };
-        if (operation === "update") {
-          payload.row = currentRowIndex;
+        const currentSheet = getCurrentSheetName();
+
+        if (currentRowIndex === null) {
+          // Add new entry.
+          const url = backendUrl + '?action=addRow'
+                    + '&sheetName=' + encodeURIComponent(currentSheet)
+                    + '&date=' + encodeURIComponent(date)
+                    + '&title=' + encodeURIComponent(title)
+                    + '&content=' + encodeURIComponent(content);
+          fetch(url)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status === "success") {
+                alert('Entry added successfully!');
+                document.getElementById('form-section').style.display = 'none';
+                document.getElementById('form-section').classList.remove('modal');
+                listSheetData();
+              }
+            })
+            .catch(error => console.error('Error:', error));
+        } else {
+          // Update existing entry.
+          const url = backendUrl + '?action=updateRow'
+                    + '&sheetName=' + encodeURIComponent(currentSheet)
+                    + '&rowIndex=' + encodeURIComponent(currentRowIndex)
+                    + '&date=' + encodeURIComponent(date)
+                    + '&title=' + encodeURIComponent(title)
+                    + '&content=' + encodeURIComponent(content);
+          fetch(url)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status === "success") {
+                alert('Entry updated successfully!');
+                document.getElementById('form-section').style.display = 'none';
+                document.getElementById('form-section').classList.remove('modal');
+                listSheetData();
+              }
+            })
+            .catch(error => console.error('Error:', error));
         }
-        fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert(operation === "append" ? "Entry added successfully!" : "Entry updated successfully!");
-            cancelForm();
-            listSheetData();
-          } else {
-            alert("Error: " + data.error);
-          }
-        })
-        .catch(err => console.error("Error submitting form:", err));
       });
 
+      // Close the form modal.
       function cancelForm() {
         document.getElementById('form-section').style.display = 'none';
         document.getElementById('form-section').classList.remove('modal');
       }
 
-      function deleteRow(rowIndex) {
-        if (!confirm('Are you sure you want to delete this entry?')) return;
-        const currentSheet = document.getElementById("sheetSelector").value;
-        fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            idToken: idToken,
-            sheetName: currentSheet,
-            operation: "delete",
-            row: rowIndex
-          })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert("Entry deleted successfully!");
-            listSheetData();
-          } else {
-            alert("Error: " + data.error);
-          }
-        })
-        .catch(err => console.error("Error deleting row:", err));
-      }
+      // On page load, fetch and display data.
+      window.addEventListener('load', listSheetData);
     </script>
   </body>
 </html>
