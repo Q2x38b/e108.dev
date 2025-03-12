@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Combined and relaxed CSP and COOP -->
+    <!-- Updated Content Security Policy to allow styles and fonts from cdnjs -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self' https://script.google.com;
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://script.google.com;
       style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+      font-src 'self' https://cdnjs.cloudflare.com;
     ">
-
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
     <title>Google Sheets Admin Console</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -369,7 +369,7 @@
     </div>
 
     <script>
-      // Backend URL for the Apps Script web app.
+      // Use the updated web app URL.
       const backendUrl = 'https://script.google.com/macros/s/AKfycbwxAc0q8HyLUO3qRkuN_6V-LX4YG2tXS5MPcuZbPVwJYtSeg0VfPDpg58Xjz_mAZKwX/exec';
       
       let sheetData = [];
