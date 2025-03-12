@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Updated Content Security Policy to allow styles and fonts from cdnjs -->
+    <!-- Combined and relaxed CSP and COOP -->
     <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self' https://script.google.com;
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://script.google.com;
-      style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
-      font-src 'self' https://cdnjs.cloudflare.com;
+      default-src 'self' https://apis.google.com https://accounts.google.com https://www.gstatic.com https://content-sheets.googleapis.com https://content.googleapis.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://www.gstatic.com;
+      style-src 'self' 'unsafe-inline';
+      frame-src https://content-sheets.googleapis.com https://content.googleapis.com;
     ">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
     <title>Google Sheets Admin Console</title>
@@ -88,15 +88,15 @@
         -moz-osx-font-smoothing: grayscale;
       }
 
-      /* Login Container */
+      /* Login Container: Shown only when not signed in */
       #login-container {
         display: flex;
         height: 100vh;
         justify-content: center;
         align-items: center;
       }
-
-      /* Main Container (hidden by default) */
+      
+      /* Main Container: Hidden until signed in */
       #main-container {
         display: none;
       }
@@ -136,7 +136,7 @@
         margin: 0;
       }
 
-      /* Button Styling */
+      /* Button Styling (restored to original) */
       button {
         position: relative;
         display: inline-flex;
@@ -307,24 +307,45 @@
         width: 80%;
       }
     </style>
+    <!-- Load the Google API client library for Sheets API -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <!-- Load the new Google Identity Services library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <!-- Login Container: visible by default -->
+    <!-- Login Container: Shown only when not signed in -->
     <div id="login-container">
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
-        <button id="signin_button" onclick="handleSignIn()">Sign in with Google</button>
-        <p id="login-error" style="color: red;"></p>
+      <div id="auth-status" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <button id="authorize_button">Sign in with Google</button>
       </div>
     </div>
 
-    <!-- Main Container: hidden until the user is authorized -->
+    <!-- Main Container: Hidden until user is signed in -->
     <div id="main-container">
       <div class="container animate-in">
         <div class="header">
           <h1>Google Sheets Admin Console</h1>
-          <div>
-            <button id="signout_button" onclick="handleSignOut()">Sign Out</button>
+          <div id="theme-toggle" class="theme-switch" aria-label="Toggle dark/light mode">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon">
+              <circle class="sun-circle" cx="12" cy="12" r="5"/>
+              <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+              <g class="sun-rays">
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </g>
+            </svg>
           </div>
+        </div>
+        
+        <div id="auth-status">
+          <button id="authorize_button" style="display:none;">Authorize</button>
+          <button id="signout_button" style="display: none;">Sign Out</button>
         </div>
         
         <!-- Sheet Selection Dropdown -->
@@ -336,7 +357,7 @@
           </select>
         </div>
         
-        <!-- Editing Controls -->
+        <!-- Editing controls -->
         <div class="controls" id="controls">
           <button onclick="listSheetData()">Refresh Data</button>
           <button onclick="showNewRowForm()">Add New Entry</button>
@@ -369,63 +390,114 @@
     </div>
 
     <script>
-      // Use the updated web app URL.
-      const backendUrl = 'https://script.google.com/macros/s/AKfycbwxAc0q8HyLUO3qRkuN_6V-LX4YG2tXS5MPcuZbPVwJYtSeg0VfPDpg58Xjz_mAZKwX/exec';
-      
-      let sheetData = [];
-      let currentRowIndex = null;
+      // Replace these with your own API credentials.
+      const CLIENT_ID = '936331083814-8hv2h12vfd021st5frrvhav875mucps3.apps.googleusercontent.com';
+      const API_KEY = 'AIzaSyApvQuAABFbVVDVWTOdVSrWWXhLAYeXyZo';
 
-      // Sign in handler: calls the backend to validate the signed-in Google account.
-      function handleSignIn() {
-        const url = backendUrl + '?action=validateUser';
-        fetch(url)
-          .then(response => response.json())
-          .then(result => {
-            if (result.status === "authorized") {
-              // User is authorized – hide login UI and display the main interface.
-              document.getElementById('login-container').style.display = 'none';
-              document.getElementById('main-container').style.display = 'block';
-              listSheetData();
-            } else {
-              document.getElementById('login-error').textContent =
-                'Unauthorized: ' + (result.message || 'Access denied.');
-            }
-          })
-          .catch(error => {
-            console.error('Error during sign in:', error);
-            document.getElementById('login-error').textContent =
-              'Error during sign in. Please try again.';
-          });
-      }
+      // Scopes include openid and email for default sign-in.
+      const SCOPES = "https://www.googleapis.com/auth/spreadsheets openid email";
+      const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
 
-      // Sign out handler – here we simply reload the page.
-      function handleSignOut() {
-        location.reload();
-      }
+      // Your Google Sheet ID.
+      const spreadsheetId = '1jyPppl4fiQeUUkPchckMdm4Q8m-PLLyNK7cV64ggMx0';
 
       // Helper: Get the currently selected sheet name.
       function getCurrentSheetName() {
         return document.getElementById("sheetSelector").value;
       }
 
-      // Fetch and display the sheet data.
-      function listSheetData() {
-        const currentSheet = getCurrentSheetName();
-        const url = backendUrl + '?action=listSheetData'
-                  + '&sheetName=' + encodeURIComponent(currentSheet);
-        fetch(url)
-          .then(response => response.json())
-          .then(data => {
-            sheetData = data;
-            displayData(data);
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('content').innerHTML = 'Error fetching data.';
-          });
+      // Helper: Build the full range string (e.g., "SheetName!A:Z")
+      function getFullRange() {
+        return getCurrentSheetName() + "!A:Z";
       }
 
-      // Render table of sheet data.
+      const authorizeButton = document.getElementById('authorize_button');
+      const signoutButton = document.getElementById('signout_button');
+      let currentRowIndex = null; // For editing rows
+      let tokenClient;
+      let accessToken = null;
+
+      // Initialize gapi.client and the GIS token client once the window is loaded.
+      function handleClientLoad() {
+        gapi.load('client', initClient);
+      }
+
+      function initClient() {
+        gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: DISCOVERY_DOCS,
+        }).then(() => {
+          if (google?.accounts?.oauth2?.initTokenClient) {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+              client_id: CLIENT_ID,
+              scope: SCOPES,
+              callback: (resp) => {
+                if (resp.error) {
+                  console.error("Token error:", resp);
+                  return;
+                }
+                accessToken = resp.access_token;
+                gapi.client.setToken({ access_token: accessToken });
+                // Hide login container and show main container
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('main-container').style.display = 'block';
+                document.getElementById('controls').style.display = 'flex';
+                listSheetData();
+                authorizeButton.style.display = 'none';
+                signoutButton.style.display = 'block';
+              },
+            });
+          } else {
+            console.error('GIS library is not loaded.');
+          }
+        });
+      }
+
+      function handleAuthClick() {
+        if (tokenClient) {
+          tokenClient.requestAccessToken();
+        } else {
+          console.error('Token client not initialized.');
+        }
+      }
+
+      function handleSignoutClick() {
+        if (accessToken) {
+          google.accounts.oauth2.revoke(accessToken, () => {
+            accessToken = null;
+            gapi.client.setToken(null);
+            // Show login container and hide main container
+            document.getElementById('login-container').style.display = 'flex';
+            document.getElementById('main-container').style.display = 'none';
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('content').innerHTML = '';
+            authorizeButton.style.display = 'block';
+            signoutButton.style.display = 'none';
+          });
+        }
+      }
+
+      authorizeButton.onclick = handleAuthClick;
+      signoutButton.onclick = handleSignoutClick;
+
+      // List sheet data and display it in a table.
+      // Only fetch data if the user is signed in.
+      function listSheetData() {
+        var currentSheet = getCurrentSheetName();
+        // Build the URL with query parameters.
+        var url = 'https://script.google.com/macros/s/AKfycbzbXrQ60RA7fGVpGVbhv_50Z79udfgeufiCzKszH7aFiYH5JZkl-OvzY0qphz3VT38V/exec'
+                    + '?action=listSheetData'
+                    + '&sheetName=' + encodeURIComponent(currentSheet);
+                    
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+            displayData(data);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+
       function displayData(data) {
         const currentSheet = getCurrentSheetName();
         let html = '<table><thead><tr>';
@@ -436,6 +508,7 @@
         for (let i = 1; i < data.length; i++) {
           html += '<tr>';
           data[i].forEach((cell, index) => {
+            // For Blog sheet, make the content column collapsible (assuming column index 2).
             if (currentSheet === "Blog" && index === 2) {
               html += '<td><button onclick="toggleContent(this)">Show Content</button>';
               html += '<div class="content-collapsible" style="display:none; margin-top:0.5rem;">' + cell + '</div></td>';
@@ -451,7 +524,7 @@
         document.getElementById('content').innerHTML = html;
       }
 
-      // Toggle collapsible content for Blog entries.
+      // Toggle the collapsible content for Blog entries.
       function toggleContent(button) {
         const div = button.nextElementSibling;
         if (div.style.display === "none") {
@@ -463,7 +536,7 @@
         }
       }
 
-      // Show modal popup for a new row.
+      // Show the modal popup for a new row.
       function showNewRowForm() {
         currentRowIndex = null;
         document.getElementById('form-title').textContent = 'Add New Entry';
@@ -474,73 +547,106 @@
 
       // Edit an existing row.
       function editRow(rowIndex) {
-        currentRowIndex = rowIndex + 1;
+        console.log("Editing row:", rowIndex);
+        currentRowIndex = rowIndex;
         document.getElementById('form-title').textContent = 'Edit Entry';
-        const rowData = sheetData[rowIndex];
-        if (rowData) {
-          document.getElementById('entry_date').value = rowData[0] || '';
-          document.getElementById('entry_title').value = rowData[1] || '';
-          document.getElementById('entry_content').value = rowData[2] || '';
-          document.getElementById('form-section').classList.add('modal');
-          document.getElementById('form-section').style.display = 'block';
-        } else {
-          console.error("No data found for row", rowIndex);
-        }
+        const currentSheet = getCurrentSheetName();
+        const range = currentSheet + '!A' + (rowIndex + 1) + ':C' + (rowIndex + 1);
+        console.log("Fetching range:", range);
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: spreadsheetId,
+          range: range,
+        }).then(function (response) {
+          console.log("Edit row response:", response);
+          const rowData = response.result.values[0];
+          if (rowData) {
+            document.getElementById('entry_date').value = rowData[0] || '';
+            document.getElementById('entry_title').value = rowData[1] || '';
+            document.getElementById('entry_content').value = rowData[2] || '';
+            document.getElementById('form-section').classList.add('modal');
+            document.getElementById('form-section').style.display = 'block';
+            console.log("Form values set:", {
+              date: document.getElementById('entry_date').value,
+              title: document.getElementById('entry_title').value,
+              content: document.getElementById('entry_content').value
+            });
+          } else {
+            console.error("No data returned for row", rowIndex);
+          }
+        }).catch(function (error) {
+          console.error("Error in editRow:", error);
+        });
       }
 
-      // Handle form submission for adding or updating a row.
+      // Handle form submission to add or update a row.
       document.getElementById('edit-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const date = document.getElementById('entry_date').value;
         const title = document.getElementById('entry_title').value;
         const content = document.getElementById('entry_content').value;
+        const values = [[date, title, content]];
         const currentSheet = getCurrentSheetName();
 
         if (currentRowIndex === null) {
-          // Add new entry.
-          const url = backendUrl + '?action=addRow'
-                    + '&sheetName=' + encodeURIComponent(currentSheet)
-                    + '&date=' + encodeURIComponent(date)
-                    + '&title=' + encodeURIComponent(title)
-                    + '&content=' + encodeURIComponent(content);
-          fetch(url)
-            .then(response => response.json())
-            .then(result => {
-              if (result.status === "success") {
-                alert('Entry added successfully!');
-                document.getElementById('form-section').style.display = 'none';
-                document.getElementById('form-section').classList.remove('modal');
-                listSheetData();
-              }
-            })
-            .catch(error => console.error('Error:', error));
+          gapi.client.sheets.spreadsheets.values.append({
+            spreadsheetId: spreadsheetId,
+            range: currentSheet,
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            resource: { values: values },
+          }).then(function (response) {
+            alert('Entry added successfully!');
+            document.getElementById('form-section').style.display = 'none';
+            document.getElementById('form-section').classList.remove('modal');
+            listSheetData();
+          });
         } else {
-          // Update existing entry.
-          const url = backendUrl + '?action=updateRow'
-                    + '&sheetName=' + encodeURIComponent(currentSheet)
-                    + '&rowIndex=' + encodeURIComponent(currentRowIndex)
-                    + '&date=' + encodeURIComponent(date)
-                    + '&title=' + encodeURIComponent(title)
-                    + '&content=' + encodeURIComponent(content);
-          fetch(url)
-            .then(response => response.json())
-            .then(result => {
-              if (result.status === "success") {
-                alert('Entry updated successfully!');
-                document.getElementById('form-section').style.display = 'none';
-                document.getElementById('form-section').classList.remove('modal');
-                listSheetData();
-              }
-            })
-            .catch(error => console.error('Error:', error));
+          const range = currentSheet + '!A' + (currentRowIndex + 1) + ':C' + (currentRowIndex + 1);
+          gapi.client.sheets.spreadsheets.values.update({
+            spreadsheetId: spreadsheetId,
+            range: range,
+            valueInputOption: 'USER_ENTERED',
+            resource: { values: values },
+          }).then(function (response) {
+            alert('Entry updated successfully!');
+            document.getElementById('form-section').style.display = 'none';
+            document.getElementById('form-section').classList.remove('modal');
+            listSheetData();
+          });
         }
       });
 
-      // Close the form modal.
       function cancelForm() {
         document.getElementById('form-section').style.display = 'none';
         document.getElementById('form-section').classList.remove('modal');
       }
+
+      // Delete a row using batchUpdate.
+      function deleteRow(rowIndex) {
+        if (!confirm('Are you sure you want to delete this entry?')) return;
+        const currentSheet = getCurrentSheetName();
+        const requests = [{
+          deleteDimension: {
+            range: {
+              sheetId: 0, // Adjust if necessary.
+              dimension: 'ROWS',
+              startIndex: rowIndex,
+              endIndex: rowIndex + 1,
+            },
+          },
+        }];
+        gapi.client.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: spreadsheetId,
+          resource: { requests: requests },
+        }).then(function (response) {
+          alert('Entry deleted successfully!');
+          listSheetData();
+        }, function (error) {
+          console.error('Error deleting row:', error);
+        });
+      }
+
+      window.addEventListener('load', handleClientLoad);
     </script>
   </body>
 </html>
