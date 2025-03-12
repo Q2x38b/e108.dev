@@ -3,20 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Combined and relaxed CSP and COOP -->
+    <!-- Updated Content Security Policy with allowances for external fonts, styles, and connect-src -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self' https://apis.google.com https://accounts.google.com https://www.gstatic.com https://content-sheets.googleapis.com https://content.googleapis.com;
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://www.gstatic.com;
       style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://accounts.google.com/gsi/style;
+      font-src 'self' https://cdnjs.cloudflare.com;
       frame-src https://content-sheets.googleapis.com https://content.googleapis.com;
+      connect-src 'self' https://script.google.com;
     ">
-
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
     <title>Google Sheets Admin Console</title>
-    <!-- (Optional) Include Font Awesome if desired -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-      /* --- Custom Font Loading --- */
+      /* Custom Font Loading */
       @font-face {
         font-family: 'Satoshi';
         src: url('fonts/Satoshi-Light.woff') format('woff');
@@ -45,7 +45,8 @@
         font-style: normal;
         font-display: swap;
       }
-      /* --- Root Variables for Theming --- */
+      
+      /* Root Variables for Theming */
       :root {
         --background: #141414;
         --foreground: #ebebeb;
@@ -64,7 +65,8 @@
         --border-color: #d4d4d4;
         --hover-bg: rgba(0, 0, 0, 0.05);
       }
-      /* --- Basic Reset --- */
+      
+      /* Basic Reset */
       *, *::before, *::after {
         box-sizing: border-box;
         margin: 0;
@@ -79,25 +81,34 @@
         color: var(--foreground);
         line-height: 1.5;
       }
-      /* --- Login Container (shown when not signed in) --- */
+      
+      /* Login Container: Shown only when not signed in */
       #login-container {
         display: flex;
         height: 100vh;
         justify-content: center;
         align-items: center;
       }
-      /* --- Main Container (hidden until signed in) --- */
+      
+      /* Main Container: Hidden until signed in */
       #main-container {
         display: none;
       }
-      /* --- Container Layout --- */
+      
+      /* Container Layout for main content */
       .container {
         max-width: 42rem;
         margin: 0 auto;
         padding: 4rem 1.5rem;
         min-height: 100vh;
       }
-      /* --- Header Styling --- */
+      @media (min-width: 640px) {
+        .container {
+          padding: 4rem 0;
+        }
+      }
+      
+      /* Header Styling */
       .header {
         display: flex;
         justify-content: space-between;
@@ -111,7 +122,8 @@
         font-weight: 600;
         color: var(--text-primary);
       }
-      /* --- Button Styling (original style restored) --- */
+      
+      /* Button Styling (original style restored) */
       button {
         display: inline-flex;
         align-items: center;
@@ -131,7 +143,8 @@
         background-color: var(--hover-bg);
         transform: translateY(-2px);
       }
-      /* --- Sheet Selection Styling --- */
+      
+      /* Sheet Selection Styling */
       #sheet-selection {
         margin: 2rem 0;
         display: flex;
@@ -151,13 +164,15 @@
         outline: none;
         border-color: var(--text-secondary);
       }
-      /* --- Controls Styling --- */
+      
+      /* Controls Styling */
       .controls {
         display: flex;
         gap: 0.75rem;
         margin-bottom: 2rem;
       }
-      /* --- Table Styling --- */
+      
+      /* Table Styling */
       table {
         width: 100%;
         border-collapse: collapse;
@@ -182,7 +197,8 @@
       tr:hover td {
         background-color: var(--hover-bg);
       }
-      /* --- Modal Popup for Edit Form --- */
+      
+      /* Modal Popup for Edit Form */
       #form-section.modal {
         position: fixed;
         top: 10%;
@@ -228,9 +244,11 @@
       }
       textarea { resize: vertical; min-height: 100px; }
       .form-buttons { display: flex; gap: 0.75rem; }
-      /* --- Action Buttons in Table --- */
+      
+      /* Action Buttons in Table */
       .action-button { padding: 0.4rem 0.75rem; margin-right: 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; }
-      /* --- Styled Divider --- */
+      
+      /* Styled Divider */
       .styled-divider {
         border: none;
         height: 1px;
@@ -246,7 +264,7 @@
     <!-- Login Container: Shown only when not signed in -->
     <div id="login-container">
       <div id="auth-status" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <!-- Google Sign-In button will be rendered here -->
+        <!-- The Google Sign-In button will be rendered here by GSI -->
         <div id="g_id_signin"></div>
       </div>
     </div>
@@ -257,7 +275,6 @@
         <div class="header">
           <h1>Google Sheets Admin Console</h1>
           <div id="theme-toggle" class="theme-switch" aria-label="Toggle dark/light mode">
-            <!-- (Theme toggle SVG code as before) -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon">
               <circle class="sun-circle" cx="12" cy="12" r="5"/>
               <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
@@ -322,18 +339,18 @@
 
     <script>
       // --- Configuration ---
-      // Set the URL for your Apps Script web app:
+      // Web app URL (Apps Script backend)
       const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzbXrQ60RA7fGVpGVbhv_50Z79udfgeufiCzKszH7aFiYH5JZkl-OvzY0qphz3VT38V/exec";
-      
+
       // --- Global Variables ---
-      let idToken = null;    // To store the user's ID token after sign-in.
+      let idToken = null;    // The user's ID token after sign-in.
       let currentRowIndex = null;  // For editing rows.
 
       // --- Google Identity Services Initialization ---
       window.onload = function() {
-        // Initialize the Google Sign-In button.
+        // Initialize Google Sign-In
         google.accounts.id.initialize({
-          client_id: "936331083814-8hv2h12vfd021st5frrvhav875mucps3.apps.googleusercontent.com",  // Replace with your client ID.
+          client_id: "936331083814-8hv2h12vfd021st5frrvhav875mucps3.apps.googleusercontent.com", // Replace with your actual client ID.
           callback: handleCredentialResponse,
           auto_select: false,
         });
@@ -344,22 +361,17 @@
         google.accounts.id.prompt(); // Optionally display One Tap.
       };
 
-      // This function is called after a successful sign-in.
       function handleCredentialResponse(response) {
         idToken = response.credential;
         // Hide the login container and show the main container.
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('main-container').style.display = 'block';
-        // Optionally, you can call listSheetData() immediately.
+        // Immediately list sheet data.
         listSheetData();
       }
 
       // --- Data Operations via Apps Script Web App ---
-      // The following functions call the backend Apps Script via fetch.
-      // The backend must verify the idToken and perform the requested operation.
-
       function listSheetData() {
-        // Get the selected sheet name.
         const sheetName = document.getElementById("sheetSelector").value;
         if (!idToken) {
           document.getElementById('content').innerHTML = 'Please sign in with Google to view data.';
@@ -431,7 +443,6 @@
         currentRowIndex = rowIndex;
         document.getElementById('form-title').textContent = 'Edit Entry';
         const currentSheet = document.getElementById("sheetSelector").value;
-        // The backend should return the specific row data for the given row index.
         fetch(WEB_APP_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
