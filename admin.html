@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Combined and relaxed CSP and COOP -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self' https://apis.google.com https://accounts.google.com https://www.gstatic.com https://content-sheets.googleapis.com https://content.googleapis.com;
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://www.gstatic.com;
@@ -14,7 +13,6 @@
     <title>Google Sheets Admin Console</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-      /* Custom Font Loading */
       @font-face {
         font-family: 'Satoshi';
         src: url('fonts/Satoshi-Light.woff') format('woff');
@@ -44,7 +42,6 @@
         font-display: swap;
       }
 
-      /* Root Variables for Theming */
       :root {
         --background: #141414;
         --foreground: #ebebeb;
@@ -68,7 +65,6 @@
         --hover-bg: rgba(0, 0, 0, 0.05);
       }
 
-      /* Basic Reset */
       *, *::before, *::after {
         box-sizing: border-box;
         margin: 0;
@@ -88,7 +84,6 @@
         -moz-osx-font-smoothing: grayscale;
       }
 
-      /* Login Container: Shown only when not signed in */
       #login-container {
         display: flex;
         height: 100vh;
@@ -96,12 +91,10 @@
         align-items: center;
       }
       
-      /* Main Container: Hidden until signed in */
       #main-container {
         display: none;
       }
 
-      /* Container Layout for main content */
       .container {
         max-width: 42rem;
         margin: 0 auto;
@@ -115,7 +108,6 @@
         }
       }
 
-      /* Header Styling */
       .header {
         display: flex;
         justify-content: space-between;
@@ -136,7 +128,6 @@
         margin: 0;
       }
 
-      /* Button Styling (restored to original) */
       button {
         position: relative;
         display: inline-flex;
@@ -160,7 +151,6 @@
         transform: translateY(-2px);
       }
 
-      /* Sheet Selection Styling */
       #sheet-selection {
         margin: 2rem 0;
         display: flex;
@@ -189,14 +179,12 @@
         border-color: var(--text-secondary);
       }
 
-      /* Controls Styling */
       .controls {
         display: flex;
         gap: 0.75rem;
         margin-bottom: 2rem;
       }
 
-      /* Table Styling */
       table {
         width: 100%;
         border-collapse: collapse;
@@ -224,7 +212,6 @@
         background-color: var(--hover-bg);
       }
 
-      /* Modal Popup for Edit Form */
       #form-section.modal {
         position: fixed;
         top: 10%;
@@ -239,7 +226,6 @@
         max-width: 600px;
       }
 
-      /* Form Styling */
       #form-section {
         display: none;
       }
@@ -283,7 +269,6 @@
         gap: 0.75rem;
       }
 
-      /* Action Buttons in Table */
       .action-button {
         padding: 0.4rem 0.75rem;
         margin-right: 0.5rem;
@@ -291,7 +276,6 @@
         font-size: 0.7rem;
       }
 
-      /* Styled Divider */
       .styled-divider {
         border: none;
         height: 1px;
@@ -307,24 +291,20 @@
         width: 80%;
       }
     </style>
-    <!-- Load the Google API client library for Sheets API -->
     <script src="https://apis.google.com/js/api.js"></script>
-    <!-- Load the new Google Identity Services library -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <!-- Login Container: Shown only when not signed in -->
     <div id="login-container">
       <div id="auth-status" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <button id="authorize_button">Sign in with Google</button>
+        <button id="authorize_button">Sign in</button>
       </div>
     </div>
 
-    <!-- Main Container: Hidden until user is signed in -->
     <div id="main-container">
       <div class="container animate-in">
         <div class="header">
-          <h1>Google Sheets Admin Console</h1>
+          <h1>Admin Console</h1>
           <div id="theme-toggle" class="theme-switch" aria-label="Toggle dark/light mode">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon">
               <circle class="sun-circle" cx="12" cy="12" r="5"/>
@@ -348,7 +328,6 @@
           <button id="signout_button" style="display: none;">Sign Out</button>
         </div>
         
-        <!-- Sheet Selection Dropdown -->
         <div id="sheet-selection">
           <label for="sheetSelector">Select Sheet:</label>
           <select id="sheetSelector" onchange="cancelForm(); listSheetData();">
@@ -357,7 +336,6 @@
           </select>
         </div>
         
-        <!-- Editing controls -->
         <div class="controls" id="controls">
           <button onclick="listSheetData()">Refresh Data</button>
           <button onclick="showNewRowForm()">Add New Entry</button>
@@ -365,7 +343,6 @@
         
         <div id="content"></div>
         
-        <!-- Edit Form Modal Popup -->
         <div id="form-section">
           <h2 id="form-title">Add/Edit Entry</h2>
           <form id="edit-form">
@@ -390,34 +367,27 @@
     </div>
 
     <script>
-      // Replace these with your own API credentials.
       const CLIENT_ID = '936331083814-8hv2h12vfd021st5frrvhav875mucps3.apps.googleusercontent.com';
       const API_KEY = 'AIzaSyApvQuAABFbVVDVWTOdVSrWWXhLAYeXyZo';
 
-      // Scopes include openid and email for default sign-in.
       const SCOPES = "https://www.googleapis.com/auth/spreadsheets openid email";
       const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
 
-      // Your Google Sheet ID.
       const spreadsheetId = '1jyPppl4fiQeUUkPchckMdm4Q8m-PLLyNK7cV64ggMx0';
 
-      // Helper: Get the currently selected sheet name.
       function getCurrentSheetName() {
         return document.getElementById("sheetSelector").value;
       }
 
-      // Helper: Build the full range string (e.g., "SheetName!A:Z")
       function getFullRange() {
         return getCurrentSheetName() + "!A:Z";
       }
 
       const authorizeButton = document.getElementById('authorize_button');
       const signoutButton = document.getElementById('signout_button');
-      let currentRowIndex = null; // For editing rows
+      let currentRowIndex = null;
       let tokenClient;
       let accessToken = null;
-
-      // Initialize gapi.client and the GIS token client once the window is loaded.
       function handleClientLoad() {
         gapi.load('client', initClient);
       }
@@ -438,7 +408,6 @@
                 }
                 accessToken = resp.access_token;
                 gapi.client.setToken({ access_token: accessToken });
-                // Hide login container and show main container
                 document.getElementById('login-container').style.display = 'none';
                 document.getElementById('main-container').style.display = 'block';
                 document.getElementById('controls').style.display = 'flex';
@@ -466,7 +435,6 @@
           google.accounts.oauth2.revoke(accessToken, () => {
             accessToken = null;
             gapi.client.setToken(null);
-            // Show login container and hide main container
             document.getElementById('login-container').style.display = 'flex';
             document.getElementById('main-container').style.display = 'none';
             document.getElementById('controls').style.display = 'none';
@@ -480,8 +448,6 @@
       authorizeButton.onclick = handleAuthClick;
       signoutButton.onclick = handleSignoutClick;
 
-      // List sheet data and display it in a table.
-      // Only fetch data if the user is signed in.
       function listSheetData() {
         if (!accessToken) {
           document.getElementById('content').innerHTML = 'Please sign in with Google to view data.';
@@ -515,7 +481,6 @@
         for (let i = 1; i < data.length; i++) {
           html += '<tr>';
           data[i].forEach((cell, index) => {
-            // For Blog sheet, make the content column collapsible (assuming column index 2).
             if (currentSheet === "Blog" && index === 2) {
               html += '<td><button onclick="toggleContent(this)">Show Content</button>';
               html += '<div class="content-collapsible" style="display:none; margin-top:0.5rem;">' + cell + '</div></td>';
@@ -531,7 +496,6 @@
         document.getElementById('content').innerHTML = html;
       }
 
-      // Toggle the collapsible content for Blog entries.
       function toggleContent(button) {
         const div = button.nextElementSibling;
         if (div.style.display === "none") {
@@ -543,7 +507,6 @@
         }
       }
 
-      // Show the modal popup for a new row.
       function showNewRowForm() {
         currentRowIndex = null;
         document.getElementById('form-title').textContent = 'Add New Entry';
@@ -552,7 +515,6 @@
         document.getElementById('form-section').style.display = 'block';
       }
 
-      // Edit an existing row.
       function editRow(rowIndex) {
         console.log("Editing row:", rowIndex);
         currentRowIndex = rowIndex;
@@ -585,7 +547,6 @@
         });
       }
 
-      // Handle form submission to add or update a row.
       document.getElementById('edit-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const date = document.getElementById('entry_date').value;
@@ -628,14 +589,13 @@
         document.getElementById('form-section').classList.remove('modal');
       }
 
-      // Delete a row using batchUpdate.
       function deleteRow(rowIndex) {
         if (!confirm('Are you sure you want to delete this entry?')) return;
         const currentSheet = getCurrentSheetName();
         const requests = [{
           deleteDimension: {
             range: {
-              sheetId: 0, // Adjust if necessary.
+              sheetId: 0,
               dimension: 'ROWS',
               startIndex: rowIndex,
               endIndex: rowIndex + 1,
