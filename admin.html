@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Combined and relaxed CSP and COOP -->
     <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self' https://apis.google.com https://accounts.google.com https://www.gstatic.com https://content-sheets.googleapis.com https://content.googleapis.com;
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://www.gstatic.com;
+      default-src 'self' https://accounts.google.com https://www.gstatic.com;
+      script-src 'self' 'unsafe-inline' https://accounts.google.com;
       style-src 'self' 'unsafe-inline';
-      frame-src https://content-sheets.googleapis.com https://content.googleapis.com;
     ">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
     <title>Google Sheets Admin Console</title>
+    <!-- (Optional) Include Font Awesome if desired -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-      /* Custom Font Loading */
+      /* --- Custom Font Loading --- */
       @font-face {
         font-family: 'Satoshi';
         src: url('fonts/Satoshi-Light.woff') format('woff');
@@ -43,18 +43,14 @@
         font-style: normal;
         font-display: swap;
       }
-
-      /* Root Variables for Theming */
+      /* --- Root Variables for Theming --- */
       :root {
         --background: #141414;
         --foreground: #ebebeb;
-        --kbd-background: #222;
         --text-primary: #d4d4d8;
         --text-secondary: #737373;
         --border-color: #404040;
-        --border-subtle: #262626;
         --hover-bg: rgba(64, 64, 64, 0.2);
-        --font-geist-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         --font-satoshi: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
       }
@@ -64,11 +60,9 @@
         --text-primary: #171717;
         --text-secondary: #525252;
         --border-color: #d4d4d4;
-        --border-subtle: #e5e5e5;
         --hover-bg: rgba(0, 0, 0, 0.05);
       }
-
-      /* Basic Reset */
+      /* --- Basic Reset --- */
       *, *::before, *::after {
         box-sizing: border-box;
         margin: 0;
@@ -82,63 +76,41 @@
         background-color: var(--background);
         color: var(--foreground);
         line-height: 1.5;
-        margin: 0;
-        padding: 0;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
       }
-
-      /* Login Container: Shown only when not signed in */
+      /* --- Login Container (shown when not signed in) --- */
       #login-container {
         display: flex;
         height: 100vh;
         justify-content: center;
         align-items: center;
       }
-      
-      /* Main Container: Hidden until signed in */
+      /* --- Main Container (hidden until signed in) --- */
       #main-container {
         display: none;
       }
-
-      /* Container Layout for main content */
+      /* --- Container Layout --- */
       .container {
         max-width: 42rem;
         margin: 0 auto;
         padding: 4rem 1.5rem;
-        position: relative;
         min-height: 100vh;
       }
-      @media (min-width: 640px) {
-        .container {
-          padding: 4rem 0;
-        }
-      }
-
-      /* Header Styling */
+      /* --- Header Styling --- */
       .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 1.5rem 0;
-        width: 100%;
-        font-size: 0.875rem;
-        font-family: var(--font-geist-mono);
-        color: var(--text-secondary);
-        border-bottom: 1px solid var(--border-subtle);
+        border-bottom: 1px solid var(--border-color);
         margin-bottom: 2rem;
       }
       h1 {
         font-size: 1.25rem;
         font-weight: 600;
         color: var(--text-primary);
-        font-family: var(--font-satoshi);
-        margin: 0;
       }
-
-      /* Button Styling (restored to original) */
+      /* --- Button Styling (original style restored) --- */
       button {
-        position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -147,31 +119,22 @@
         font-size: 0.75rem;
         font-weight: 600;
         color: var(--text-primary);
-        text-decoration: none;
         border-radius: 0.375rem;
         border: 1px solid var(--border-color);
         background-color: transparent;
         transition: all 0.15s ease;
         cursor: pointer;
-        overflow: hidden;
       }
       button:hover {
         background-color: var(--hover-bg);
         transform: translateY(-2px);
       }
-
-      /* Sheet Selection Styling */
+      /* --- Sheet Selection Styling --- */
       #sheet-selection {
         margin: 2rem 0;
         display: flex;
         align-items: center;
         gap: 0.75rem;
-      }
-      #sheet-selection label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        font-family: var(--font-geist-mono);
       }
       select {
         padding: 0.5rem;
@@ -179,42 +142,36 @@
         border: 1px solid var(--border-color);
         background-color: var(--background);
         color: var(--text-primary);
-        font-family: var(--font-geist-mono);
         font-size: 0.75rem;
-        cursor: pointer;
         min-width: 150px;
       }
       select:focus {
         outline: none;
         border-color: var(--text-secondary);
       }
-
-      /* Controls Styling */
+      /* --- Controls Styling --- */
       .controls {
         display: flex;
         gap: 0.75rem;
         margin-bottom: 2rem;
       }
-
-      /* Table Styling */
+      /* --- Table Styling --- */
       table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 2rem;
-        font-family: var(--font-satoshi);
       }
       th, td {
         padding: 0.75rem 1rem;
         text-align: left;
-        border-bottom: 1px solid var(--border-subtle);
+        border-bottom: 1px solid var(--border-color);
       }
       th {
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--text-secondary);
-        font-family: var(--font-geist-mono);
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        color: var(--text-secondary);
       }
       td {
         font-size: 0.875rem;
@@ -223,8 +180,7 @@
       tr:hover td {
         background-color: var(--hover-bg);
       }
-
-      /* Modal Popup for Edit Form */
+      /* --- Modal Popup for Edit Form --- */
       #form-section.modal {
         position: fixed;
         top: 10%;
@@ -238,11 +194,7 @@
         width: 90%;
         max-width: 600px;
       }
-
-      /* Form Styling */
-      #form-section {
-        display: none;
-      }
+      #form-section { display: none; }
       #form-title {
         font-size: 1rem;
         font-weight: 600;
@@ -254,7 +206,6 @@
         font-size: 0.8rem;
         font-weight: 600;
         color: var(--text-secondary);
-        font-family: var(--font-geist-mono);
         margin-bottom: 0.5rem;
       }
       input[type="text"], textarea {
@@ -264,7 +215,6 @@
         border: 1px solid var(--border-color);
         background-color: transparent;
         color: var(--text-primary);
-        font-family: var(--font-satoshi);
         font-size: 0.875rem;
         margin-bottom: 1.5rem;
         transition: all 0.15s ease;
@@ -274,41 +224,19 @@
         border-color: var(--text-secondary);
         background-color: var(--hover-bg);
       }
-      textarea {
-        resize: vertical;
-        min-height: 100px;
-      }
-      .form-buttons {
-        display: flex;
-        gap: 0.75rem;
-      }
-
-      /* Action Buttons in Table */
-      .action-button {
-        padding: 0.4rem 0.75rem;
-        margin-right: 0.5rem;
-        border-radius: 0.25rem;
-        font-size: 0.7rem;
-      }
-
-      /* Styled Divider */
+      textarea { resize: vertical; min-height: 100px; }
+      .form-buttons { display: flex; gap: 0.75rem; }
+      /* --- Action Buttons in Table --- */
+      .action-button { padding: 0.4rem 0.75rem; margin-right: 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; }
+      /* --- Styled Divider --- */
       .styled-divider {
         border: none;
         height: 1px;
-        background: linear-gradient(
-          to right,
-          transparent,
-          var(--border-color),
-          var(--border-color),
-          var(--border-color),
-          transparent
-        );
+        background: linear-gradient(to right, transparent, var(--border-color), var(--border-color), var(--border-color), transparent);
         margin: 2rem auto;
         width: 80%;
       }
     </style>
-    <!-- Load the Google API client library for Sheets API -->
-    <script src="https://apis.google.com/js/api.js"></script>
     <!-- Load the new Google Identity Services library -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -316,7 +244,8 @@
     <!-- Login Container: Shown only when not signed in -->
     <div id="login-container">
       <div id="auth-status" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <button id="authorize_button">Sign in with Google</button>
+        <!-- Google Sign-In button will be rendered here -->
+        <div id="g_id_signin"></div>
       </div>
     </div>
 
@@ -326,6 +255,7 @@
         <div class="header">
           <h1>Google Sheets Admin Console</h1>
           <div id="theme-toggle" class="theme-switch" aria-label="Toggle dark/light mode">
+            <!-- (Theme toggle SVG code as before) -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon">
               <circle class="sun-circle" cx="12" cy="12" r="5"/>
               <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
@@ -344,7 +274,6 @@
         </div>
         
         <div id="auth-status">
-          <button id="authorize_button" style="display:none;">Authorize</button>
           <button id="signout_button" style="display: none;">Sign Out</button>
         </div>
         
@@ -390,132 +319,78 @@
     </div>
 
     <script>
-      // Replace these with your own API credentials.
-      const CLIENT_ID = '936331083814-8hv2h12vfd021st5frrvhav875mucps3.apps.googleusercontent.com';
-      const API_KEY = 'AIzaSyApvQuAABFbVVDVWTOdVSrWWXhLAYeXyZo';
+      // --- Configuration ---
+      // Set the URL for your Apps Script web app:
+      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzbXrQ60RA7fGVpGVbhv_50Z79udfgeufiCzKszH7aFiYH5JZkl-OvzY0qphz3VT38V/exec";
+      
+      // --- Global Variables ---
+      let idToken = null;    // To store the user's ID token after sign-in.
+      let currentRowIndex = null;  // For editing rows.
 
-      // Scopes include openid and email for default sign-in.
-      const SCOPES = "https://www.googleapis.com/auth/spreadsheets openid email";
-      const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
-
-      // Your Google Sheet ID.
-      const spreadsheetId = '1jyPppl4fiQeUUkPchckMdm4Q8m-PLLyNK7cV64ggMx0';
-
-      // Helper: Get the currently selected sheet name.
-      function getCurrentSheetName() {
-        return document.getElementById("sheetSelector").value;
-      }
-
-      // Helper: Build the full range string (e.g., "SheetName!A:Z")
-      function getFullRange() {
-        return getCurrentSheetName() + "!A:Z";
-      }
-
-      const authorizeButton = document.getElementById('authorize_button');
-      const signoutButton = document.getElementById('signout_button');
-      let currentRowIndex = null; // For editing rows
-      let tokenClient;
-      let accessToken = null;
-
-      // Initialize gapi.client and the GIS token client once the window is loaded.
-      function handleClientLoad() {
-        gapi.load('client', initClient);
-      }
-
-      function initClient() {
-        gapi.client.init({
-          apiKey: API_KEY,
-          discoveryDocs: DISCOVERY_DOCS,
-        }).then(() => {
-          if (google?.accounts?.oauth2?.initTokenClient) {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-              client_id: CLIENT_ID,
-              scope: SCOPES,
-              callback: (resp) => {
-                if (resp.error) {
-                  console.error("Token error:", resp);
-                  return;
-                }
-                accessToken = resp.access_token;
-                gapi.client.setToken({ access_token: accessToken });
-                // Hide login container and show main container
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('main-container').style.display = 'block';
-                document.getElementById('controls').style.display = 'flex';
-                listSheetData();
-                authorizeButton.style.display = 'none';
-                signoutButton.style.display = 'block';
-              },
-            });
-          } else {
-            console.error('GIS library is not loaded.');
-          }
+      // --- Google Identity Services Initialization ---
+      window.onload = function() {
+        // Initialize the Google Sign-In button.
+        google.accounts.id.initialize({
+          client_id: "YOUR_GOOGLE_CLIENT_ID",  // Replace with your client ID.
+          callback: handleCredentialResponse,
+          auto_select: false,
         });
+        google.accounts.id.renderButton(
+          document.getElementById("g_id_signin"),
+          { theme: "outline", size: "large" }
+        );
+        google.accounts.id.prompt(); // Optionally display One Tap.
+      };
+
+      // This function is called after a successful sign-in.
+      function handleCredentialResponse(response) {
+        idToken = response.credential;
+        // Hide the login container and show the main container.
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('main-container').style.display = 'block';
+        // Optionally, you can call listSheetData() immediately.
+        listSheetData();
       }
 
-      function handleAuthClick() {
-        if (tokenClient) {
-          tokenClient.requestAccessToken();
-        } else {
-          console.error('Token client not initialized.');
-        }
-      }
+      // --- Data Operations via Apps Script Web App ---
+      // The following functions call the backend Apps Script via fetch.
+      // The backend must verify the idToken and perform the requested operation.
 
-      function handleSignoutClick() {
-        if (accessToken) {
-          google.accounts.oauth2.revoke(accessToken, () => {
-            accessToken = null;
-            gapi.client.setToken(null);
-            // Show login container and hide main container
-            document.getElementById('login-container').style.display = 'flex';
-            document.getElementById('main-container').style.display = 'none';
-            document.getElementById('controls').style.display = 'none';
-            document.getElementById('content').innerHTML = '';
-            authorizeButton.style.display = 'block';
-            signoutButton.style.display = 'none';
-          });
-        }
-      }
-
-      authorizeButton.onclick = handleAuthClick;
-      signoutButton.onclick = handleSignoutClick;
-
-      // List sheet data and display it in a table.
-      // Only fetch data if the user is signed in.
       function listSheetData() {
-        if (!accessToken) {
+        // Get the selected sheet name.
+        const sheetName = document.getElementById("sheetSelector").value;
+        if (!idToken) {
           document.getElementById('content').innerHTML = 'Please sign in with Google to view data.';
           return;
         }
-        gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: spreadsheetId,
-          range: getFullRange(),
-        }).then(
-          function (response) {
-            const range = response.result;
-            if (range.values && range.values.length > 0) {
-              displayData(range.values);
-            } else {
-              document.getElementById('content').innerHTML = 'No data found.';
-            }
-          },
-          function (response) {
-            console.error('Error fetching data: ' + response.result.error.message);
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            idToken: idToken,
+            sheetName: sheetName,
+            operation: "list"
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            displayData(data.values);
+          } else {
+            document.getElementById("content").innerHTML = "Error: " + data.error;
           }
-        );
+        })
+        .catch(err => console.error("Error listing data:", err));
       }
 
-      function displayData(data) {
-        const currentSheet = getCurrentSheetName();
+      function displayData(values) {
+        const currentSheet = document.getElementById("sheetSelector").value;
         let html = '<table><thead><tr>';
-        data[0].forEach(header => {
-          html += '<th>' + header + '</th>';
-        });
+        values[0].forEach(header => { html += '<th>' + header + '</th>'; });
         html += '<th>Actions</th></tr></thead><tbody>';
-        for (let i = 1; i < data.length; i++) {
+        for (let i = 1; i < values.length; i++) {
           html += '<tr>';
-          data[i].forEach((cell, index) => {
-            // For Blog sheet, make the content column collapsible (assuming column index 2).
+          values[i].forEach((cell, index) => {
             if (currentSheet === "Blog" && index === 2) {
               html += '<td><button onclick="toggleContent(this)">Show Content</button>';
               html += '<div class="content-collapsible" style="display:none; margin-top:0.5rem;">' + cell + '</div></td>';
@@ -531,7 +406,6 @@
         document.getElementById('content').innerHTML = html;
       }
 
-      // Toggle the collapsible content for Blog entries.
       function toggleContent(button) {
         const div = button.nextElementSibling;
         if (div.style.display === "none") {
@@ -543,7 +417,6 @@
         }
       }
 
-      // Show the modal popup for a new row.
       function showNewRowForm() {
         currentRowIndex = null;
         document.getElementById('form-title').textContent = 'Add New Entry';
@@ -552,75 +425,70 @@
         document.getElementById('form-section').style.display = 'block';
       }
 
-      // Edit an existing row.
       function editRow(rowIndex) {
-        console.log("Editing row:", rowIndex);
         currentRowIndex = rowIndex;
         document.getElementById('form-title').textContent = 'Edit Entry';
-        const currentSheet = getCurrentSheetName();
-        const range = currentSheet + '!A' + (rowIndex + 1) + ':C' + (rowIndex + 1);
-        console.log("Fetching range:", range);
-        gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: spreadsheetId,
-          range: range,
-        }).then(function (response) {
-          console.log("Edit row response:", response);
-          const rowData = response.result.values[0];
-          if (rowData) {
-            document.getElementById('entry_date').value = rowData[0] || '';
-            document.getElementById('entry_title').value = rowData[1] || '';
-            document.getElementById('entry_content').value = rowData[2] || '';
+        const currentSheet = document.getElementById("sheetSelector").value;
+        // The backend should return the specific row data for the given row index.
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            idToken: idToken,
+            sheetName: currentSheet,
+            operation: "getRow",
+            row: rowIndex
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.row) {
+            document.getElementById('entry_date').value = data.row[0] || '';
+            document.getElementById('entry_title').value = data.row[1] || '';
+            document.getElementById('entry_content').value = data.row[2] || '';
             document.getElementById('form-section').classList.add('modal');
             document.getElementById('form-section').style.display = 'block';
-            console.log("Form values set:", {
-              date: document.getElementById('entry_date').value,
-              title: document.getElementById('entry_title').value,
-              content: document.getElementById('entry_content').value
-            });
           } else {
-            console.error("No data returned for row", rowIndex);
+            console.error("Error fetching row data:", data.error);
           }
-        }).catch(function (error) {
-          console.error("Error in editRow:", error);
-        });
+        })
+        .catch(err => console.error("Error in editRow:", err));
       }
 
-      // Handle form submission to add or update a row.
-      document.getElementById('edit-form').addEventListener('submit', function (e) {
+      document.getElementById('edit-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const date = document.getElementById('entry_date').value;
         const title = document.getElementById('entry_title').value;
         const content = document.getElementById('entry_content').value;
-        const values = [[date, title, content]];
-        const currentSheet = getCurrentSheetName();
-
-        if (currentRowIndex === null) {
-          gapi.client.sheets.spreadsheets.values.append({
-            spreadsheetId: spreadsheetId,
-            range: currentSheet,
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
-            resource: { values: values },
-          }).then(function (response) {
-            alert('Entry added successfully!');
-            document.getElementById('form-section').style.display = 'none';
-            document.getElementById('form-section').classList.remove('modal');
-            listSheetData();
-          });
-        } else {
-          const range = currentSheet + '!A' + (currentRowIndex + 1) + ':C' + (currentRowIndex + 1);
-          gapi.client.sheets.spreadsheets.values.update({
-            spreadsheetId: spreadsheetId,
-            range: range,
-            valueInputOption: 'USER_ENTERED',
-            resource: { values: values },
-          }).then(function (response) {
-            alert('Entry updated successfully!');
-            document.getElementById('form-section').style.display = 'none';
-            document.getElementById('form-section').classList.remove('modal');
-            listSheetData();
-          });
+        const currentSheet = document.getElementById("sheetSelector").value;
+        let operation = currentRowIndex === null ? "append" : "update";
+        let payload = {
+          idToken: idToken,
+          sheetName: currentSheet,
+          operation: operation,
+          date: date,
+          title: title,
+          content: content
+        };
+        if (operation === "update") {
+          payload.row = currentRowIndex;
         }
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(operation === "append" ? "Entry added successfully!" : "Entry updated successfully!");
+            cancelForm();
+            listSheetData();
+          } else {
+            alert("Error: " + data.error);
+          }
+        })
+        .catch(err => console.error("Error submitting form:", err));
       });
 
       function cancelForm() {
@@ -628,32 +496,30 @@
         document.getElementById('form-section').classList.remove('modal');
       }
 
-      // Delete a row using batchUpdate.
       function deleteRow(rowIndex) {
         if (!confirm('Are you sure you want to delete this entry?')) return;
-        const currentSheet = getCurrentSheetName();
-        const requests = [{
-          deleteDimension: {
-            range: {
-              sheetId: 0, // Adjust if necessary.
-              dimension: 'ROWS',
-              startIndex: rowIndex,
-              endIndex: rowIndex + 1,
-            },
-          },
-        }];
-        gapi.client.sheets.spreadsheets.batchUpdate({
-          spreadsheetId: spreadsheetId,
-          resource: { requests: requests },
-        }).then(function (response) {
-          alert('Entry deleted successfully!');
-          listSheetData();
-        }, function (error) {
-          console.error('Error deleting row:', error);
-        });
+        const currentSheet = document.getElementById("sheetSelector").value;
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            idToken: idToken,
+            sheetName: currentSheet,
+            operation: "delete",
+            row: rowIndex
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("Entry deleted successfully!");
+            listSheetData();
+          } else {
+            alert("Error: " + data.error);
+          }
+        })
+        .catch(err => console.error("Error deleting row:", err));
       }
-
-      window.addEventListener('load', handleClientLoad);
     </script>
   </body>
 </html>
