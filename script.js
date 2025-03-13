@@ -39,11 +39,8 @@ const projectsData = {
     },
     'achievements': {
         title: 'Achievements & Awards',
-        date: '2024 - 11',
-        shortDesc: 'Some of my comitments and acheivements that are worth sharing',
-        fullDesc: 'Waterpolo\n\nI worked on the marketing, website and dashboard. The project involved creating a seamless customer experience from browsing products to checkout and delivery tracking.\n\nI used Next.js, TailwindCSS, Framer Motion, and Stripe to create the website and the payment system.',
-        technologies: ['Next.js', 'TailwindCSS', 'Framer Motion', 'Stripe'],
-        link: 'https://dextopmodels.com'
+        date: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M6 9a6 6 0 1 0 12 0A6 6 0 1 0 6 9"/><path d="m12 15l3.4 5.89l1.598-3.233l3.598.232l-3.4-5.889M6.802 12l-3.4 5.89L7 17.657l1.598 3.232l3.4-5.889"/></g></svg>',
+        fullDesc: 'Throughout my academic career, I have been recognized for excellence across athletics, academics, and leadership. In water polo, I earned a varsity letter in 2023, contributed to a UIL state championship victory, and was honored as an All-State team goalie. I further advanced my athletic career by representing the Southwest Zone as the national team goalie on the Olympic Development team.\n\nMy passion for science and innovation is highlighted by leading my middle school rocket club to a top 25 finish at the American Rocketry Challenge in Virginia (2022). I also placed 1st in my division at the district science fair advancing to the Houston science fair.\n\nIn boy scouts, I have demonstrated strong leadership by serving as Troop 554s Senior Patrol Leader, where I led over 40 scouts. My commitment to leadership development was further solidified through participation in a week-long National Youth Leadership Training (NYLT) course in December 2022 and by being elected into the Scouts BSA Order of the Arrow Program in 2022. I have also been actively involved in the PALs program, continually enhancing my leadership skills and community engagement.\n\nThis diverse array of awards and achievements reflects my dedication, teamwork, and leadership in every endeavor.',
     }
 };
 
@@ -63,7 +60,15 @@ function showProjectPopup(projectId) {
     const projectLink = overlay.querySelector('.project-link');
     
     popupTitle.textContent = project.title;
-    popupDate.textContent = project.date;
+    
+    // Update this line to handle HTML content for the date
+    // Check if the date contains an SVG (contains HTML tags)
+    if (project.date && project.date.includes('<svg')) {
+        popupDate.innerHTML = project.date;
+    } else {
+        popupDate.textContent = project.date;
+    }
+    
     popupDescription.textContent = project.shortDesc;
     popupDetails.textContent = project.fullDesc;
     
@@ -283,5 +288,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (profileBio) {
         profileBio.classList.add('fade-element');
         profileBio.style.animationDelay = '0.6s';
+    }
+});
+
+window.addEventListener('scroll', function() {
+    const scrollPosition = window.scrollY;
+    const blurElement = document.querySelector('.sticky-blur');
+    
+    // Maximum scroll position to consider (adjust as needed)
+    const maxScroll = 300;
+    
+    // Calculate blur intensity (start strong at 20px and decrease to 5px)
+    let blurValue = 20;
+    
+    if (scrollPosition <= maxScroll) {
+        // Linear decrease from 20px to 5px as user scrolls
+        blurValue = 20 - (scrollPosition / maxScroll) * 15;
+        
+        // Apply the calculated blur
+        blurElement.style.backdropFilter = `blur(${blurValue}px)`;
+        blurElement.style.webkitBackdropFilter = `blur(${blurValue}px)`;
     }
 });
