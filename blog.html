@@ -700,6 +700,22 @@
       .nav-next:hover svg {
         transform: translateX(3px);
       }
+
+      .sticky-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px); /* For Safari */
+            z-index: 100;
+            background-color: transparent; /* No background color, just blur */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
     </style>
   </head>
   <body>
@@ -753,7 +769,9 @@
       </div>
     </main>
     <div id="overlay" class="overlay">
-      <div class="overlay-content">
+      <div class="sticky-blur">
+    </div>
+      <div class="overlay-content" style="margin-top: 5rem;">
         <button id="closeOverlay" class="close-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -1074,6 +1092,26 @@
           }
         })();
       });
+
+      window.addEventListener('scroll', function() {
+            const scrollPosition = window.scrollY;
+            const blurElement = document.querySelector('.sticky-blur');
+            
+            // Maximum scroll position to consider (adjust as needed)
+            const maxScroll = 300;
+            
+            // Calculate blur intensity (start strong at 20px and decrease to 5px)
+            let blurValue = 20;
+            
+            if (scrollPosition <= maxScroll) {
+                // Linear decrease from 20px to 5px as user scrolls
+                blurValue = 20 - (scrollPosition / maxScroll) * 15;
+                
+                // Apply the calculated blur
+                blurElement.style.backdropFilter = `blur(${blurValue}px)`;
+                blurElement.style.webkitBackdropFilter = `blur(${blurValue}px)`;
+            }
+        });
     </script>
   </body>
 </html>
