@@ -270,7 +270,7 @@
                     <a href="#" class="scroll-top" title="Scroll to top">
                         <i class="fa-solid fa-caret-up"></i>
                     </a>
-                    <p class="copyright">伊森 • <a href="https://github.com/Q2x38b/e108.dev/commit/main" target="_blank" class="text-hover">v1.<span id="commit"></span></a> • <a href="https://github.com/Q2x38b" target="_blank" class="text-hover">@e108</a>  • <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" class="text-hover"> CC BY 4.0</a></p>
+                    <p class="copyright">伊森 • <a href="https://github.com/Q2x38b/e108.dev/commit/main" target="_blank" class="text-hover">v1.<span id="commit"></span></a> • <a href="https://github.com/Q2x38b" target="_blank" class="text-hover">@e108</a> • <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" class="text-hover"> CC BY 4.0</a></p>
                 </div>
             </div>
         </div>
@@ -317,24 +317,145 @@
               <div class="spotlight-section">
                   <div class="spotlight-section-header">Links</div>
                   <div class="spotlight-result-items" id="spotlight-links">
-                      <!-- Results will be dynamically populated here -->
                   </div>
               </div>
               <div class="spotlight-section">
                   <div class="spotlight-section-header">Pages</div>
                   <div class="spotlight-result-items" id="spotlight-pages">
-                      <!-- Results will be dynamically populated here -->
                   </div>
               </div>
               <div class="spotlight-section">
                   <div class="spotlight-section-header">Sections</div>
                   <div class="spotlight-result-items" id="spotlight-sections">
-                      <!-- Results will be dynamically populated here -->
                   </div>
               </div>
           </div>
       </div>
   </div>
+
+  <div id="keybinds-popup" class="keybinds-container">
+    <div class="keybinds-backdrop"></div>
+    <div class="keybinds-modal">
+        <div class="keybinds-header">
+            <div class="keybinds-title">Keyboard Shortcuts</div>
+            <button class="keybinds-close" aria-label="Close keyboard shortcuts">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="keybinds-content">
+            <div class="keybinds-section">
+                <div class="keybinds-section-title">Navigation</div>
+                <div class="keybinds-items">
+                    <div class="keybind-item">
+                        <div class="keybind-description">Open search</div>
+                        <div class="keybind-combo">
+                          <kbd>⌘ or Ctrl</kbd>
+                            <span>+</span>
+                            <kbd>K</kbd>
+                        </div>
+                    </div>
+                    <div class="keybind-item">
+                        <div class="keybind-description">Show keyboard shortcuts</div>
+                        <div class="keybind-combo">
+                            <kbd>?</kbd>
+                        </div>
+                    </div>
+                    <div class="keybind-item">
+                        <div class="keybind-description">Scroll to top</div>
+                        <div class="keybind-combo">
+                            <kbd>Home</kbd>
+                        </div>
+                    </div>
+                    <div class="keybind-item">
+                        <div class="keybind-description">Scroll to bottom</div>
+                        <div class="keybind-combo">
+                            <kbd>End</kbd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="keybinds-section">
+                <div class="keybinds-section-title">Projects</div>
+                <div class="keybinds-items">
+                    <div class="keybind-item">
+                        <div class="keybind-description">Close project popup</div>
+                        <div class="keybind-combo">
+                            <kbd>Esc</kbd>
+                        </div>
+                    </div>
+                    <div class="keybind-item">
+                        <div class="keybind-description">Navigate to extracurriculars</div>
+                        <div class="keybind-combo">
+                            <kbd>G</kbd>
+                            <span>+</span>
+                            <kbd>E</kbd>
+                        </div>
+                    </div>
+                    <div class="keybind-item">
+                        <div class="keybind-description">Navigate to hobbies</div>
+                        <div class="keybind-combo">
+                            <kbd>G</kbd>
+                            <span>+</span>
+                            <kbd>H</kbd>
+                        </div>
+                    </div>
+                    <div class="keybind-item">
+                        <div class="keybind-description">Navigate to achievements</div>
+                        <div class="keybind-combo">
+                            <kbd>G</kbd>
+                            <span>+</span>
+                            <kbd>A</kbd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="keybinds-section">
+                <div class="keybinds-section-title">Other</div>
+                <div class="keybinds-items">
+                    <div class="keybind-item">
+                        <div class="keybind-description">Toggle dark/light mode</div>
+                        <div class="keybind-combo">
+                            <kbd>⌘ or Ctrl</kbd>
+                            <span>+</span>
+                            <kbd>D</kbd>
+                        </div>
+                    </div>
+                    <div class="keybind-item">
+                        <div class="keybind-description">Contact me (focus form)</div>
+                        <div class="keybind-combo">
+                            <kbd>⌘ or Ctrl</kbd>
+                            <span>+</span>
+                            <kbd>E</kbd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="keybinds-footer">
+            <button class="keybinds-button">
+                <div class="keybinds-button-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                        <path d="M6 8h.001"></path>
+                        <path d="M10 8h.001"></path>
+                        <path d="M14 8h.001"></path>
+                        <path d="M18 8h.001"></path>
+                        <path d="M8 12h.001"></path>
+                        <path d="M12 12h.001"></path>
+                        <path d="M16 12h.001"></path>
+                        <path d="M7 16h10"></path>
+                    </svg>
+                    <span>Press <kbd>?</kbd> anytime to show this dialog</span>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
 
     <div class="popup" id="tooltip-popup"></div>
     <script src="script.js"></script>
@@ -360,5 +481,6 @@
           ]
         }
         </script>        
+        
 </body>
 </html>
