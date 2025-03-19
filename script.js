@@ -61,8 +61,6 @@ function showProjectPopup(projectId) {
     
     popupTitle.textContent = project.title;
     
-    // Update this line to handle HTML content for the date
-    // Check if the date contains an SVG (contains HTML tags)
     if (project.date && project.date.includes('<svg')) {
         popupDate.innerHTML = project.date;
     } else {
@@ -299,17 +297,12 @@ window.addEventListener('scroll', function() {
     const scrollPosition = window.scrollY;
     const blurElement = document.querySelector('.sticky-blur');
     
-    // Maximum scroll position to consider (adjust as needed)
     const maxScroll = 300;
     
-    // Calculate blur intensity (start strong at 20px and decrease to 5px)
     let blurValue = 20;
     
     if (scrollPosition <= maxScroll) {
-        // Linear decrease from 20px to 5px as user scrolls
         blurValue = 20 - (scrollPosition / maxScroll) * 15;
-        
-        // Apply the calculated blur
         blurElement.style.backdropFilter = `blur(${blurValue}px)`;
         blurElement.style.webkitBackdropFilter = `blur(${blurValue}px)`;
     }
@@ -318,16 +311,12 @@ window.addEventListener('scroll', function() {
 fetch('https://api.github.com/repos/Q2x38b/e108.dev/commits?per_page=1')
   .then(response => response.json())
   .then(data => {
-    // Extract the SHA from the first element in the returned array
     const latestCommitSHA = data[0].sha;
-    // Optionally, shorten the commit for display (common practice is to show the first 7 characters)
     const shortSHA = latestCommitSHA.substring(0, 7);
-    // Display it in an element with id 'commit'
     document.getElementById('commit').textContent = shortSHA;
   })
   .catch(error => console.error('Error fetching commit:', error));
 
-// Spotlight Search Component
 document.addEventListener('DOMContentLoaded', () => {
     initSpotlightSearch();
 });
@@ -339,20 +328,14 @@ function initSpotlightSearch() {
     const spotlightPages = document.getElementById('spotlight-pages');
     const spotlightSections = document.getElementById('spotlight-sections');
     
-    // Define searchable items
     const searchableItems = [
-        // Links
         { type: 'link', title: 'Email', description: 'Send me an email', url: 'mailto:ethanjerla08@gmail.com', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>' },
         { type: 'link', title: 'Resume', description: 'Download my resume', url: 'https://e108.dev/resume.pdf', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' },
         { type: 'link', title: 'Projects', description: 'View my projects', url: 'https://e108.dev/links', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width=".5"><path fill="currentColor" stroke="currentColor" d="M8.465 11.293c1.133-1.133 3.109-1.133 4.242 0l.707.707l1.414-1.414l-.707-.707c-.943-.944-2.199-1.465-3.535-1.465s-2.592.521-3.535 1.465L4.929 12a5.01 5.01 0 0 0 0 7.071a4.98 4.98 0 0 0 3.535 1.462A4.98 4.98 0 0 0 12 19.071l.707-.707l-1.414-1.414l-.707.707a3.007 3.007 0 0 1-4.243 0a3.005 3.005 0 0 1 0-4.243z"/><path fill="currentColor" stroke="currentColor" d="m12 4.929l-.707.707l1.414 1.414l.707-.707a3.007 3.007 0 0 1 4.243 0a3.005 3.005 0 0 1 0 4.243l-2.122 2.121c-1.133 1.133-3.109 1.133-4.242 0L10.586 12l-1.414 1.414l.707.707c.943.944 2.199 1.465 3.535 1.465s2.592-.521 3.535-1.465L19.071 12a5.01 5.01 0 0 0 0-7.071a5.006 5.006 0 0 0-7.071 0"/></svg>' },
-        { type: 'link', title: 'Blog', description: 'Read my blog posts', url: 'https://e108.dev/blog', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4M2 6h4m-4 4h4m-4 4h4m-4 4h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></g></svg>' },
+        { type: 'link', title: 'Blog', description: 'Read my blog posts', url: 'https://e108.dev/blog', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4M2 6h4m-4 4h4m-4 4h4m-4 4h4"/></g></svg>' },
         { type: 'link', title: 'GitHub', description: 'View my GitHub profile', url: 'https://github.com/Q2x38b', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>' },
-        
-        // Pages
         { type: 'page', title: 'Home', description: 'Return to homepage', url: 'https://e108.dev/', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>' },
         { type: 'page', title: 'Links', description: 'All my important links', url: 'https://e108.dev/links', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><line x1="8" x2="16" y1="12" y2="12"></line></svg>' },
-        
-        // Sections
         { type: 'section', title: 'My Work', description: 'View my projects section', url: '#my-work', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>' },
         { type: 'section', title: 'Extracurriculars', description: 'Sports, clubs, and organizations', url: '#extracurriculars', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><rect x="9" y="9" width="6" height="6"></rect></svg>' },
         { type: 'section', title: 'Hobbies', description: 'My favorite hobbies', url: '#hobbies', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>' },
@@ -361,23 +344,17 @@ function initSpotlightSearch() {
         { type: 'section', title: 'Contact', description: 'Get in touch with me', url: '#contact', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>' }
     ];
     
-    // Track selected item index
     let selectedIndex = -1;
     let filteredItems = [];
     
-    // Toggle spotlight with keyboard shortcut (Cmd+K or Ctrl+K)
     document.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        if (e.key === '1') {
             e.preventDefault();
             toggleSpotlight();
         }
-        
-        // Close with Escape key
         if (e.key === 'Escape' && spotlightContainer.classList.contains('active')) {
             closeSpotlight();
         }
-        
-        // Navigate with arrow keys
         if (spotlightContainer.classList.contains('active')) {
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -392,10 +369,8 @@ function initSpotlightSearch() {
         }
     });
     
-    // Close when clicking outside
     spotlightContainer.querySelector('.spotlight-backdrop').addEventListener('click', closeSpotlight);
     
-    // Search input handler
     spotlightInput.addEventListener('input', () => {
         const query = spotlightInput.value.toLowerCase().trim();
         filterResults(query);
@@ -411,7 +386,6 @@ function initSpotlightSearch() {
     
     function openSpotlight() {
         spotlightContainer.style.display = 'block';
-        // Add this line to prevent body scrolling
         document.body.style.overflow = 'hidden';
         
         setTimeout(() => {
@@ -427,42 +401,34 @@ function initSpotlightSearch() {
         setTimeout(() => {
             spotlightContainer.style.display = 'none';
             spotlightInput.value = '';
-            // Add this line to restore body scrolling
             document.body.style.overflow = '';
         }, 300);
     }
     
     function filterResults(query) {
-        // Clear previous results
         spotlightLinks.innerHTML = '';
         spotlightPages.innerHTML = '';
         spotlightSections.innerHTML = '';
         
-        // Reset selection
         selectedIndex = -1;
         
-        // If query is empty, show all items
         if (!query) {
             filteredItems = [...searchableItems];
         } else {
-            // Filter items based on query
             filteredItems = searchableItems.filter(item => 
                 item.title.toLowerCase().includes(query) || 
                 item.description.toLowerCase().includes(query)
             );
         }
         
-        // Group by type
         const links = filteredItems.filter(item => item.type === 'link');
         const pages = filteredItems.filter(item => item.type === 'page');
         const sections = filteredItems.filter(item => item.type === 'section');
         
-        // Render results
         renderResults(links, spotlightLinks);
         renderResults(pages, spotlightPages);
         renderResults(sections, spotlightSections);
         
-        // Show no results message if needed
         if (filteredItems.length === 0 && query) {
             const noResults = document.createElement('div');
             noResults.className = 'spotlight-no-results';
@@ -498,21 +464,16 @@ function initSpotlightSearch() {
     }
     
     function navigateResults(direction) {
-        // Remove current selection
         const items = document.querySelectorAll('.spotlight-result-item');
         items.forEach(item => item.classList.remove('selected'));
         
-        // Update selected index
         selectedIndex += direction;
         
-        // Loop around if needed
         if (selectedIndex < 0) selectedIndex = filteredItems.length - 1;
         if (selectedIndex >= filteredItems.length) selectedIndex = 0;
         
-        // Add selected class to current item
         if (selectedIndex >= 0 && selectedIndex < items.length) {
             items[selectedIndex].classList.add('selected');
-            // Scroll into view if needed
             items[selectedIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
@@ -520,21 +481,17 @@ function initSpotlightSearch() {
     function selectResult(item) {
         closeSpotlight();
         
-        // Handle different item types
         if (item.url.startsWith('#')) {
-            // Scroll to section
             const element = document.querySelector(item.url) || 
                            document.querySelector(`[data-project-id="${item.url.substring(1)}"]`);
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth' });
             }
         } else {
-            // Navigate to URL
             window.location.href = item.url;
         }
     }
     
-    // Add a button to trigger the spotlight search
     const spotlightButton = document.createElement('button');
     spotlightButton.className = 'spotlight-trigger';
     spotlightButton.innerHTML = `
@@ -544,13 +501,12 @@ function initSpotlightSearch() {
         </svg>
         <span class="spotlight-trigger-text">Search</span>
         <span class="spotlight-trigger-shortcut">
-            <kbd>${navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'} K</kbd>
+            <kbd>1</kbd>
         </span>
     `;
     
     spotlightButton.addEventListener('click', toggleSpotlight);
     
-    // Insert button in the header
     const header = document.querySelector('.header-right');
     if (header) {
         header.insertBefore(spotlightButton, header.firstChild);
@@ -560,3 +516,198 @@ function initSpotlightSearch() {
         e.stopPropagation();
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    initKeybindsPopup();
+});
+
+function initKeybindsPopup() {
+    const keybindsContainer = document.getElementById('keybinds-popup');
+    const closeButton = keybindsContainer.querySelector('.keybinds-close');
+    
+    const keybindsTrigger = document.createElement('button');
+    keybindsTrigger.className = 'keybinds-trigger';
+    keybindsTrigger.setAttribute('aria-label', 'Show keyboard shortcuts');
+    keybindsTrigger.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+            <path d="M6 8h.001"></path>
+            <path d="M10 8h.001"></path>
+            <path d="M14 8h.001"></path>
+            <path d="M18 8h.001"></path>
+            <path d="M8 12h.001"></path>
+            <path d="M12 12h.001"></path>
+            <path d="M16 12h.001"></path>
+            <path d="M7 16h10"></path>
+        </svg>
+    `;
+    document.body.appendChild(keybindsTrigger);
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '2' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+            toggleKeybindsPopup();
+        }
+        if (e.key === 'Escape' && keybindsContainer.classList.contains('active')) {
+            closeKeybindsPopup();
+        }
+        if (e.key === 'e' && window.lastKeyPressed === 'g') {
+            const element = document.querySelector('[data-project-id="extracurriculars"]');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        if (e.key === 'h' && window.lastKeyPressed === 'g') {
+            const element = document.querySelector('[data-project-id="hobbies"]');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        if (e.key === 'a' && window.lastKeyPressed === 'g') {
+            const element = document.querySelector('[data-project-id="achievements"]');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        if (e.key === 'd' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.click();
+            }
+        }
+        if (e.key === 'e' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            const nameInput = document.getElementById('name');
+            if (nameInput) {
+                nameInput.focus();
+            }
+        }
+        window.lastKeyPressed = e.key.toLowerCase();
+        setTimeout(() => {
+            if (window.lastKeyPressed === e.key.toLowerCase()) {
+                window.lastKeyPressed = null;
+            }
+        }, 1500);
+    });
+    
+    closeButton.addEventListener('click', closeKeybindsPopup);
+    
+    keybindsContainer.querySelector('.keybinds-backdrop').addEventListener('click', closeKeybindsPopup);
+    
+    keybindsTrigger.addEventListener('click', toggleKeybindsPopup);
+    
+    keybindsContainer.querySelector('.keybinds-button').addEventListener('click', closeKeybindsPopup);
+    
+    function toggleKeybindsPopup() {
+        if (keybindsContainer.classList.contains('active')) {
+            closeKeybindsPopup();
+        } else {
+            openKeybindsPopup();
+        }
+    }
+    
+    function openKeybindsPopup() {
+        keybindsContainer.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        setTimeout(() => {
+            keybindsContainer.classList.add('active');
+        }, 10);
+    }
+    
+    function closeKeybindsPopup() {
+        keybindsContainer.classList.remove('active');
+        
+        setTimeout(() => {
+            keybindsContainer.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 300);
+    }
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Home') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'End') {
+            window.scrollTo({ 
+                top: document.body.scrollHeight, 
+                behavior: 'smooth' 
+            });
+        }
+    });
+}
+
+function countAndDisplayCodeLines() {
+    let lineCounts = {
+      html: 0,
+      css: 0,
+      js: 0,
+      total: 0
+    };
+  
+    let filesToProcess = 3;
+  
+    fetch('index.html')
+      .then(response => response.text())
+      .then(data => {
+        lineCounts.html = data.split('\n').length;
+        updateTotal();
+      })
+      .catch(error => {
+        console.error('Error loading HTML file:', error);
+        filesToProcess--;
+      });
+  
+    fetch('styles.css')
+      .then(response => response.text())
+      .then(data => {
+        lineCounts.css = data.split('\n').length;
+        updateTotal();
+      })
+      .catch(error => {
+        console.error('Error loading CSS file:', error);
+        filesToProcess--;
+      });
+  
+    fetch('script.js')
+      .then(response => response.text())
+      .then(data => {
+        lineCounts.js = data.split('\n').length;
+        updateTotal();
+      })
+      .catch(error => {
+        console.error('Error loading JS file:', error);
+        filesToProcess--;
+      });
+  
+    function updateTotal() {
+      filesToProcess--;
+      if (filesToProcess <= 0) {
+        lineCounts.total = lineCounts.html + lineCounts.css + lineCounts.js;
+        displayInFooter();
+      }
+    }
+  
+    function displayInFooter() {
+      const lineCounterEl = document.createElement('span');
+      lineCounterEl.id = 'line-counter';
+      lineCounterEl.innerHTML = `<a class="text-hover" title="HTML: ${lineCounts.html} lines\nCSS: ${lineCounts.css} lines\nJS: ${lineCounts.js} lines">${lineCounts.total.toLocaleString()} LOC</a> • `;
+  
+      const copyrightElement = document.querySelector('.copyright');
+      if (copyrightElement) {
+        const ccLink = copyrightElement.querySelector('a[href*="creativecommons"]');
+        if (ccLink) {
+          ccLink.parentNode.insertBefore(lineCounterEl, ccLink);
+        } else {
+          copyrightElement.appendChild(lineCounterEl);
+        }
+      }
+    }
+}
+  
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(countAndDisplayCodeLines, 500);
+});
