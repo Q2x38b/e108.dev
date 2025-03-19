@@ -310,3 +310,15 @@ window.addEventListener('scroll', function() {
         blurElement.style.webkitBackdropFilter = `blur(${blurValue}px)`;
     }
 });
+
+fetch('https://api.github.com/repos/Q2x38b/e108.dev/commits?per_page=1')
+  .then(response => response.json())
+  .then(data => {
+    // Extract the SHA from the first element in the returned array
+    const latestCommitSHA = data[0].sha;
+    // Optionally, shorten the commit for display (common practice is to show the first 7 characters)
+    const shortSHA = latestCommitSHA.substring(0, 7);
+    // Display it in an element with id 'commit'
+    document.getElementById('commit').textContent = shortSHA;
+  })
+  .catch(error => console.error('Error fetching commit:', error));
