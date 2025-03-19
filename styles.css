@@ -1782,7 +1782,7 @@ textarea:-webkit-autofill:focus {
 }
 
 .spotlight-trigger svg {
-  stroke-width: 1.5;
+  stroke-width: 3;
 }
 
 .spotlight-trigger-shortcut {
