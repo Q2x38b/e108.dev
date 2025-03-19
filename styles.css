@@ -1681,6 +1681,8 @@ textarea:-webkit-autofill:focus {
 .spotlight-results {
   max-height: 400px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .spotlight-section {
@@ -1835,4 +1837,8 @@ textarea:-webkit-autofill:focus {
   .spotlight-trigger {
       padding: 6px;
   }
+}
+
+.spotlight-results::-webkit-scrollbar {
+  display: none;
 }
