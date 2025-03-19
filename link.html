@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Project Links</title>
+    <meta name="description" content="A collection of my projects">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap');
+
+        :root {
+            --background: #141414;
+            --foreground: #ebebeb;
+            --text-primary: #d4d4d8;
+            --text-secondary: #737373;
+            --border-color: #404040;
+            --border-subtle: #262626;
+            --hover-bg: rgba(64, 64, 64, 0.2);
+            --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            --font-mono: "JetBrains Mono", monospace, Consolas, "Courier New", monospace;
+            --font-geist-mono: "Geist Mono", monospace;
+            --transition-standard: all 0.15s ease;
+            --easing-standard: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        [data-theme="light"] {
+            --background: #f5f5f5;
+            --foreground: #171717;
+            --text-primary: #171717;
+            --text-secondary: #525252;
+            --border-color: #d4d4d4;
+            --border-subtle: #e5e5e5;
+            --hover-bg: rgba(0, 0, 0, 0.05);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: var(--font-sans);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            transition: var(--transition-standard);
+        }
+
+        .container {
+            max-width: 42rem;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            width: 100%;
+            font-size: 0.875rem;
+            font-family: var(--font-geist-mono);
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .location {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-standard);
+            font-size: 0.875rem;
+            font-family: var(--font-geist-mono);
+            color: var(--text-secondary);
+        }
+
+        .location a {
+            color: var(--text-secondary);
+            transition: var(--transition-standard);
+        }
+
+        .text-hover:hover {
+            text-decoration: underline;
+            color: var(--text-primary);
+        }
+        
+        .profile {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-family: var(--font-mono);
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--text-secondary);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            background-color: var(--hover-bg);
+        }
+
+        .link-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            flex-shrink: 0;
+            margin-right: 1rem;
+            color: var(--text-primary);
+        }
+
+        .link-content {
+            flex: 1;
+        }
+
+        .link-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .link-description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 2rem;
+            font-family: var(--font-mono);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .social-button {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .social-button:hover {
+            transform: translateY(-2px);
+            background-color: var(--hover-bg);
+            border-color: var(--text-secondary);
+        }
+
+        .social-icon {
+            width: 1.2rem;
+            height: 1.2rem;
+            stroke: currentColor;
+        }
+
+        .divider {
+            border: none;
+            height: 1px;
+            background: linear-gradient(
+                to right,
+                transparent,
+                var(--border-color),
+                var(--border-color),
+                var(--border-color),
+                transparent
+            );
+            margin: 2rem auto;
+            width: 80%;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 3rem 1.25rem;
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="location">
+                <a href="https://e108.dev/" class="text-hover">home</a>\<span>links</span>
+            </div>
+        </div>
+
+        <div class="profile">
+            <h1 class="profile-name">Project Links</h1>
+            <p class="profile-title">Apps • Utilites • Odities</p>
+        </div>
+
+        <div class="links-container">
+            <a href="https://e108.dev" class="link-card" target="_blank">
+                <div class="link-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                </div>
+                <div class="link-content">
+                    <div class="link-title">Resume Website</div>
+                    <div class="link-description">My personal portfolio showcasing my work and me</div>
+                </div>
+            </a>
+
+            <a href="https://iconary.e108.dev" class="link-card" target="_blank">
+                <div class="link-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="#c4c4c4" stroke-width="1.5"><path d="M14.5 19.5h-5m5 0c0-.713 0-1.07.038-1.307c.123-.763.144-.812.631-1.412c.151-.186.711-.688 1.832-1.692A7.5 7.5 0 1 0 7 15.09c1.12 1.004 1.68 1.505 1.832 1.692c.487.6.508.649.63 1.412c.039.237.039.593.039 1.307m5 0c0 .935 0 1.402-.201 1.75a1.5 1.5 0 0 1-.549.549c-.349.2-.816.2-1.751.2s-1.402 0-1.75-.201a1.5 1.5 0 0 1-.549-.549c-.201-.348-.201-.815-.201-1.75"/><path stroke-linecap="round" d="M12 17v-2m1.732-1a2 2 0 0 1-3.464 0"/></g></svg>
+                </div>
+                <div class="link-content">
+                    <div class="link-title">Iconary</div>
+                    <div class="link-description">Easy to use icon dictionary for downloading and customizing icons</div>
+                </div>
+            </a>
+
+            <a href="https://e108.dev/blog" class="link-card" target="_blank">
+                <div class="link-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+                <div class="link-content">
+                    <div class="link-title">Blog</div>
+                    <div class="link-description">Articles about development and design</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>@e108 • 伊森</p>
+        </div>
+    </div>
+</body>
+</html>
