@@ -18,7 +18,7 @@
         <div class="header" id="header">
             <p class="location">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <a href="https://maps.app.goo.gl/YiYRqPJ9z8CiuYJq5" class="text-hover">Houston</a>, Texas
+                <a href="https://en.wikipedia.org/wiki/Houston" class="text-hover">Houston</a>, Texas
               </p>
               <div class="header-right">
                 <button class="theme-switch" id="theme-toggle" aria-label="Toggle dark/light mode">
@@ -298,6 +298,44 @@
         </div>
     </div>
 
+    <div id="spotlight-search" class="spotlight-container">
+      <div class="spotlight-backdrop"></div>
+      <div class="spotlight-modal">
+          <div class="spotlight-search-bar">
+              <div class="spotlight-search-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+              </div>
+              <input type="text" id="spotlight-input" placeholder="Search or press Enter to start new search..." autocomplete="off">
+              <div class="spotlight-keyboard-shortcut">
+                  <kbd>Esc</kbd>
+              </div>
+          </div>
+          <div class="spotlight-results">
+              <div class="spotlight-section">
+                  <div class="spotlight-section-header">Links</div>
+                  <div class="spotlight-result-items" id="spotlight-links">
+                      <!-- Results will be dynamically populated here -->
+                  </div>
+              </div>
+              <div class="spotlight-section">
+                  <div class="spotlight-section-header">Pages</div>
+                  <div class="spotlight-result-items" id="spotlight-pages">
+                      <!-- Results will be dynamically populated here -->
+                  </div>
+              </div>
+              <div class="spotlight-section">
+                  <div class="spotlight-section-header">Sections</div>
+                  <div class="spotlight-result-items" id="spotlight-sections">
+                      <!-- Results will be dynamically populated here -->
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
     <div class="popup" id="tooltip-popup"></div>
     <script src="script.js"></script>
 
@@ -322,6 +360,5 @@
           ]
         }
         </script>        
-        
 </body>
 </html>
