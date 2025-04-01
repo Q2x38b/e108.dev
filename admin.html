@@ -296,23 +296,34 @@
         border: 1px solid var(--border-color);
         border-radius: 0.5rem;
         padding: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         background-color: rgba(0, 0, 0, 0.1);
-        max-height: 300px;
+        max-height: 200px;
         overflow-y: auto;
+        display: none; /* Hide code by default */
+      }
+
+      .code-toggle {
+        margin-bottom: 1rem;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        display: inline-block;
       }
 
       .code-output {
         border: 1px solid var(--border-color);
         border-radius: 0.5rem;
         padding: 1rem;
-        margin-top: 1rem;
-        background-color: var(--background);
+        background-color: white;
         min-height: 100px;
+        width: 100%;
+        overflow: hidden;
       }
 
       .rendered-section {
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
+        width: 100%;
       }
 
       #misc-content {
@@ -604,30 +615,48 @@
             let cellContent = data[i][0]; // Get content from first column
             
             if (cellContent && cellContent.trim() !== '') {
-              // Check if the content is wrapped in quotes and remove them
+              // Clean up content - remove surrounding quotes and fix escaped quotes
               if (cellContent.startsWith('"') && cellContent.endsWith('"')) {
                 cellContent = cellContent.substring(1, cellContent.length - 1);
               }
-              
-              // Fix double quotes that might be escaped in the Google Sheet
               cellContent = cellContent.replace(/""/g, '"');
               
-              html += `<div class="rendered-section">
-                        <div class="code-container">
-                          <pre>${escapeHtml(cellContent)}</pre>
-                        </div>
-                        <div class="code-output">
-                          ${cellContent}
-                        </div>
-                      </div>`;
+              // Create a unique ID for this section
+              const sectionId = `code-section-${i}`;
+              
+              html += `
+                <div class="rendered-section">
+                  <div class="code-toggle" onclick="toggleCodeView('${sectionId}')">
+                    <i class="fas fa-code"></i> Show/Hide Code
+                  </div>
+                  <div id="${sectionId}" class="code-container">
+                    <pre>${escapeHtml(cellContent)}</pre>
+                  </div>
+                  <div class="code-output">
+                    ${cellContent}
+                  </div>
+                </div>
+              `;
             }
           }
         }
         
-        document.getElementById('misc-content').innerHTML = html;
-        
-        // Execute any scripts in the rendered content
-        executeRenderedScripts();
+        if (html === '') {
+          document.getElementById('misc-content').innerHTML = 'No code cells found.';
+        } else {
+          document.getElementById('misc-content').innerHTML = html;
+          // Execute any scripts in the rendered content
+          executeRenderedScripts();
+        }
+      }
+
+      function toggleCodeView(sectionId) {
+        const codeContainer = document.getElementById(sectionId);
+        if (codeContainer.style.display === "block") {
+          codeContainer.style.display = "none";
+        } else {
+          codeContainer.style.display = "block";
+        }
       }
 
       function escapeHtml(unsafe) {
@@ -645,24 +674,32 @@
       }
 
       function executeRenderedScripts() {
-        // Find all script tags in the rendered output
-        const scriptElements = document.querySelectorAll('#misc-content .code-output script');
-        
-        // Execute each script
-        scriptElements.forEach(script => {
-          const newScript = document.createElement('script');
+        try {
+          // Find all script tags in the rendered output
+          const scriptElements = document.querySelectorAll('#misc-content .code-output script');
           
-          // Copy all attributes
-          Array.from(script.attributes).forEach(attr => {
-            newScript.setAttribute(attr.name, attr.value);
+          // Execute each script
+          scriptElements.forEach(script => {
+            try {
+              const newScript = document.createElement('script');
+              
+              // Copy all attributes
+              Array.from(script.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+              });
+              
+              // Set the script content
+              newScript.innerHTML = script.innerHTML;
+              
+              // Replace the old script with the new one
+              script.parentNode.replaceChild(newScript, script);
+            } catch (err) {
+              console.error('Error executing script:', err);
+            }
           });
-          
-          // Set the script content
-          newScript.innerHTML = script.innerHTML;
-          
-          // Replace the old script with the new one
-          script.parentNode.replaceChild(newScript, script);
-        });
+        } catch (err) {
+          console.error('Error in executeRenderedScripts:', err);
+        }
       }
 
       function showNewRowForm() {
@@ -779,6 +816,9 @@
             : 'dark'
         );
       });
+
+      // Add to global scope for access in rendered HTML
+      window.toggleCodeView = toggleCodeView;
 
       window.addEventListener('load', handleClientLoad);
     </script>
