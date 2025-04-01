@@ -588,38 +588,58 @@
       }
 
       function fetchAndRenderCodeCells() {
+        console.log("Fetching code cells from Misc sheet...");
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: spreadsheetId,
           range: 'Misc!A:Z',
         }).then(
           function (response) {
+            console.log("Response from Sheets API:", response);
             const range = response.result;
             if (range.values && range.values.length > 0) {
+              console.log("Number of rows found:", range.values.length);
+              console.log("First row:", range.values[0]);
+              if (range.values.length > 1) {
+                console.log("Second row:", range.values[1]);
+              }
               renderCodeCells(range.values);
             } else {
-              document.getElementById('misc-content').innerHTML = 'No code cells found.';
+              console.error("No values found in the response");
+              document.getElementById('misc-content').innerHTML = 'No code cells found. Make sure you have added content to the Misc sheet.';
             }
           },
           function (response) {
-            console.error('Error fetching code cells: ' + response.result.error.message);
+            console.error('Error fetching code cells:', response);
+            document.getElementById('misc-content').innerHTML = 'Error loading data: ' + (response.result ? response.result.error.message : 'Unknown error');
           }
-        );
+        ).catch(function(err) {
+          console.error('Exception in fetchAndRenderCodeCells:', err);
+          document.getElementById('misc-content').innerHTML = 'Error: ' + err.message;
+        });
       }
 
       function renderCodeCells(data) {
+        console.log("Rendering code cells:", data);
         let html = '';
         
-        // Skip header row
-        for (let i = 1; i < data.length; i++) {
+        // Skip header row if there is one, otherwise start from the first row
+        const startRow = data[0][0] === 'Content' || data[0][0] === 'HTML' ? 1 : 0;
+        
+        for (let i = startRow; i < data.length; i++) {
+          console.log(`Processing row ${i}:`, data[i]);
           if (data[i] && data[i].length > 0) {
             let cellContent = data[i][0]; // Get content from first column
             
             if (cellContent && cellContent.trim() !== '') {
+              console.log(`Cell content before processing (${i}):`, cellContent.substring(0, 100) + "...");
+              
               // Clean up content - remove surrounding quotes and fix escaped quotes
               if (cellContent.startsWith('"') && cellContent.endsWith('"')) {
                 cellContent = cellContent.substring(1, cellContent.length - 1);
               }
               cellContent = cellContent.replace(/""/g, '"');
+              
+              console.log(`Cell content after processing (${i}):`, cellContent.substring(0, 100) + "...");
               
               // Create a unique ID for this section
               const sectionId = `code-section-${i}`;
@@ -637,13 +657,19 @@
                   </div>
                 </div>
               `;
+            } else {
+              console.log(`Empty cell content at row ${i}`);
             }
+          } else {
+            console.log(`Empty or invalid row at index ${i}`);
           }
         }
         
         if (html === '') {
-          document.getElementById('misc-content').innerHTML = 'No code cells found.';
+          console.log("No HTML generated, no valid code cells found");
+          document.getElementById('misc-content').innerHTML = 'No code cells found. Please add HTML content to the first column of the Misc sheet.';
         } else {
+          console.log("Inserting HTML into misc-content");
           document.getElementById('misc-content').innerHTML = html;
           // Execute any scripts in the rendered content
           executeRenderedScripts();
