@@ -290,6 +290,36 @@
         margin: 2rem auto;
         width: 80%;
       }
+
+      /* New styles for code rendering */
+      .code-container {
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+
+      .code-output {
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        background-color: var(--background);
+      }
+
+      .rendered-section {
+        margin-bottom: 2rem;
+      }
+
+      #id-generator-content {
+        display: none;
+      }
+
+      .toggle-content-btn {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
     </style>
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -330,18 +360,20 @@
         
         <div id="sheet-selection">
           <label for="sheetSelector">Select Sheet:</label>
-          <select id="sheetSelector" onchange="cancelForm(); listSheetData();">
+          <select id="sheetSelector" onchange="cancelForm(); switchView(); listSheetData();">
             <option value="Form Responses">Form Responses</option>
             <option value="Blog">Blog</option>
+            <option value="ID Generator">ID Generator</option>
           </select>
         </div>
         
         <div class="controls" id="controls">
           <button onclick="listSheetData()">Refresh Data</button>
-          <button onclick="showNewRowForm()">Add New Entry</button>
+          <button id="add-entry-btn" onclick="showNewRowForm()">Add New Entry</button>
         </div>
         
         <div id="content"></div>
+        <div id="id-generator-content"></div>
         
         <div id="form-section">
           <h2 id="form-title">Add/Edit Entry</h2>
@@ -412,6 +444,7 @@
                 document.getElementById('main-container').style.display = 'block';
                 document.getElementById('controls').style.display = 'flex';
                 listSheetData();
+                switchView();
                 authorizeButton.style.display = 'none';
                 signoutButton.style.display = 'block';
               },
@@ -448,27 +481,51 @@
       authorizeButton.onclick = handleAuthClick;
       signoutButton.onclick = handleSignoutClick;
 
+      function switchView() {
+        const currentSheet = getCurrentSheetName();
+        const contentDiv = document.getElementById('content');
+        const idGeneratorDiv = document.getElementById('id-generator-content');
+        const addEntryBtn = document.getElementById('add-entry-btn');
+        
+        if (currentSheet === 'ID Generator') {
+          contentDiv.style.display = 'none';
+          idGeneratorDiv.style.display = 'block';
+          addEntryBtn.style.display = 'none';
+        } else {
+          contentDiv.style.display = 'block';
+          idGeneratorDiv.style.display = 'none';
+          addEntryBtn.style.display = 'inline-flex';
+        }
+      }
+
       function listSheetData() {
         if (!accessToken) {
           document.getElementById('content').innerHTML = 'Please sign in with Google to view data.';
           return;
         }
-        gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: spreadsheetId,
-          range: getFullRange(),
-        }).then(
-          function (response) {
-            const range = response.result;
-            if (range.values && range.values.length > 0) {
-              displayData(range.values);
-            } else {
-              document.getElementById('content').innerHTML = 'No data found.';
+        
+        const currentSheet = getCurrentSheetName();
+        
+        if (currentSheet === 'ID Generator') {
+          fetchAndRenderCodeCells();
+        } else {
+          gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: spreadsheetId,
+            range: getFullRange(),
+          }).then(
+            function (response) {
+              const range = response.result;
+              if (range.values && range.values.length > 0) {
+                displayData(range.values);
+              } else {
+                document.getElementById('content').innerHTML = 'No data found.';
+              }
+            },
+            function (response) {
+              console.error('Error fetching data: ' + response.result.error.message);
             }
-          },
-          function (response) {
-            console.error('Error fetching data: ' + response.result.error.message);
-          }
-        );
+          );
+        }
       }
 
       function displayData(data) {
@@ -482,8 +539,11 @@
           html += '<tr>';
           data[i].forEach((cell, index) => {
             if (currentSheet === "Blog" && index === 2) {
-              html += '<td><button onclick="toggleContent(this)">Show Content</button>';
-              html += '<div class="content-collapsible" style="display:none; margin-top:0.5rem;">' + cell + '</div></td>';
+              // Show Content button in the Content column
+              html += '<td>' + 
+                     '<button class="toggle-content-btn" onclick="toggleContent(this)">Show Content</button>' +
+                     '<div class="content-collapsible" style="display:none; margin-top:0.5rem;">' + cell + '</div>' +
+                     '</td>';
             } else {
               html += '<td>' + cell + '</td>';
             }
@@ -505,6 +565,85 @@
           div.style.display = "none";
           button.textContent = "Show Content";
         }
+      }
+
+      function fetchAndRenderCodeCells() {
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: spreadsheetId,
+          range: 'ID Generator!A:Z',
+        }).then(
+          function (response) {
+            const range = response.result;
+            if (range.values && range.values.length > 0) {
+              renderCodeCells(range.values);
+            } else {
+              document.getElementById('id-generator-content').innerHTML = 'No code cells found.';
+            }
+          },
+          function (response) {
+            console.error('Error fetching code cells: ' + response.result.error.message);
+          }
+        );
+      }
+
+      function renderCodeCells(data) {
+        let html = '';
+        
+        // Skip header row
+        for (let i = 1; i < data.length; i++) {
+          if (data[i] && data[i].length > 0) {
+            const cellContent = data[i][0]; // Get content from first column
+            
+            html += `<div class="rendered-section">
+                      <div class="code-container">
+                        <pre>${escapeHtml(cellContent)}</pre>
+                      </div>
+                      <div class="code-output" id="output-${i}">
+                        ${renderCell(cellContent)}
+                      </div>
+                    </div>`;
+          }
+        }
+        
+        document.getElementById('id-generator-content').innerHTML = html;
+        
+        // Execute any scripts in the rendered content
+        executeRenderedScripts();
+      }
+
+      function escapeHtml(unsafe) {
+        return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function renderCell(content) {
+        // Return the content as-is to be rendered
+        return content;
+      }
+
+      function executeRenderedScripts() {
+        // Find all script tags in the rendered output
+        const scriptElements = document.querySelectorAll('#id-generator-content .code-output script');
+        
+        // Execute each script
+        scriptElements.forEach(script => {
+          const newScript = document.createElement('script');
+          
+          // Copy all attributes
+          Array.from(script.attributes).forEach(attr => {
+            newScript.setAttribute(attr.name, attr.value);
+          });
+          
+          // Set the script content
+          newScript.innerHTML = script.innerHTML;
+          
+          // Replace the old script with the new one
+          script.parentNode.replaceChild(newScript, script);
+        });
       }
 
       function showNewRowForm() {
@@ -612,6 +751,15 @@
           console.error('Error deleting row:', error);
         });
       }
+
+      // Theme toggling
+      document.getElementById('theme-toggle').addEventListener('click', function() {
+        document.documentElement.setAttribute('data-theme', 
+          document.documentElement.getAttribute('data-theme') === 'dark' 
+            ? 'light' 
+            : 'dark'
+        );
+      });
 
       window.addEventListener('load', handleClientLoad);
     </script>
