@@ -96,7 +96,7 @@
       }
 
       .container {
-        max-width: 42rem;
+        max-width: 65rem;
         margin: 0 auto;
         padding: 4rem 1.5rem;
         position: relative;
@@ -298,6 +298,8 @@
         padding: 1rem;
         margin-bottom: 1.5rem;
         background-color: rgba(0, 0, 0, 0.1);
+        max-height: 300px;
+        overflow-y: auto;
       }
 
       .code-output {
@@ -306,6 +308,7 @@
         padding: 1rem;
         margin-top: 1rem;
         background-color: var(--background);
+        min-height: 100px;
       }
 
       .rendered-section {
@@ -314,11 +317,17 @@
 
       #misc-content {
         display: none;
+        width: 100%;
+        max-width: 100%;
       }
 
       .toggle-content-btn {
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
+      }
+      
+      .code-output > * {
+        max-width: 100%;
       }
     </style>
     <script src="https://apis.google.com/js/api.js"></script>
@@ -594,14 +603,16 @@
           if (data[i] && data[i].length > 0) {
             const cellContent = data[i][0]; // Get content from first column
             
-            html += `<div class="rendered-section">
-                      <div class="code-container">
-                        <pre>${escapeHtml(cellContent)}</pre>
-                      </div>
-                      <div class="code-output" id="output-${i}">
-                        ${renderCell(cellContent)}
-                      </div>
-                    </div>`;
+            if (cellContent && cellContent.trim() !== '') {
+              html += `<div class="rendered-section">
+                        <div class="code-container">
+                          <pre>${escapeHtml(cellContent)}</pre>
+                        </div>
+                        <div class="code-output">
+                          ${cellContent}
+                        </div>
+                      </div>`;
+            }
           }
         }
         
