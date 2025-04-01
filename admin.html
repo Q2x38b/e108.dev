@@ -312,7 +312,7 @@
         margin-bottom: 2rem;
       }
 
-      #id-generator-content {
+      #misc-content {
         display: none;
       }
 
@@ -363,7 +363,7 @@
           <select id="sheetSelector" onchange="cancelForm(); switchView(); listSheetData();">
             <option value="Form Responses">Form Responses</option>
             <option value="Blog">Blog</option>
-            <option value="ID Generator">ID Generator</option>
+            <option value="Misc">Misc</option>
           </select>
         </div>
         
@@ -373,7 +373,7 @@
         </div>
         
         <div id="content"></div>
-        <div id="id-generator-content"></div>
+        <div id="misc-content"></div>
         
         <div id="form-section">
           <h2 id="form-title">Add/Edit Entry</h2>
@@ -484,16 +484,16 @@
       function switchView() {
         const currentSheet = getCurrentSheetName();
         const contentDiv = document.getElementById('content');
-        const idGeneratorDiv = document.getElementById('id-generator-content');
+        const miscDiv = document.getElementById('misc-content');
         const addEntryBtn = document.getElementById('add-entry-btn');
         
-        if (currentSheet === 'ID Generator') {
+        if (currentSheet === 'Misc') {
           contentDiv.style.display = 'none';
-          idGeneratorDiv.style.display = 'block';
+          miscDiv.style.display = 'block';
           addEntryBtn.style.display = 'none';
         } else {
           contentDiv.style.display = 'block';
-          idGeneratorDiv.style.display = 'none';
+          miscDiv.style.display = 'none';
           addEntryBtn.style.display = 'inline-flex';
         }
       }
@@ -506,7 +506,7 @@
         
         const currentSheet = getCurrentSheetName();
         
-        if (currentSheet === 'ID Generator') {
+        if (currentSheet === 'Misc') {
           fetchAndRenderCodeCells();
         } else {
           gapi.client.sheets.spreadsheets.values.get({
@@ -570,14 +570,14 @@
       function fetchAndRenderCodeCells() {
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: spreadsheetId,
-          range: 'ID Generator!A:Z',
+          range: 'Misc!A:Z',
         }).then(
           function (response) {
             const range = response.result;
             if (range.values && range.values.length > 0) {
               renderCodeCells(range.values);
             } else {
-              document.getElementById('id-generator-content').innerHTML = 'No code cells found.';
+              document.getElementById('misc-content').innerHTML = 'No code cells found.';
             }
           },
           function (response) {
@@ -605,7 +605,7 @@
           }
         }
         
-        document.getElementById('id-generator-content').innerHTML = html;
+        document.getElementById('misc-content').innerHTML = html;
         
         // Execute any scripts in the rendered content
         executeRenderedScripts();
@@ -627,7 +627,7 @@
 
       function executeRenderedScripts() {
         // Find all script tags in the rendered output
-        const scriptElements = document.querySelectorAll('#id-generator-content .code-output script');
+        const scriptElements = document.querySelectorAll('#misc-content .code-output script');
         
         // Execute each script
         scriptElements.forEach(script => {
