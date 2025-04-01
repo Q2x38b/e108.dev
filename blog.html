@@ -942,6 +942,32 @@
         let allPosts = [];
         let currentPostIndex = 0;
         
+        // Function to update the URL with the post ID
+        function updateURL(postId) {
+          if (history.pushState) {
+            const newURL = window.location.protocol + "//" + window.location.host + 
+                        window.location.pathname + '?post=' + postId;
+            window.history.pushState({path: newURL}, '', newURL);
+          }
+        }
+        
+        // Function to check URL for post ID parameter
+        function checkURLForPostID() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const postId = urlParams.get('post');
+          
+          if (postId) {
+            // Find post index by ID
+            const postIndex = allPosts.findIndex(post => post[0] === postId);
+            if (postIndex !== -1) {
+              // Show the post
+              setTimeout(() => {
+                showOverlay(postIndex);
+              }, 300); // Small delay to ensure everything is loaded
+            }
+          }
+        }
+        
         function displayPosts(posts) {
           const blogContainer = document.getElementById('blog-posts');
           if (posts.length <= 1) {
@@ -963,12 +989,13 @@
           
           blogContainer.innerHTML = '';
           for (let i = 1; i < posts.length; i++) {
-            const [date, title, content] = posts[i];
+            const [id, date, title, content] = posts[i];
             const subtitle = extractSubtitle(content);
             
             const postWrapper = document.createElement('div');
             postWrapper.className = 'post new-post-entry';
             postWrapper.setAttribute('data-index', i - 1);
+            postWrapper.setAttribute('data-id', id);
             postWrapper.style.animationDelay = `${(i - 1) * 0.05}s`;
             postWrapper.addEventListener('click', () => {
               showOverlay(i - 1);
@@ -984,11 +1011,14 @@
             
             blogContainer.appendChild(postWrapper);
           }
+          
+          // Check URL for post ID on page load
+          checkURLForPostID();
         }
         
         function showOverlay(index) {
           currentPostIndex = index;
-          const [date, title, content] = allPosts[currentPostIndex];
+          const [id, date, title, content] = allPosts[currentPostIndex];
           
           document.getElementById('overlayTitle').textContent = title;
           document.getElementById('overlayDate').textContent = date;
@@ -1012,6 +1042,9 @@
           overlay.classList.add('active');
           overlay.scrollTop = 0;
           document.title = title + ' | My Blog';
+          
+          // Update URL with the post ID
+          updateURL(id);
         }
         
         function updateNavigationButtons() {
@@ -1021,7 +1054,9 @@
           if (currentPostIndex > 0) {
             prevButton.style.opacity = '1';
             prevButton.style.cursor = 'pointer';
-            prevButton.onclick = () => showOverlay(currentPostIndex - 1);
+            prevButton.onclick = () => {
+              showOverlay(currentPostIndex - 1);
+            };
           } else {
             prevButton.style.opacity = '0.5';
             prevButton.style.cursor = 'not-allowed';
@@ -1031,7 +1066,9 @@
           if (currentPostIndex < allPosts.length - 1) {
             nextButton.style.opacity = '1';
             nextButton.style.cursor = 'pointer';
-            nextButton.onclick = () => showOverlay(currentPostIndex + 1);
+            nextButton.onclick = () => {
+              showOverlay(currentPostIndex + 1);
+            };
           } else {
             nextButton.style.opacity = '0.5';
             nextButton.style.cursor = 'not-allowed';
@@ -1046,6 +1083,13 @@
             overlay.style.display = 'none';
             document.body.style.overflow = '';
             document.title = 'My Blog';
+            
+            // Reset URL to base URL without parameters
+            if (history.pushState) {
+              const newURL = window.location.protocol + "//" + window.location.host + 
+                          window.location.pathname;
+              window.history.pushState({path: newURL}, '', newURL);
+            }
           }, 400);
         }
         
@@ -1094,24 +1138,24 @@
       });
 
       window.addEventListener('scroll', function() {
-            const scrollPosition = window.scrollY;
-            const blurElement = document.querySelector('.sticky-blur');
-            
-            // Maximum scroll position to consider (adjust as needed)
-            const maxScroll = 300;
-            
-            // Calculate blur intensity (start strong at 20px and decrease to 5px)
-            let blurValue = 20;
-            
-            if (scrollPosition <= maxScroll) {
-                // Linear decrease from 20px to 5px as user scrolls
-                blurValue = 20 - (scrollPosition / maxScroll) * 15;
-                
-                // Apply the calculated blur
-                blurElement.style.backdropFilter = `blur(${blurValue}px)`;
-                blurElement.style.webkitBackdropFilter = `blur(${blurValue}px)`;
-            }
-        });
+        const scrollPosition = window.scrollY;
+        const blurElement = document.querySelector('.sticky-blur');
+        
+        // Maximum scroll position to consider (adjust as needed)
+        const maxScroll = 300;
+        
+        // Calculate blur intensity (start strong at 20px and decrease to 5px)
+        let blurValue = 20;
+        
+        if (scrollPosition <= maxScroll) {
+          // Linear decrease from 20px to 5px as user scrolls
+          blurValue = 20 - (scrollPosition / maxScroll) * 15;
+          
+          // Apply the calculated blur
+          blurElement.style.backdropFilter = `blur(${blurValue}px)`;
+          blurElement.style.webkitBackdropFilter = `blur(${blurValue}px)`;
+        }
+      });
     </script>
   </body>
 </html>
