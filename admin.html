@@ -311,12 +311,16 @@
         display: inline-block;
       }
 
-      .code-output {
+      .widget-container {
         border: 1px solid var(--border-color);
         border-radius: 0.5rem;
-        padding: 1rem;
-        background-color: white;
-        min-height: 100px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        background-color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .code-output {
         width: 100%;
         overflow: hidden;
       }
@@ -337,8 +341,12 @@
         margin-bottom: 0.5rem;
       }
       
-      .code-output > * {
-        max-width: 100%;
+      /* Create isolation for each rendered widget */
+      .widget-iframe {
+        border: none;
+        width: 100%;
+        min-height: 200px;
+        overflow: hidden;
       }
     </style>
     <script src="https://apis.google.com/js/api.js"></script>
@@ -641,8 +649,10 @@
               
               console.log(`Cell content after processing (${i}):`, cellContent.substring(0, 100) + "...");
               
-              // Create a unique ID for this section
+              // Create unique IDs for this section
               const sectionId = `code-section-${i}`;
+              const widgetId = `widget-${i}`;
+              const frameId = `frame-${i}`;
               
               html += `
                 <div class="rendered-section">
@@ -652,8 +662,10 @@
                   <div id="${sectionId}" class="code-container">
                     <pre>${escapeHtml(cellContent)}</pre>
                   </div>
-                  <div class="code-output">
-                    ${cellContent}
+                  <div id="${widgetId}" class="widget-container">
+                    <div class="code-output">
+                      ${cellContent}
+                    </div>
                   </div>
                 </div>
               `;
@@ -721,6 +733,19 @@
               script.parentNode.replaceChild(newScript, script);
             } catch (err) {
               console.error('Error executing script:', err);
+            }
+          });
+
+          // Adjust heights of any widget containers as needed
+          const widgetContainers = document.querySelectorAll('.widget-container');
+          widgetContainers.forEach(container => {
+            const content = container.querySelector('.code-output');
+            if (content && content.scrollHeight > 0) {
+              // Set minimum height to content height plus padding
+              const minHeight = content.scrollHeight + 40;
+              if (minHeight > 200) {
+                container.style.minHeight = minHeight + 'px';
+              }
             }
           });
         } catch (err) {
