@@ -654,6 +654,9 @@
               const widgetId = `widget-${i}`;
               const frameId = `frame-${i}`;
               
+              // Store the content for later use with iframe
+              window[`content_${i}`] = cellContent;
+              
               html += `
                 <div class="rendered-section">
                   <div class="code-toggle" onclick="toggleCodeView('${sectionId}')">
@@ -663,9 +666,7 @@
                     <pre>${escapeHtml(cellContent)}</pre>
                   </div>
                   <div id="${widgetId}" class="widget-container">
-                    <div class="code-output">
-                      ${cellContent}
-                    </div>
+                    <iframe id="${frameId}" class="widget-iframe" onload="setupIframe('${frameId}', ${i})"></iframe>
                   </div>
                 </div>
               `;
@@ -683,9 +684,21 @@
         } else {
           console.log("Inserting HTML into misc-content");
           document.getElementById('misc-content').innerHTML = html;
-          // Execute any scripts in the rendered content
-          executeRenderedScripts();
         }
+      }
+      
+      function setupIframe(frameId, contentIndex) {
+        const iframe = document.getElementById(frameId);
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        
+        doc.open();
+        doc.write(window[`content_${contentIndex}`]);
+        doc.close();
+        
+        // Adjust iframe height to match content
+        setTimeout(() => {
+          iframe.style.height = (doc.body.scrollHeight + 20) + 'px';
+        }, 100);
       }
 
       function toggleCodeView(sectionId) {
@@ -870,6 +883,7 @@
 
       // Add to global scope for access in rendered HTML
       window.toggleCodeView = toggleCodeView;
+      window.setupIframe = setupIframe;
 
       window.addEventListener('load', handleClientLoad);
     </script>
