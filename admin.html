@@ -406,6 +406,9 @@
         <div id="form-section">
           <h2 id="form-title">Add/Edit Entry</h2>
           <form id="edit-form">
+            <label for="entry_id">ID:</label>
+            <input type="text" id="entry_id" name="id" />
+            
             <label for="entry_date">Date:</label>
             <input type="text" id="entry_date" name="date" placeholder="YYYY-MM-DD" required />
             
@@ -566,7 +569,7 @@
         for (let i = 1; i < data.length; i++) {
           html += '<tr>';
           data[i].forEach((cell, index) => {
-            if (currentSheet === "Blog" && index === 2) {
+            if (currentSheet === "Blog" && index === 3) {  // Assuming index 3 is the Content column
               // Show Content button in the Content column
               html += '<td>' + 
                      '<button class="toggle-content-btn" onclick="toggleContent(this)">Show Content</button>' +
@@ -770,6 +773,11 @@
         currentRowIndex = null;
         document.getElementById('form-title').textContent = 'Add New Entry';
         document.getElementById('edit-form').reset();
+        
+        // Generate a unique ID for new entries
+        const uniqueId = 'entry_' + Date.now();
+        document.getElementById('entry_id').value = uniqueId;
+        
         document.getElementById('form-section').classList.add('modal');
         document.getElementById('form-section').style.display = 'block';
       }
@@ -779,7 +787,7 @@
         currentRowIndex = rowIndex;
         document.getElementById('form-title').textContent = 'Edit Entry';
         const currentSheet = getCurrentSheetName();
-        const range = currentSheet + '!A' + (rowIndex + 1) + ':C' + (rowIndex + 1);
+        const range = currentSheet + '!A' + (rowIndex + 1) + ':D' + (rowIndex + 1);  // Updated to include ID field
         console.log("Fetching range:", range);
         gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: spreadsheetId,
@@ -788,12 +796,14 @@
           console.log("Edit row response:", response);
           const rowData = response.result.values[0];
           if (rowData) {
-            document.getElementById('entry_date').value = rowData[0] || '';
-            document.getElementById('entry_title').value = rowData[1] || '';
-            document.getElementById('entry_content').value = rowData[2] || '';
+            document.getElementById('entry_id').value = rowData[0] || '';
+            document.getElementById('entry_date').value = rowData[1] || '';
+            document.getElementById('entry_title').value = rowData[2] || '';
+            document.getElementById('entry_content').value = rowData[3] || '';
             document.getElementById('form-section').classList.add('modal');
             document.getElementById('form-section').style.display = 'block';
             console.log("Form values set:", {
+              id: document.getElementById('entry_id').value,
               date: document.getElementById('entry_date').value,
               title: document.getElementById('entry_title').value,
               content: document.getElementById('entry_content').value
@@ -808,10 +818,11 @@
 
       document.getElementById('edit-form').addEventListener('submit', function (e) {
         e.preventDefault();
+        const id = document.getElementById('entry_id').value;
         const date = document.getElementById('entry_date').value;
         const title = document.getElementById('entry_title').value;
         const content = document.getElementById('entry_content').value;
-        const values = [[date, title, content]];
+        const values = [[id, date, title, content]];
         const currentSheet = getCurrentSheetName();
 
         if (currentRowIndex === null) {
@@ -828,7 +839,7 @@
             listSheetData();
           });
         } else {
-          const range = currentSheet + '!A' + (currentRowIndex + 1) + ':C' + (currentRowIndex + 1);
+          const range = currentSheet + '!A' + (currentRowIndex + 1) + ':D' + (currentRowIndex + 1);
           gapi.client.sheets.spreadsheets.values.update({
             spreadsheetId: spreadsheetId,
             range: range,
