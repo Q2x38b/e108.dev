@@ -702,47 +702,58 @@
       }
 
       .sticky-blur {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px); /* For Safari */
-            z-index: 100;
-            background-color: transparent; /* No background color, just blur */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px); /* For Safari */
+        z-index: 100;
+        background-color: transparent; /* No background color, just blur */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+
+      /* Custom UI element styles for blog posts */
+      .custom-ui {
+        margin: 1rem 0;
+      }
+      .custom-ui.align-left {
+        text-align: left;
+      }
+      .custom-ui.align-middle {
+        text-align: center;
+      }
     </style>
   </head>
   <body>
     <main class="container">
-        <div class="header" id="sub-header">
-            <div class="location">
-              <a href="https://e108.dev/" class="text-hover">home</a>\<a href="#" class="text-hover">blog</a>
-            </div>
-            <div class="header-right">
-              <button class="theme-switch" id="theme-toggle-dup" aria-label="Toggle dark/light mode">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="theme-icon">
-                    <circle class="sun-circle" cx="12" cy="12" r="5"/>
-                    <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                    <g class="sun-rays">
-                      <line x1="12" y1="1" x2="12" y2="3"/>
-                      <line x1="12" y1="21" x2="12" y2="23"/>
-                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                      <line x1="1" y1="12" x2="3" y2="12"/>
-                      <line x1="21" y1="12" x2="23" y2="12"/>
-                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                    </g>
-                  </svg>
-              </button>
-            </div>
-          </div>
+      <div class="header" id="sub-header">
+        <div class="location">
+          <a href="https://e108.dev/" class="text-hover">home</a>\<a href="#" class="text-hover">blog</a>
+        </div>
+        <div class="header-right">
+          <button class="theme-switch" id="theme-toggle-dup" aria-label="Toggle dark/light mode">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="theme-icon">
+              <circle class="sun-circle" cx="12" cy="12" r="5"/>
+              <path class="moon-path" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+              <g class="sun-rays">
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </g>
+            </svg>
+          </button>
+        </div>
+      </div>
       <div class="profile">
         <h1 class="profile-name">Blog</h1>
         <p class="profile-title">Thoughts • Ideas • Stories</p>
@@ -769,8 +780,7 @@
       </div>
     </main>
     <div id="overlay" class="overlay">
-      <div class="sticky-blur">
-    </div>
+      <div class="sticky-blur"></div>
       <div class="overlay-content" style="margin-top: 5rem;">
         <button id="closeOverlay" class="close-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -805,6 +815,24 @@
     </div>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        // Custom UI elements for specific blog posts.
+        // Keys should match the first cell (post id) of the Google Sheet rows.
+        // The HTML includes a custom class (e.g., align-left or align-middle) to control alignment.
+        const customUIElements = {
+          "bX1iZIOh": `
+            <div class="custom-ui align-left">
+              <h3>Extra Info for Post 1</h3>
+              <button onclick="alert('Button in Post 1 clicked!')">Click Me</button>
+            </div>
+          `,
+          "5uPM6MJ8": `
+            <div class="custom-ui align-middle">
+              <h3>Special Note for Post 2</h3>
+              <p>This is a unique section for Post 2.</p>
+            </div>
+          `,
+        };
+
         const htmlElement = document.documentElement;
         const body = document.body;
         const themeToggles = document.querySelectorAll('#theme-toggle, #theme-toggle-dup');
@@ -1022,7 +1050,13 @@
           
           document.getElementById('overlayTitle').textContent = title;
           document.getElementById('overlayDate').textContent = date;
-          document.getElementById('overlayContent').innerHTML = markdownToHtml(content);
+          const parsedContent = markdownToHtml(content);
+          // If a custom UI element is defined for this post id, append it to the post content.
+          if (customUIElements[id]) {
+            document.getElementById('overlayContent').innerHTML = parsedContent + customUIElements[id];
+          } else {
+            document.getElementById('overlayContent').innerHTML = parsedContent;
+          }
           
           updateNavigationButtons();
           
