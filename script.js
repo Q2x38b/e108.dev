@@ -308,7 +308,7 @@ window.addEventListener('scroll', function() {
     }
 });
 
-fetch('https://api.github.com/repos/Q2x38b/e108.dev/commits?per_page=1')
+fetch('https://api.github.com/repos/Q2x38b/e108.dev/commits?&per_page=1&page=1')
   .then(response => response.json())
   .then(data => {
     const latestCommitSHA = data[0].sha;
