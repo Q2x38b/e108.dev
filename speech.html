@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Dark Audio Player</title>
+    <style>
+        :root {
+            --primary-color: #9e9e9e;
+            --accent-color: #616161;
+            --text-color: #e2e8f0;
+            --bg-color: #1a1a1a;
+            --player-bg: #2a2a2a;
+            --slider-bg: #3f3f3f;
+            --hover-color: #757575;
+            --border-color: #3f3f3f;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .audio-player {
+            width: 320px;
+            background-color: var(--player-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .audio-player::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle at center,
+                rgba(158, 158, 158, 0.08) 0%,
+                rgba(97, 97, 97, 0.03) 30%,
+                transparent 70%
+            );
+            z-index: 0;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .play-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #444444;
+            border: none;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            background: #505050;
+        }
+
+        .play-button:active {
+            transform: scale(0.98);
+        }
+
+        .play-icon, .pause-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .pause-icon {
+            display: none;
+        }
+
+        .time-display {
+            font-size: 14px;
+            font-weight: 400;
+            color: #d1d5db;
+            letter-spacing: 0.5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: rgba(63, 63, 63, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 2px;
+        }
+        
+        .speed-button {
+            background: none;
+            border: none;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .speed-button:hover, .speed-button.active {
+            background: rgba(97, 97, 97, 0.6);
+            color: white;
+        }
+
+        .speed-options {
+            display: none;
+        }
+
+        .speed-option {
+            padding: 6px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #d1d5db;
+        }
+
+        .speed-option:hover {
+            background-color: rgba(158, 158, 158, 0.3);
+            color: white;
+        }
+
+        .speed-options.show {
+            display: block;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--slider-bg);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 10px;
+            z-index: 1;
+        }
+
+        .progress-bar {
+            height: 100%;
+                            background: linear-gradient(90deg, #757575, #9e9e9e);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .progress-handle {
+            width: 14px;
+            height: 14px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            left: 0%;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(117, 117, 117, 0.7);
+            transition: transform 0.2s;
+        }
+
+        .progress-handle:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .waveform {
+            width: 100%;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+            transition: height 0.2s, background-color 0.3s;
+        }
+
+        .wave-bar.active {
+            background-color: #757575;
+        }
+
+        .track-info {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #9ca3af;
+            position: relative;
+            z-index: 1;
+        }
+
+        .track-name {
+            font-weight: 500;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .track-artist {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="audio-player">
+        <div class="controls">
+            <button class="play-button">
+                <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+                <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                </svg>
+            </button>
+            <div class="time-display">0:00 / 0:00</div>
+            <div class="speed-control">
+                <button class="speed-button" data-speed="0.5">0.5x</button>
+                <button class="speed-button" data-speed="1.0">1x</button>
+                <button class="speed-button" data-speed="1.5">1.5x</button>
+                <button class="speed-button" data-speed="2.0">2x</button>
+            </div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+            <div class="progress-handle"></div>
+        </div>
+        <div class="waveform">
+            <!-- Waveform bars will be generated by JavaScript -->
+        </div>
+        <!-- Track info removed as requested -->
+        <audio src="Speech.mp3" preload="metadata"></audio>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const audioPlayer = document.querySelector('.audio-player');
+            const audio = audioPlayer.querySelector('audio');
+            const playButton = audioPlayer.querySelector('.play-button');
+            const playIcon = audioPlayer.querySelector('.play-icon');
+            const pauseIcon = audioPlayer.querySelector('.pause-icon');
+            const timeDisplay = audioPlayer.querySelector('.time-display');
+            const progressContainer = audioPlayer.querySelector('.progress-container');
+            const progressBar = audioPlayer.querySelector('.progress-bar');
+            const progressHandle = audioPlayer.querySelector('.progress-handle');
+            const speedButton = audioPlayer.querySelector('.speed-button');
+            const speedOptions = audioPlayer.querySelector('.speed-options');
+            const speedOptionElements = audioPlayer.querySelectorAll('.speed-option');
+            const waveform = audioPlayer.querySelector('.waveform');
+            const trackName = audioPlayer.querySelector('.track-name');
+            const trackArtist = audioPlayer.querySelector('.track-artist');
+
+            // Replace this with your MP3 file path
+            audio.src = "Speech.mp3";
+            
+            // Create audio context for analyzing audio
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = audioContext.createAnalyser();
+            let audioSource = null;
+            
+            // Set up analyser
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            // Create waveform bars
+            const barCount = 40;
+            for (let i = 0; i < barCount; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar';
+                // Initial height
+                bar.style.height = '5px';
+                waveform.appendChild(bar);
+            }
+            
+            // Connect audio to analyser when playing
+            audio.addEventListener('play', () => {
+                if (!audioSource) {
+                    audioSource = audioContext.createMediaElementSource(audio);
+                    audioSource.connect(analyser);
+                    analyser.connect(audioContext.destination);
+                }
+            });
+            
+            // Update waveform based on audio data
+            function updateWaveform() {
+                // Get frequency data
+                analyser.getByteFrequencyData(dataArray);
+                
+                const bars = waveform.querySelectorAll('.wave-bar');
+                
+                // Map frequency data to bars
+                for (let i = 0; i < bars.length; i++) {
+                    // Calculate which frequency bin to use for this bar
+                    const index = Math.floor(i * (bufferLength / bars.length));
+                    
+                    // Get height from frequency data
+                    const value = dataArray[index];
+                    const height = (value / 255) * 30;
+                    
+                    // Update bar height
+                    bars[i].style.height = `${Math.max(3, height)}px`;
+                    
+                    // Determine if bar is active based on progress
+                    const progress = (audio.currentTime / audio.duration) * 100;
+                    const activeBarCount = Math.floor((bars.length * progress) / 100);
+                    
+                    if (i < activeBarCount) {
+                        bars[i].classList.add('active');
+                    } else {
+                        bars[i].classList.remove('active');
+                    }
+                }
+            }
+            
+            // Toggle play/pause
+            playButton.addEventListener('click', togglePlay);
+            
+            function togglePlay() {
+                if (audio.paused) {
+                    audio.play();
+                    playIcon.style.display = 'none';
+                    pauseIcon.style.display = 'block';
+                    // Animate waveform when playing
+                    animateWaveform();
+                } else {
+                    audio.pause();
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    // Stop waveform animation
+                    stopWaveformAnimation();
+                }
+            }
+            
+            let animationFrame;
+            
+            function animateWaveform() {
+                // Use requestAnimationFrame for smoother animation
+                function renderFrame() {
+                    if (!audio.paused) {
+                        updateWaveform();
+                        animationFrame = requestAnimationFrame(renderFrame);
+                    }
+                }
+                
+                // Start animation loop
+                animationFrame = requestAnimationFrame(renderFrame);
+            }
+            
+            function stopWaveformAnimation() {
+                if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                }
+                
+                // Reset waveform to default state
+                const bars = waveform.querySelectorAll('.wave-bar');
+                bars.forEach(bar => {
+                    bar.style.height = '5px';
+                });
+            }
+            
+            // Update progress bar and time display
+            audio.addEventListener('timeupdate', updateProgress);
+            
+            function updateProgress() {
+                const duration = audio.duration;
+                const currentTime = audio.currentTime;
+                const progress = (currentTime / duration) * 100;
+                
+                progressBar.style.width = `${progress}%`;
+                progressHandle.style.left = `${progress}%`;
+                
+                timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+            }
+            
+            // Format time to MM:SS
+            function formatTime(seconds) {
+                if (isNaN(seconds)) return "0:00";
+                
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60);
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Seek functionality
+            progressContainer.addEventListener('click', seek);
+            
+            function seek(e) {
+                const progressWidth = progressContainer.clientWidth;
+                const clickPosition = e.offsetX;
+                const seekPercentage = clickPosition / progressWidth;
+                
+                audio.currentTime = seekPercentage * audio.duration;
+            }
+            
+            // Make the progress handle draggable
+            let isDragging = false;
+            
+            progressHandle.addEventListener('mousedown', () => {
+                isDragging = true;
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const rect = progressContainer.getBoundingClientRect();
+                    const position = e.clientX - rect.left;
+                    const percentage = Math.max(0, Math.min(1, position / rect.width));
+                    
+                    progressBar.style.width = `${percentage * 100}%`;
+                    progressHandle.style.left = `${percentage * 100}%`;
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    const percentage = parseFloat(progressHandle.style.left) / 100;
+                    audio.currentTime = percentage * audio.duration;
+                    isDragging = false;
+                }
+            });
+            
+            // Set initial speed button state
+            const speedButtons = audioPlayer.querySelectorAll('.speed-button');
+            
+            // Set the default (1.0x) as active
+            speedButtons.forEach(button => {
+                if(button.getAttribute('data-speed') === '1.0') {
+                    button.classList.add('active');
+                }
+                
+                // Add click event to each speed button
+                button.addEventListener('click', () => {
+                    // Update active state
+                    speedButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Change playback speed
+                    const speed = parseFloat(button.getAttribute('data-speed'));
+                    audio.playbackRate = speed;
+                })
+            });
+            
+            // Close speed menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!speedSelector.contains(e.target)) {
+                    speedOptions.classList.remove('show');
+                }
+            });
+            
+            // We don't need these anymore with the new speed control
+            // Remove code related to the old dropdown
+            
+            // Initialize
+            audio.addEventListener('loadedmetadata', () => {
+                timeDisplay.textContent = `0:00 / ${formatTime(audio.duration)}`;
+                
+                // Resume audio context if it was suspended (browser policy)
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            });
+            
+            // Handle audio ending
+            audio.addEventListener('ended', () => {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+                progressBar.style.width = '0%';
+                progressHandle.style.left = '0%';
+                audio.currentTime = 0;
+                
+                // Reset waveform
+                const bars = waveform.querySelectorAll('.wave-bar');
+                bars.forEach(bar => {
+                    bar.classList.remove('active');
+                    bar.style.height = '5px';
+                });
+                
+                // Stop waveform animation
+                stopWaveformAnimation();
+            });
+            
+            // Make sure speed selector is on top of other elements with proper z-index
+            const speedSelector = audioPlayer.querySelector('.speed-selector');
+
+            // We don't need these anymore with the new speed control
+            // Remove code related to the old dropdown
+        });
+    </script>
+</body>
+</html>
