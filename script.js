@@ -711,3 +711,239 @@ function countAndDisplayCodeLines() {
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(countAndDisplayCodeLines, 500);
 });
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const correctCode = "4a6H";
+    const inputs = document.querySelectorAll('.code-input');
+
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', function() {
+            this.value = this.value.slice(0, 1);
+            if (this.value && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            checkCode();
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+
+    function checkCode() {
+        let enteredValues = [];
+        inputs.forEach(input => {
+            if (input.value) {
+                enteredValues.push(input.value);
+            }
+        });
+
+        if (enteredValues.length === 4) {
+            const sortedEntered = [...enteredValues].sort().join('');
+            const sortedCorrect = [...correctCode].sort().join('');
+            if (sortedEntered === sortedCorrect) {
+                triggerConfetti();
+                setTimeout(() => {
+                    inputs.forEach(input => {
+                        input.value = '';
+                    });
+                    inputs[0].focus();
+                }, 1500);
+            }
+        }
+    }
+
+    function triggerConfetti() {
+        const confettiContainer = document.getElementById('confetti-container');
+        confettiContainer.innerHTML = '';
+
+        const colors = ['#FF577F', '#FF884B', '#FDBF50', '#70D4FF', '#6C63FF', '#7EC636'];
+        const confettiCount = Math.min(Math.floor(window.innerWidth / 10), 200);
+
+        for (let i = 0; i < confettiCount; i++) {
+            let confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+
+            confetti.style.left = Math.random() * 100 + '%';
+
+            const size = Math.random() * 8 + 4;
+            confetti.style.width = size + 'px';
+            confetti.style.height = size + 'px';
+
+            const fallSpeed = 1.5 + Math.random();
+            confetti.style.animationDuration = fallSpeed + 's';
+
+            const delay = Math.random() * 0.8;
+            confetti.style.animationDelay = delay + 's';
+
+            const randomStartX = -10 + Math.random() * 20;
+            const randomEndX = randomStartX + (-30 + Math.random() * 60);
+
+            const keyframes = `
+              @keyframes fall-${i} {
+                0% {
+                  transform: translateY(0) translateX(0) rotate(0deg) scale(0.7);
+                  opacity: 0;
+                }
+                5% {
+                  opacity: 1;
+                  transform: translateY(0) translateX(${randomStartX}px) rotate(45deg) scale(1);
+                }
+                100% {
+                  transform: translateY(120vh) translateX(${randomEndX}px) rotate(360deg) scale(0.7);
+                  opacity: 0;
+                }
+              }
+            `;
+
+            const styleElem = document.createElement('style');
+            styleElem.innerHTML = keyframes;
+            document.head.appendChild(styleElem);
+
+            confetti.style.animation = `fall-${i} ${fallSpeed}s linear forwards`;
+            confetti.style.animationDelay = delay + 's';
+
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.boxShadow = '0 0 3px rgba(255,255,255,0.3)';
+
+            confettiContainer.appendChild(confetti);
+        }
+
+        setTimeout(() => {
+            const styles = document.querySelectorAll('style');
+            styles.forEach(style => {
+                if (style.innerHTML.includes('fall-')) {
+                    style.remove();
+                }
+            });
+            confettiContainer.innerHTML = '';
+        }, 4000);
+    }
+});
+
+function displayConsoleSymbol() {
+    const symbol = `
+     _  _   
+    | || |  
+    | || |_ 
+    |__   _|
+       | |  
+       |_|  
+  `;
+    console.log('%c' + symbol, 'font-family: monospace; white-space: pre;');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    displayConsoleSymbol();
+});
+
+function checkForSecretParam() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (urlParams.has('secret') && urlParams.get('secret') === 'g') {
+        console.log('%c' + `
+  
+         
+    __ _ 
+   / _\` |
+  | (_| |
+   \\__,_|
+         
+  `, 'font-family: monospace; white-space: pre; font-size: 16px; line-height: 1;');
+
+        const body = document.querySelector('body');
+        if (body) {
+            body.style.transition = 'all 0.5s ease';
+            body.style.boxShadow = 'inset 0 0 20px rgba(100, 100, 100, 0.1)';
+            setTimeout(() => {
+                body.style.boxShadow = 'none';
+            }, 2000);
+        }
+    }
+}
+
+function setupKonamiCode() {
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let konamiIndex = 0;
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            konamiIndex = 0;
+            return;
+        }
+
+        if (e.key === konamiCode[konamiIndex]) {
+            konamiIndex++;
+            if (konamiIndex === konamiCode.length) {
+                konamiIndex = 0;
+                console.log('%c' + `
+  
+    __   
+   / /_  
+  |  _ \\ 
+  | (_) |
+   \\___/ 
+         
+  `, 'font-family: monospace; white-space: pre; font-size: 16px; line-height: 1;');
+
+                const flashOverlay = document.createElement('div');
+                flashOverlay.style.position = 'fixed';
+                flashOverlay.style.top = '0';
+                flashOverlay.style.left = '0';
+                flashOverlay.style.width = '100%';
+                flashOverlay.style.height = '100%';
+                flashOverlay.style.backgroundColor = 'rgba(100, 100, 255, 0.1)';
+                flashOverlay.style.zIndex = '9999';
+                flashOverlay.style.pointerEvents = 'none';
+                document.body.appendChild(flashOverlay);
+
+                setTimeout(() => {
+                    document.body.removeChild(flashOverlay);
+                }, 300);
+            }
+        } else {
+            konamiIndex = 0;
+        }
+    });
+}
+
+function setupFaviconSecret() {
+    const cornerElement = document.createElement('div');
+    cornerElement.style.position = 'fixed';
+    cornerElement.style.top = '0';
+    cornerElement.style.left = '0';
+    cornerElement.style.width = '20px';
+    cornerElement.style.height = '20px';
+    cornerElement.style.zIndex = '9999';
+    cornerElement.style.pointerEvents = 'all';
+    cornerElement.style.cursor = 'default';
+    document.body.appendChild(cornerElement);
+
+    let symbolRevealed = false;
+
+    cornerElement.addEventListener('mouseenter', () => {
+        if (!symbolRevealed) {
+            console.log('%c' + `
+  
+    _    _ 
+   | |  | |
+   | |__| |
+   |  __  |
+   | |  | |
+   |_|  |_|
+           
+  `, 'font-family: monospace; white-space: pre; font-size: 16px; line-height: 1;');
+
+            symbolRevealed = true;
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    checkForSecretParam();
+    setupKonamiCode();
+    setupFaviconSecret();
+});
