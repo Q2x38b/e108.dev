@@ -21,23 +21,12 @@ updateClock();
 setInterval(updateClock, 1000);
 
 const projectsData = {
-    'extracurriculars': {
-        title: 'Extracurriculars',
-        date: '2024 - 11',
-        shortDesc: 'Some of my comitments and acheivements that are worth sharing',
-        fullDesc: 'Waterpolo\n\nI worked on the marketing, website and dashboard. The project involved creating a seamless customer experience from browsing products to checkout and delivery tracking.\n\nI used Next.js, TailwindCSS, Framer Motion, and Stripe to create the website and the payment system.',
-        technologies: ['Next.js', 'TailwindCSS', 'Framer Motion', 'Stripe'],
-        link: 'https://dextopmodels.com'
-    },
-    'hobbies': {
-        title: 'Hobbies',
-        date: '2020 - 2024',
-        shortDesc: 'An Milling, Engraving, and Laser company, where I worked on the automation of certain processes.',
-        fullDesc: 'At Nijdeken, I was responsible for automating various processes in this Milling, Engraving, and Laser company.\n\nI created custom software solutions to streamline their production workflow and improve efficiency. The automation resulted in a 30% reduction in processing time and significantly improved quality control.',
-        technologies: ['React', 'Node.js', 'Express', 'SQL', 'Automation'],
-        link: 'https://nijdeken.nl'
-    },
     'achievements': {
+        title: 'Achievements & Awards',
+        date: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M6 9a6 6 0 1 0 12 0A6 6 0 1 0 6 9"/><path d="m12 15l3.4 5.89l1.598-3.233l3.598.232l-3.4-5.889M6.802 12l-3.4 5.89L7 17.657l1.598 3.232l3.4-5.889"/></g></svg>',
+        fullDesc: 'Throughout my academic career, I have been recognized for excellence across athletics, academics, and leadership. In water polo, I earned a varsity letter in 2023, contributed to a UIL state championship victory, and was honored as an All-State team goalie. I further advanced my athletic career by representing the Southwest Zone as the national team goalie on the Olympic Development team.\n\nMy passion for science and innovation is highlighted by leading my middle school rocket club to a top 25 finish at the American Rocketry Challenge in Virginia (2022). I also placed 1st in my division at the district science fair advancing to the Houston science fair.\n\nIn boy scouts, I have demonstrated strong leadership by serving as Troop 554s Senior Patrol Leader, where I led over 40 scouts. My commitment to leadership development was further solidified through participation in a week-long National Youth Leadership Training (NYLT) course in December 2022 and by being elected into the Scouts BSA Order of the Arrow Program in 2022. I have also been actively involved in the PALs program, continually enhancing my leadership skills and community engagement.\n\nThis diverse array of awards and achievements reflects my dedication, teamwork, and leadership in every endeavor.',
+    },
+    'extracurriculars-hobbies': {
         title: 'Achievements & Awards',
         date: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M6 9a6 6 0 1 0 12 0A6 6 0 1 0 6 9"/><path d="m12 15l3.4 5.89l1.598-3.233l3.598.232l-3.4-5.889M6.802 12l-3.4 5.89L7 17.657l1.598 3.232l3.4-5.889"/></g></svg>',
         fullDesc: 'Throughout my academic career, I have been recognized for excellence across athletics, academics, and leadership. In water polo, I earned a varsity letter in 2023, contributed to a UIL state championship victory, and was honored as an All-State team goalie. I further advanced my athletic career by representing the Southwest Zone as the national team goalie on the Olympic Development team.\n\nMy passion for science and innovation is highlighted by leading my middle school rocket club to a top 25 finish at the American Rocketry Challenge in Virginia (2022). I also placed 1st in my division at the district science fair advancing to the Houston science fair.\n\nIn boy scouts, I have demonstrated strong leadership by serving as Troop 554s Senior Patrol Leader, where I led over 40 scouts. My commitment to leadership development was further solidified through participation in a week-long National Youth Leadership Training (NYLT) course in December 2022 and by being elected into the Scouts BSA Order of the Arrow Program in 2022. I have also been actively involved in the PALs program, continually enhancing my leadership skills and community engagement.\n\nThis diverse array of awards and achievements reflects my dedication, teamwork, and leadership in every endeavor.',
@@ -105,8 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupProjectCards();
     
     const overlay = document.getElementById('popup-overlay');
-    const popup = overlay.querySelector('.project-popup');
-    
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) {
             closeProjectPopup();
@@ -239,10 +226,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.button-row'),
         document.querySelector('.profile-bio'),
         document.querySelector('.sections'),
-        document.querySelector('.styled-divider'),
-        document.querySelector('.about'),
+        document.querySelector('.styled-divider-1'),
+        document.querySelector('.styled-divider-2'),
+        document.querySelector('.styled-divider-3'),
+        document.querySelector('.about-content'),
         document.querySelector('.footer-form'),
-        document.querySelector('.footer')
+        document.querySelector('.footer'),
+        document.querySelector('.secret-code-wrapper')
     ];
 
     animatedElements.forEach((element, index) => {
@@ -298,7 +288,6 @@ window.addEventListener('scroll', function() {
     const blurElement = document.querySelector('.sticky-blur');
     
     const maxScroll = 300;
-    
     let blurValue = 20;
     
     if (scrollPosition <= maxScroll) {
@@ -317,17 +306,18 @@ fetch('https://api.github.com/repos/Q2x38b/e108.dev/commits?&per_page=1&page=1')
   })
   .catch(error => console.error('Error fetching commit:', error));
 
+
 document.addEventListener('DOMContentLoaded', () => {
     initSpotlightSearch();
 });
 
 function initSpotlightSearch() {
     const spotlightContainer = document.getElementById('spotlight-search');
-    const spotlightInput = document.getElementById('spotlight-input');
-    const spotlightLinks = document.getElementById('spotlight-links');
-    const spotlightPages = document.getElementById('spotlight-pages');
-    const spotlightSections = document.getElementById('spotlight-sections');
-    
+    const spotlightInput     = document.getElementById('spotlight-input');
+    const spotlightLinks     = document.getElementById('spotlight-links');
+    const spotlightPages     = document.getElementById('spotlight-pages');
+    const spotlightSections  = document.getElementById('spotlight-sections');
+
     const searchableItems = [
         { type: 'link', title: 'Email', description: 'Send me an email', url: 'mailto:ethanjerla08@gmail.com', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>' },
         { type: 'link', title: 'Resume', description: 'Download my resume', url: 'https://e108.dev/resume.pdf', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' },
@@ -343,92 +333,88 @@ function initSpotlightSearch() {
         { type: 'section', title: 'About Me', description: 'Learn more about me', url: '#about-me', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="10" r="3"></circle><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"></path></svg>' },
         { type: 'section', title: 'Contact', description: 'Get in touch with me', url: '#contact', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>' }
     ];
-    
+
     let selectedIndex = -1;
     let filteredItems = [];
-    
+
     document.addEventListener('keydown', (e) => {
-        if (e.key === '1') {
+        const keybindsContainer = document.getElementById('keybinds-popup');
+        const keybindsActive    = keybindsContainer?.classList.contains('active');
+        const spotlightActive   = spotlightContainer.classList.contains('active');
+
+        // SHIFT+1 toggles Spotlight (and closes Keybinds if open)
+        if ((e.key === '1' && e.shiftKey) || e.key === '!') {
             e.preventDefault();
-            toggleSpotlight();
-        }
-        if (e.key === 'Escape' && spotlightContainer.classList.contains('active')) {
-            closeSpotlight();
-        }
-        if (spotlightContainer.classList.contains('active')) {
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                navigateResults(1);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                navigateResults(-1);
-            } else if (e.key === 'Enter' && selectedIndex >= 0) {
-                e.preventDefault();
-                selectResult(filteredItems[selectedIndex]);
+            if (keybindsActive) {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+                openSpotlight();
+            } else if (spotlightActive) {
+                closeSpotlight();
+            } else {
+                openSpotlight();
             }
+            return;
         }
-    });
-    
-    spotlightContainer.querySelector('.spotlight-backdrop').addEventListener('click', closeSpotlight);
-    
-    spotlightInput.addEventListener('input', () => {
-        const query = spotlightInput.value.toLowerCase().trim();
-        filterResults(query);
-    });
-    
-    function toggleSpotlight() {
-        if (spotlightContainer.classList.contains('active')) {
+
+        // ESC closes Spotlight
+        if (e.key === 'Escape' && spotlightActive) {
             closeSpotlight();
-        } else {
-            openSpotlight();
+            return;
         }
-    }
-    
+
+        if (!spotlightActive) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateResults(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateResults(-1);
+        } else if (e.key === 'Enter' && selectedIndex >= 0) {
+            e.preventDefault();
+            selectResult(filteredItems[selectedIndex]);
+        }
+    });
+
+    spotlightContainer.querySelector('.spotlight-backdrop').addEventListener('click', closeSpotlight);
+    spotlightInput.addEventListener('input', () => filterResults(spotlightInput.value.toLowerCase().trim()));
+
     function openSpotlight() {
         spotlightContainer.style.display = 'block';
         document.body.style.overflow = 'hidden';
-        
         setTimeout(() => {
             spotlightContainer.classList.add('active');
             spotlightInput.focus();
             filterResults('');
         }, 10);
     }
-    
+
     function closeSpotlight() {
         spotlightContainer.classList.remove('active');
-        
         setTimeout(() => {
             spotlightContainer.style.display = 'none';
             spotlightInput.value = '';
             document.body.style.overflow = '';
         }, 300);
     }
-    
+
     function filterResults(query) {
         spotlightLinks.innerHTML = '';
         spotlightPages.innerHTML = '';
         spotlightSections.innerHTML = '';
-        
         selectedIndex = -1;
-        
-        if (!query) {
-            filteredItems = [...searchableItems];
-        } else {
-            filteredItems = searchableItems.filter(item => 
-                item.title.toLowerCase().includes(query) || 
-                item.description.toLowerCase().includes(query)
-            );
-        }
-        
-        const links = filteredItems.filter(item => item.type === 'link');
-        const pages = filteredItems.filter(item => item.type === 'page');
-        const sections = filteredItems.filter(item => item.type === 'section');
-        
-        renderResults(links, spotlightLinks);
-        renderResults(pages, spotlightPages);
-        renderResults(sections, spotlightSections);
-        
+
+        filteredItems = query
+            ? searchableItems.filter(item =>
+                  item.title.toLowerCase().includes(query) ||
+                  item.description.toLowerCase().includes(query)
+              )
+            : [...searchableItems];
+
+        renderResults(filteredItems.filter(i => i.type === 'link'), spotlightLinks);
+        renderResults(filteredItems.filter(i => i.type === 'page'), spotlightPages);
+        renderResults(filteredItems.filter(i => i.type === 'section'), spotlightSections);
+
         if (filteredItems.length === 0 && query) {
             const noResults = document.createElement('div');
             noResults.className = 'spotlight-no-results';
@@ -436,86 +422,67 @@ function initSpotlightSearch() {
             spotlightLinks.appendChild(noResults);
         }
     }
-    
+
     function renderResults(items, container) {
         if (items.length === 0) {
             container.parentElement.style.display = 'none';
             return;
         }
-        
         container.parentElement.style.display = 'block';
-        
         items.forEach(item => {
-            const resultItem = document.createElement('div');
-            resultItem.className = 'spotlight-result-item';
-            resultItem.dataset.url = item.url;
-            
-            resultItem.innerHTML = `
-                <div class="spotlight-result-icon">${item.icon}</div>
-                <div class="spotlight-result-content">
-                    <div class="spotlight-result-title">${item.title}</div>
-                    <div class="spotlight-result-description">${item.description}</div>
-                </div>
-            `;
-            
-            resultItem.addEventListener('click', () => selectResult(item));
-            container.appendChild(resultItem);
+            const div = document.createElement('div');
+            div.className = 'spotlight-result-item';
+            div.dataset.url = item.url;
+            div.innerHTML = `
+              <div class="spotlight-result-icon">${item.icon}</div>
+              <div class="spotlight-result-content">
+                <div class="spotlight-result-title">${item.title}</div>
+                <div class="spotlight-result-description">${item.description}</div>
+              </div>`;
+            div.addEventListener('click', () => selectResult(item));
+            container.appendChild(div);
         });
     }
-    
-    function navigateResults(direction) {
+
+    function navigateResults(dir) {
         const items = document.querySelectorAll('.spotlight-result-item');
-        items.forEach(item => item.classList.remove('selected'));
-        
-        selectedIndex += direction;
-        
-        if (selectedIndex < 0) selectedIndex = filteredItems.length - 1;
-        if (selectedIndex >= filteredItems.length) selectedIndex = 0;
-        
-        if (selectedIndex >= 0 && selectedIndex < items.length) {
-            items[selectedIndex].classList.add('selected');
-            items[selectedIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        items.forEach(i => i.classList.remove('selected'));
+        selectedIndex = (selectedIndex + dir + filteredItems.length) % filteredItems.length;
+        items[selectedIndex]?.classList.add('selected');
+        items[selectedIndex]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-    
+
     function selectResult(item) {
         closeSpotlight();
-        
         if (item.url.startsWith('#')) {
-            const element = document.querySelector(item.url) || 
-                           document.querySelector(`[data-project-id="${item.url.substring(1)}"]`);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
+            const el = document.querySelector(item.url) || document.querySelector(`[data-project-id="${item.url.slice(1)}"]`);
+            el?.scrollIntoView({ behavior: 'smooth' });
         } else {
             window.location.href = item.url;
         }
     }
-    
-    const spotlightButton = document.createElement('button');
-    spotlightButton.className = 'spotlight-trigger';
-    spotlightButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <span class="spotlight-trigger-text">Search</span>
-        <span class="spotlight-trigger-shortcut">
-            <kbd>1</kbd>
-        </span>
-    `;
-    
-    spotlightButton.addEventListener('click', toggleSpotlight);
-    
-    const header = document.querySelector('.header-right');
-    if (header) {
-        header.insertBefore(spotlightButton, header.firstChild);
-    }
 
-    document.querySelector('.spotlight-results').addEventListener('wheel', (e) => {
-        e.stopPropagation();
+    const btn = document.querySelector('.spotlight-trigger');
+    btn?.addEventListener('click', () => {
+        spotlightContainer.classList.contains('active') ? closeSpotlight() : openSpotlight();
     });
 }
+
+    const spotlightBtn = document.createElement('button');
+    spotlightBtn.className = 'spotlight-trigger';
+    spotlightBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <span class="spotlight-trigger-text">Search</span>`;
+    spotlightBtn.addEventListener('click', () => {
+        const active = spotlightContainer.classList.contains('active');
+        active ? closeSpotlight() : openSpotlight();
+    });
+    const header = document.querySelector('.header-right');
+    if (header) header.insertBefore(spotlightBtn, header.firstChild);
 
 document.addEventListener('DOMContentLoaded', () => {
     initKeybindsPopup();
@@ -523,166 +490,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initKeybindsPopup() {
     const keybindsContainer = document.getElementById('keybinds-popup');
-    const closeButton = keybindsContainer.querySelector('.keybinds-close');
-    
+    const closeButton       = keybindsContainer.querySelector('.keybinds-close');
+
     const keybindsTrigger = document.createElement('button');
     keybindsTrigger.className = 'keybinds-trigger';
     keybindsTrigger.setAttribute('aria-label', 'Show keyboard shortcuts');
     keybindsTrigger.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
-            <path d="M6 8h.001"></path>
-            <path d="M10 8h.001"></path>
-            <path d="M14 8h.001"></path>
-            <path d="M18 8h.001"></path>
-            <path d="M8 12h.001"></path>
-            <path d="M12 12h.001"></path>
-            <path d="M16 12h.001"></path>
-            <path d="M7 16h10"></path>
-        </svg>
-    `;
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+        <path d="M6 8h.001"></path>
+        <path d="M10 8h.001"></path>
+        <path d="M14 8h.001"></path>
+        <path d="M18 8h.001"></path>
+        <path d="M8 12h.001"></path>
+        <path d="M12 12h.001"></path>
+        <path d="M16 12h.001"></path>
+        <path d="M7 16h10"></path>
+      </svg>`;
     document.body.appendChild(keybindsTrigger);
-    
+
     document.addEventListener('keydown', (e) => {
-        if (e.key === '2' && !e.metaKey && !e.ctrlKey && !e.altKey) {
-            toggleKeybindsPopup();
+        const spotlightContainer = document.getElementById('spotlight-search');
+        const spotlightActive    = spotlightContainer && spotlightContainer.classList.contains('active');
+        const keybindsActive     = keybindsContainer.classList.contains('active');
+
+        if ((e.key === '2' && e.shiftKey) || e.key === '@') {
+            e.preventDefault();
+            if (spotlightActive) {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+                openKeybindsPopup();
+            } else if (keybindsActive) {
+                closeKeybindsPopup();
+            } else {
+                openKeybindsPopup();
+            }
+            return;
         }
-        if (e.key === 'Escape' && keybindsContainer.classList.contains('active')) {
+
+        if (e.key === 'Escape' && keybindsActive) {
             closeKeybindsPopup();
+            return;
         }
-        if (e.key === 'e' && window.lastKeyPressed === 'g') {
-            const element = document.querySelector('[data-project-id="extracurriculars"]');
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-        if (e.key === 'h' && window.lastKeyPressed === 'g') {
-            const element = document.querySelector('[data-project-id="hobbies"]');
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-        if (e.key === 'a' && window.lastKeyPressed === 'g') {
-            const element = document.querySelector('[data-project-id="achievements"]');
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-        if (e.key === 'd' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            const themeToggle = document.getElementById('theme-toggle');
-            if (themeToggle) {
-                themeToggle.click();
-            }
-        }
-        if (e.key === 'e' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            const nameInput = document.getElementById('name');
-            if (nameInput) {
-                nameInput.focus();
-            }
-        }
-        window.lastKeyPressed = e.key.toLowerCase();
-        setTimeout(() => {
-            if (window.lastKeyPressed === e.key.toLowerCase()) {
-                window.lastKeyPressed = null;
-            }
-        }, 1500);
+
     });
-    
+
     closeButton.addEventListener('click', closeKeybindsPopup);
-    
     keybindsContainer.querySelector('.keybinds-backdrop').addEventListener('click', closeKeybindsPopup);
-    
-    keybindsTrigger.addEventListener('click', toggleKeybindsPopup);
-    
-    keybindsContainer.querySelector('.keybinds-button').addEventListener('click', closeKeybindsPopup);
-    
-    function toggleKeybindsPopup() {
-        if (keybindsContainer.classList.contains('active')) {
-            closeKeybindsPopup();
-        } else {
-            openKeybindsPopup();
-        }
-    }
-    
+    keybindsTrigger.addEventListener('click', () => {
+        const active = keybindsContainer.classList.contains('active');
+        active ? closeKeybindsPopup() : openKeybindsPopup();
+    });
+
     function openKeybindsPopup() {
         keybindsContainer.style.display = 'block';
         document.body.style.overflow = 'hidden';
-        
-        setTimeout(() => {
-            keybindsContainer.classList.add('active');
-        }, 10);
+        setTimeout(() => keybindsContainer.classList.add('active'), 10);
     }
-    
     function closeKeybindsPopup() {
         keybindsContainer.classList.remove('active');
-        
         setTimeout(() => {
             keybindsContainer.style.display = 'none';
             document.body.style.overflow = '';
         }, 300);
     }
-    
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Home') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    });
-    
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'End') {
-            window.scrollTo({ 
-                top: document.body.scrollHeight, 
-                behavior: 'smooth' 
-            });
-        }
-    });
 }
 
+/* Line Count Display */
+
 function countAndDisplayCodeLines() {
-    let lineCounts = {
-      html: 0,
-      css: 0,
-      js: 0,
-      total: 0
-    };
-  
+    let lineCounts = { html: 0, css: 0, js: 0, total: 0 };
     let filesToProcess = 3;
-  
+
     fetch('index.html')
-      .then(response => response.text())
+      .then(res => res.text())
       .then(data => {
         lineCounts.html = data.split('\n').length;
         updateTotal();
       })
-      .catch(error => {
-        console.error('Error loading HTML file:', error);
-        filesToProcess--;
-      });
-  
+      .catch(() => { filesToProcess--; });
+
     fetch('styles.css')
-      .then(response => response.text())
+      .then(res => res.text())
       .then(data => {
         lineCounts.css = data.split('\n').length;
         updateTotal();
       })
-      .catch(error => {
-        console.error('Error loading CSS file:', error);
-        filesToProcess--;
-      });
-  
+      .catch(() => { filesToProcess--; });
+
     fetch('script.js')
-      .then(response => response.text())
+      .then(res => res.text())
       .then(data => {
         lineCounts.js = data.split('\n').length;
         updateTotal();
       })
-      .catch(error => {
-        console.error('Error loading JS file:', error);
-        filesToProcess--;
-      });
-  
+      .catch(() => { filesToProcess--; });
+
     function updateTotal() {
       filesToProcess--;
       if (filesToProcess <= 0) {
@@ -690,66 +593,50 @@ function countAndDisplayCodeLines() {
         displayInFooter();
       }
     }
-  
+
     function displayInFooter() {
-      const lineCounterEl = document.createElement('span');
-      lineCounterEl.id = 'line-counter';
-      lineCounterEl.innerHTML = `<a class="text-hover" title="HTML: ${lineCounts.html} lines\nCSS: ${lineCounts.css} lines\nJS: ${lineCounts.js} lines">${lineCounts.total.toLocaleString()} LOC</a> • `;
-  
-      const copyrightElement = document.querySelector('.copyright');
-      if (copyrightElement) {
-        const ccLink = copyrightElement.querySelector('a[href*="creativecommons"]');
-        if (ccLink) {
-          ccLink.parentNode.insertBefore(lineCounterEl, ccLink);
-        } else {
-          copyrightElement.appendChild(lineCounterEl);
-        }
-      }
+      const span = document.createElement('span');
+      span.id = 'line-counter';
+      span.innerHTML = `<a class="text-hover" title="HTML: ${lineCounts.html} lines\nCSS: ${lineCounts.css} lines\nJS: ${lineCounts.js} lines">${lineCounts.total.toLocaleString()} LOC</a> • `;
+      const copyright = document.querySelector('.copyright');
+      if (!copyright) return;
+      const ccLink = copyright.querySelector('a[href*="creativecommons"]');
+      if (ccLink) ccLink.parentNode.insertBefore(span, ccLink);
+      else copyright.appendChild(span);
     }
 }
-  
-document.addEventListener('DOMContentLoaded', function() {
+
+document.addEventListener('DOMContentLoaded', () => {
     setTimeout(countAndDisplayCodeLines, 500);
 });
 
 
-document.addEventListener('DOMContentLoaded', function() {
+/* Secret-Code Confetti */
+
+document.addEventListener('DOMContentLoaded', () => {
     const correctCode = "4a6H";
     const inputs = document.querySelectorAll('.code-input');
 
-    inputs.forEach((input, index) => {
+    inputs.forEach((input, idx) => {
         input.addEventListener('input', function() {
-            this.value = this.value.slice(0, 1);
-            if (this.value && index < inputs.length - 1) {
-                inputs[index + 1].focus();
-            }
+            this.value = this.value.slice(0,1);
+            if (this.value && idx < inputs.length - 1) inputs[idx+1].focus();
             checkCode();
         });
-
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Backspace' && !this.value && index > 0) {
-                inputs[index - 1].focus();
-            }
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !this.value && idx > 0) inputs[idx-1].focus();
         });
     });
 
     function checkCode() {
-        let enteredValues = [];
-        inputs.forEach(input => {
-            if (input.value) {
-                enteredValues.push(input.value);
-            }
-        });
-
-        if (enteredValues.length === 4) {
-            const sortedEntered = [...enteredValues].sort().join('');
+        const entered = Array.from(inputs).map(i => i.value).filter(Boolean);
+        if (entered.length === 4) {
+            const sortedIn = entered.slice().sort().join('');
             const sortedCorrect = [...correctCode].sort().join('');
-            if (sortedEntered === sortedCorrect) {
+            if (sortedIn === sortedCorrect) {
                 triggerConfetti();
                 setTimeout(() => {
-                    inputs.forEach(input => {
-                        input.value = '';
-                    });
+                    inputs.forEach(i => i.value = '');
                     inputs[0].focus();
                 }, 1500);
             }
@@ -757,192 +644,113 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function triggerConfetti() {
-        const confettiContainer = document.getElementById('confetti-container');
-        confettiContainer.innerHTML = '';
+        const container = document.getElementById('confetti-container');
+        container.innerHTML = '';
+        const colors = ['#FF577F','#FF884B','#FDBF50','#70D4FF','#6C63FF','#7EC636'];
+        const count = Math.min(Math.floor(window.innerWidth/10), 200);
 
-        const colors = ['#FF577F', '#FF884B', '#FDBF50', '#70D4FF', '#6C63FF', '#7EC636'];
-        const confettiCount = Math.min(Math.floor(window.innerWidth / 10), 200);
-
-        for (let i = 0; i < confettiCount; i++) {
-            let confetti = document.createElement('div');
-            confetti.classList.add('confetti');
-
-            confetti.style.left = Math.random() * 100 + '%';
-
-            const size = Math.random() * 8 + 4;
-            confetti.style.width = size + 'px';
-            confetti.style.height = size + 'px';
-
-            const fallSpeed = 1.5 + Math.random();
-            confetti.style.animationDuration = fallSpeed + 's';
-
-            const delay = Math.random() * 0.8;
-            confetti.style.animationDelay = delay + 's';
-
-            const randomStartX = -10 + Math.random() * 20;
-            const randomEndX = randomStartX + (-30 + Math.random() * 60);
-
+        for (let i=0; i<count; i++){
+            const conf = document.createElement('div');
+            conf.className = 'confetti';
+            conf.style.left = Math.random()*100 + '%';
+            const size = Math.random()*8 + 4;
+            conf.style.width = conf.style.height = size + 'px';
+            const speed = 1.5 + Math.random();
+            const delay = Math.random()*0.8;
+            conf.style.animation = `fall-${i} ${speed}s linear ${delay}s forwards`;
+            conf.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+            conf.style.boxShadow = '0 0 3px rgba(255,255,255,0.3)';
+            const startX = -10 + Math.random()*20;
+            const endX = startX + (-30 + Math.random()*60);
             const keyframes = `
               @keyframes fall-${i} {
-                0% {
-                  transform: translateY(0) translateX(0) rotate(0deg) scale(0.7);
-                  opacity: 0;
-                }
-                5% {
-                  opacity: 1;
-                  transform: translateY(0) translateX(${randomStartX}px) rotate(45deg) scale(1);
-                }
-                100% {
-                  transform: translateY(120vh) translateX(${randomEndX}px) rotate(360deg) scale(0.7);
-                  opacity: 0;
-                }
+                0% { transform: translateY(0) translateX(0) rotate(0deg) scale(0.7); opacity:0 }
+                5% { transform: translateY(0) translateX(${startX}px) rotate(45deg) scale(1); opacity:1 }
+                100% { transform: translateY(120vh) translateX(${endX}px) rotate(360deg) scale(0.7); opacity:0 }
               }
             `;
-
-            const styleElem = document.createElement('style');
-            styleElem.innerHTML = keyframes;
-            document.head.appendChild(styleElem);
-
-            confetti.style.animation = `fall-${i} ${fallSpeed}s linear forwards`;
-            confetti.style.animationDelay = delay + 's';
-
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.boxShadow = '0 0 3px rgba(255,255,255,0.3)';
-
-            confettiContainer.appendChild(confetti);
+            const style = document.createElement('style');
+            style.innerHTML = keyframes;
+            document.head.appendChild(style);
+            container.appendChild(conf);
         }
 
         setTimeout(() => {
-            const styles = document.querySelectorAll('style');
-            styles.forEach(style => {
-                if (style.innerHTML.includes('fall-')) {
-                    style.remove();
-                }
+            document.querySelectorAll('style').forEach(s => {
+                if (s.innerHTML.includes('@keyframes fall-')) s.remove();
             });
-            confettiContainer.innerHTML = '';
+            container.innerHTML = '';
         }, 4000);
     }
 });
 
+
+/* Console ASCII Logo */
+
 function displayConsoleSymbol() {
-    const symbol = `
+    const sym = `
      _  _   
     | || |  
     | || |_ 
     |__   _|
        | |  
        |_|  
-  `;
-    console.log('%c' + symbol, 'font-family: monospace; white-space: pre;');
+    `;
+    console.log('%c'+sym, 'font-family:monospace;white-space:pre;');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    displayConsoleSymbol();
-});
+document.addEventListener('DOMContentLoaded', displayConsoleSymbol);
+
+
+/* URL-Param Secret */
 
 function checkForSecretParam() {
-    const urlParams = new URLSearchParams(window.location.search);
-
-    if (urlParams.has('secret') && urlParams.get('secret') === 'g') {
-        console.log('%c' + `
-  
-         
-    __ _ 
-   / _\` |
-  | (_| |
-   \\__,_|
-         
-  `, 'font-family: monospace; white-space: pre; font-size: 16px; line-height: 1;');
-
-        const body = document.querySelector('body');
-        if (body) {
-            body.style.transition = 'all 0.5s ease';
-            body.style.boxShadow = 'inset 0 0 20px rgba(100, 100, 100, 0.1)';
-            setTimeout(() => {
-                body.style.boxShadow = 'none';
-            }, 2000);
-        }
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('secret') === 'g') {
+        console.log('%c\n    __ _ \n   / _\` |\n  | (_| |\n   \\__,_|\n', 'font-family:monospace;white-space:pre;');
+        document.body.style.transition='all 0.5s ease';
+        document.body.style.boxShadow='inset 0 0 20px rgba(100,100,100,0.1)';
+        setTimeout(()=>document.body.style.boxShadow='none',2000);
     }
 }
-
 function setupKonamiCode() {
-    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-    let konamiIndex = 0;
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            konamiIndex = 0;
-            return;
-        }
-
-        if (e.key === konamiCode[konamiIndex]) {
-            konamiIndex++;
-            if (konamiIndex === konamiCode.length) {
-                konamiIndex = 0;
-                console.log('%c' + `
-  
-    __   
-   / /_  
-  |  _ \\ 
-  | (_) |
-   \\___/ 
-         
-  `, 'font-family: monospace; white-space: pre; font-size: 16px; line-height: 1;');
-
-                const flashOverlay = document.createElement('div');
-                flashOverlay.style.position = 'fixed';
-                flashOverlay.style.top = '0';
-                flashOverlay.style.left = '0';
-                flashOverlay.style.width = '100%';
-                flashOverlay.style.height = '100%';
-                flashOverlay.style.backgroundColor = 'rgba(100, 100, 255, 0.1)';
-                flashOverlay.style.zIndex = '9999';
-                flashOverlay.style.pointerEvents = 'none';
-                document.body.appendChild(flashOverlay);
-
-                setTimeout(() => {
-                    document.body.removeChild(flashOverlay);
-                }, 300);
+    const code = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    let idx = 0;
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { idx = 0; return; }
+        if (e.key === code[idx]) {
+            idx++;
+            if (idx === code.length) {
+                idx = 0;
+                console.log('%c\n __   \n/ /_  \n|  _ \\ \n| (_) |\n \\___/ \n', 'font-family:monospace;white-space:pre;');
+                const flash = document.createElement('div');
+                Object.assign(flash.style, {
+                    position:'fixed',top:0,left:0,width:'100%',height:'100%',
+                    backgroundColor:'rgba(100,100,255,0.1)',zIndex:9999
+                });
+                document.body.appendChild(flash);
+                setTimeout(()=>flash.remove(),300);
             }
-        } else {
-            konamiIndex = 0;
-        }
+        } else idx = 0;
     });
 }
 
 function setupFaviconSecret() {
-    const cornerElement = document.createElement('div');
-    cornerElement.style.position = 'fixed';
-    cornerElement.style.top = '0';
-    cornerElement.style.left = '0';
-    cornerElement.style.width = '20px';
-    cornerElement.style.height = '20px';
-    cornerElement.style.zIndex = '9999';
-    cornerElement.style.pointerEvents = 'all';
-    cornerElement.style.cursor = 'default';
-    document.body.appendChild(cornerElement);
-
-    let symbolRevealed = false;
-
-    cornerElement.addEventListener('mouseenter', () => {
-        if (!symbolRevealed) {
-            console.log('%c' + `
-  
-    _    _ 
-   | |  | |
-   | |__| |
-   |  __  |
-   | |  | |
-   |_|  |_|
-           
-  `, 'font-family: monospace; white-space: pre; font-size: 16px; line-height: 1;');
-
-            symbolRevealed = true;
-        }
+    const corner = document.createElement('div');
+    Object.assign(corner.style, {
+        position:'fixed',top:0,left:0,width:'20px',height:'20px',zIndex:9999,cursor:'default'
+    });
+    document.body.appendChild(corner);
+    let shown = false;
+    corner.addEventListener('mouseenter', () => {
+        if (shown) return;
+        console.log('%c\n _    _ \n| |  | |\n| |__| |\n|  __  |\n| |  | |\n|_|  |_|', 'font-family:monospace;white-space:pre;');
+        shown = true;
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+
+document.addEventListener('DOMContentLoaded', () => {
     checkForSecretParam();
     setupKonamiCode();
     setupFaviconSecret();
