@@ -1207,8 +1207,8 @@ kbd svg:last-child {
 
 .footer-form {
   width: 100%;
-  max-width: 25rem;
-  padding: 1.5rem 0;
+  max-width: 30rem;
+  padding: 1.5rem 1.5rem;
   margin: 0 auto;
   position: relative;
   right: auto;
