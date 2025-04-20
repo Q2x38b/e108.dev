@@ -1146,7 +1146,7 @@ a {
 
 .fade-element {
   opacity: 0;
-  animation: fadeIn 0.7s ease forwards;
+  animation: fadeIn 0.5s ease forwards;
 }
 
 .fade-scroll {
@@ -1170,6 +1170,8 @@ html kbd {
   display: inline-block;
   min-width: 16px;
   padding: 2px 3px;
+  margin-left: 3px;
+  margin-right: 3px;
   font-size: 12px;
   line-height: 1.4;
   text-align: center;
@@ -1410,7 +1412,7 @@ textarea:-webkit-autofill:focus {
   color: #171717;
 }
 
-.styled-divider {
+.styled-divider-1 {
   border: none;
   height: 1px;
   background: linear-gradient(
@@ -1428,7 +1430,43 @@ textarea:-webkit-autofill:focus {
   position: relative;
 }
 
-[data-theme="dark"] .styled-divider {
+.styled-divider-2 {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--text-secondary),
+    var(--text-secondary),
+    var(--text-secondary),
+    transparent
+  );
+  margin: 2rem auto;
+  width: 80%;
+  opacity: 1;
+  transition: background 0.3s ease;
+  position: relative;
+}
+
+.styled-divider-3 {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--text-secondary),
+    var(--text-secondary),
+    var(--text-secondary),
+    transparent
+  );
+  margin: 2rem auto;
+  width: 80%;
+  opacity: 1;
+  transition: background 0.3s ease;
+  position: relative;
+}
+
+[data-theme="dark"] .styled-divider-1 {
   background: linear-gradient(
     to right,
     transparent,
@@ -1439,7 +1477,51 @@ textarea:-webkit-autofill:focus {
   );
 }
 
-[data-theme="light"] .styled-divider {
+[data-theme="dark"] .styled-divider-2 {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(60, 60, 60, 0.8),
+    rgba(60, 60, 60, 0.8),
+    rgba(60, 60, 60, 0.8),
+    transparent
+  );
+}
+
+[data-theme="dark"] .styled-divider-3 {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(60, 60, 60, 0.8),
+    rgba(60, 60, 60, 0.8),
+    rgba(60, 60, 60, 0.8),
+    transparent
+  );
+}
+
+[data-theme="light"] .styled-divider-1 {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(213, 213, 213, 0.7),
+    rgba(213, 213, 213, 0.7),
+    rgba(213, 213, 213, 0.7),
+    transparent
+  );
+}
+
+[data-theme="light"] .styled-divider-2 {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(213, 213, 213, 0.7),
+    rgba(213, 213, 213, 0.7),
+    rgba(213, 213, 213, 0.7),
+    transparent
+  );
+}
+
+[data-theme="light"] .styled-divider-3 {
   background: linear-gradient(
     to right,
     transparent,
@@ -1514,10 +1596,9 @@ textarea:-webkit-autofill:focus {
   align-items: flex-end;
 }
 
-.styled-divider.fade-element {
+.styled-divider-1, .styled-divider-2, .styled-divider-3 {
   opacity: 0;
-  animation: dividerExpand 1s ease forwards;
-  animation-delay: inherit;
+  animation: fadeIn 0.7s ease forwards;
 }
 
 @keyframes dividerExpand {
@@ -2104,7 +2185,7 @@ textarea:-webkit-autofill:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 25px;
+  margin-bottom: 14px;
   bottom: 10px;
   left: 0;
   right: 0;
@@ -2283,4 +2364,62 @@ textarea:-webkit-autofill:focus {
     flex-wrap: wrap;
     gap: 8px;
   }
+}
+
+.timeline {
+  position: relative;
+  padding-left: 2rem;       /* space for line & circles */
+  margin: 1.5rem 0;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  width: 1px;
+  height: 100%;
+  background-color: var(--kbd-background);
+  z-index: 0;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  top: 0.25rem;
+  left: -1.24rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  background-color: var(--border-color);
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  transform: translateX(0);
+  z-index: 1;
+}
+.timeline-content {
+  margin-left: 2rem;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.4;
+  font-family: var(--font-satoshi);
+  color: var(--text-primary);
+}
+.timeline-content h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  font-family: var(--font-satoshi);
+  color: var(--text-secondary);
+}
+.timeline-content p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-family: var(--font-satoshi);
+  color: var(--text-primary);
 }
