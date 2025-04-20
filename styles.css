@@ -1169,7 +1169,7 @@ a {
 html kbd {
   display: inline-block;
   min-width: 16px;
-  padding: 2px 8px;
+  padding: 2px 3px;
   font-size: 12px;
   line-height: 1.4;
   text-align: center;
