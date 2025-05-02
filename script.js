@@ -27,7 +27,7 @@ const projectsData = {
         fullDesc: 'Throughout my academic career, I have been recognized for excellence across athletics, academics, and leadership. In water polo, I earned a varsity letter in 2023, contributed to a UIL state championship victory, and was honored as an All-State team goalie. I further advanced my athletic career by representing the Southwest Zone as the national team goalie on the Olympic Development team.\n\nMy passion for science and innovation is highlighted by leading my middle school rocket club to a top 25 finish at the American Rocketry Challenge in Virginia (2022). I also placed 1st in my division at the district science fair advancing to the Houston science fair.\n\nIn boy scouts, I have demonstrated strong leadership by serving as Troop 554s Senior Patrol Leader, where I led over 40 scouts. My commitment to leadership development was further solidified through participation in a week-long National Youth Leadership Training (NYLT) course in December 2022 and by being elected into the Scouts BSA Order of the Arrow Program in 2022. I have also been actively involved in the PALs program, continually enhancing my leadership skills and community engagement.\n\nThis diverse array of awards and achievements reflects my dedication, teamwork, and leadership in every endeavor.',
     },
     'extracurriculars-hobbies': {
-        title: 'Achievements & Awards',
+        title: 'Extracurriculars & Hobbies',
         date: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M6 9a6 6 0 1 0 12 0A6 6 0 1 0 6 9"/><path d="m12 15l3.4 5.89l1.598-3.233l3.598.232l-3.4-5.889M6.802 12l-3.4 5.89L7 17.657l1.598 3.232l3.4-5.889"/></g></svg>',
         fullDesc: 'Throughout my academic career, I have been recognized for excellence across athletics, academics, and leadership. In water polo, I earned a varsity letter in 2023, contributed to a UIL state championship victory, and was honored as an All-State team goalie. I further advanced my athletic career by representing the Southwest Zone as the national team goalie on the Olympic Development team.\n\nMy passion for science and innovation is highlighted by leading my middle school rocket club to a top 25 finish at the American Rocketry Challenge in Virginia (2022). I also placed 1st in my division at the district science fair advancing to the Houston science fair.\n\nIn boy scouts, I have demonstrated strong leadership by serving as Troop 554s Senior Patrol Leader, where I led over 40 scouts. My commitment to leadership development was further solidified through participation in a week-long National Youth Leadership Training (NYLT) course in December 2022 and by being elected into the Scouts BSA Order of the Arrow Program in 2022. I have also been actively involved in the PALs program, continually enhancing my leadership skills and community engagement.\n\nThis diverse array of awards and achievements reflects my dedication, teamwork, and leadership in every endeavor.',
     }
@@ -225,12 +225,15 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.profile-title'),
         document.querySelector('.button-row'),
         document.querySelector('.profile-bio'),
-        document.querySelector('.sections'),
+        document.querySelector('.carousel-container'),
         document.querySelector('.styled-divider-1'),
+        document.querySelector('.sections'),
         document.querySelector('.styled-divider-2'),
         document.querySelector('.styled-divider-3'),
         document.querySelector('.about-content'),
+        document.querySelector('.styled-divider-4'),
         document.querySelector('.footer-form'),
+        document.querySelector('.carousel-container'),
         document.querySelector('.footer'),
         document.querySelector('.secret-code-wrapper')
     ];
@@ -319,15 +322,14 @@ function initSpotlightSearch() {
     const spotlightSections  = document.getElementById('spotlight-sections');
 
     const searchableItems = [
-        { type: 'link', title: 'Email', description: 'Send me an email', url: 'mailto:ethanjerla08@gmail.com', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>' },
+        { type: 'link', title: 'Email', description: 'Send me an email', url: 'mailto:hello@e108.dev', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>' },
         { type: 'link', title: 'Resume', description: 'Download my resume', url: 'https://e108.dev/resume.pdf', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' },
         { type: 'link', title: 'Projects', description: 'View my projects', url: 'https://e108.dev/links', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width=".5"><path fill="currentColor" stroke="currentColor" d="M8.465 11.293c1.133-1.133 3.109-1.133 4.242 0l.707.707l1.414-1.414l-.707-.707c-.943-.944-2.199-1.465-3.535-1.465s-2.592.521-3.535 1.465L4.929 12a5.01 5.01 0 0 0 0 7.071a4.98 4.98 0 0 0 3.535 1.462A4.98 4.98 0 0 0 12 19.071l.707-.707l-1.414-1.414l-.707.707a3.007 3.007 0 0 1-4.243 0a3.005 3.005 0 0 1 0-4.243z"/><path fill="currentColor" stroke="currentColor" d="m12 4.929l-.707.707l1.414 1.414l.707-.707a3.007 3.007 0 0 1 4.243 0a3.005 3.005 0 0 1 0 4.243l-2.122 2.121c-1.133 1.133-3.109 1.133-4.242 0L10.586 12l-1.414 1.414l.707.707c.943.944 2.199 1.465 3.535 1.465s2.592-.521 3.535-1.465L19.071 12a5.01 5.01 0 0 0 0-7.071a5.006 5.006 0 0 0-7.071 0"/></svg>' },
         { type: 'link', title: 'Blog', description: 'Read my blog posts', url: 'https://e108.dev/blog', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4M2 6h4m-4 4h4m-4 4h4m-4 4h4"/></g></svg>' },
         { type: 'link', title: 'GitHub', description: 'View my GitHub profile', url: 'https://github.com/Q2x38b', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>' },
         { type: 'page', title: 'Home', description: 'Return to homepage', url: 'https://e108.dev/', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>' },
         { type: 'page', title: 'Links', description: 'All my important links', url: 'https://e108.dev/links', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><line x1="8" x2="16" y1="12" y2="12"></line></svg>' },
-        { type: 'section', title: 'My Work', description: 'View my projects section', url: '#my-work', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>' },
-        { type: 'section', title: 'Extracurriculars', description: 'Sports, clubs, and organizations', url: '#extracurriculars', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><rect x="9" y="9" width="6" height="6"></rect></svg>' },
+        { type: 'section', title: 'Extracurriculars', description: 'Sports, clubs, and organizations', url: '#extracurriculars-hobbies', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><rect x="9" y="9" width="6" height="6"></rect></svg>' },
         { type: 'section', title: 'Hobbies', description: 'My favorite hobbies', url: '#hobbies', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>' },
         { type: 'section', title: 'Achievements', description: 'My achievements and awards', url: '#achievements', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>' },
         { type: 'section', title: 'About Me', description: 'Learn more about me', url: '#about-me', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="10" r="3"></circle><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"></path></svg>' },
@@ -754,4 +756,36 @@ document.addEventListener('DOMContentLoaded', () => {
     checkForSecretParam();
     setupKonamiCode();
     setupFaviconSecret();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const items = ['Developer', 'Student', 'Athlete', 'Leader', 'Opportunist', 'Problem-Solver', 'Logical', 'Collaborative', 'Proactive'];
+    const carousel1 = document.getElementById('carousel1');
+    const carousel2 = document.getElementById('carousel2');
+    const carousel3 = document.getElementById('carousel3');
+    
+    function createItems(container) {
+        items.forEach(text => {
+            const item = document.createElement('div');
+            item.className = 'carousel-item';
+            item.textContent = text;
+            container.appendChild(item);
+        });
+    }
+    
+    createItems(carousel1);
+    createItems(carousel2);
+    createItems(carousel3);
+    
+    function adjustAnimationSpeed() {
+        const itemWidth = carousel1.scrollWidth;
+        const speed = itemWidth / 70;
+        
+        document.querySelectorAll('.carousel-content').forEach(carousel => {
+            carousel.style.animationDuration = `${speed}s`;
+        });
+    }
+    
+    adjustAnimationSpeed();
+    window.addEventListener('resize', adjustAnimationSpeed);
 });
