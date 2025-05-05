@@ -286,20 +286,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-window.addEventListener('scroll', function() {
-    const scrollPosition = window.scrollY;
-    const blurElement = document.querySelector('.sticky-blur');
-    
-    const maxScroll = 300;
-    let blurValue = 20;
-    
-    if (scrollPosition <= maxScroll) {
-        blurValue = 20 - (scrollPosition / maxScroll) * 15;
-        blurElement.style.backdropFilter = `blur(${blurValue}px)`;
-        blurElement.style.webkitBackdropFilter = `blur(${blurValue}px)`;
-    }
-});
-
 fetch('https://api.github.com/repos/Q2x38b/e108.dev/commits?&per_page=1&page=1')
   .then(response => response.json())
   .then(data => {
@@ -344,7 +330,6 @@ function initSpotlightSearch() {
         const keybindsActive    = keybindsContainer?.classList.contains('active');
         const spotlightActive   = spotlightContainer.classList.contains('active');
 
-        // SHIFT+1 toggles Spotlight (and closes Keybinds if open)
         if ((e.key === '1' && e.shiftKey) || e.key === '!') {
             e.preventDefault();
             if (keybindsActive) {
@@ -358,7 +343,6 @@ function initSpotlightSearch() {
             return;
         }
 
-        // ESC closes Spotlight
         if (e.key === 'Escape' && spotlightActive) {
             closeSpotlight();
             return;
@@ -558,8 +542,6 @@ function initKeybindsPopup() {
     }
 }
 
-/* Line Count Display */
-
 function countAndDisplayCodeLines() {
     let lineCounts = { html: 0, css: 0, js: 0, total: 0 };
     let filesToProcess = 3;
@@ -611,9 +593,6 @@ function countAndDisplayCodeLines() {
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(countAndDisplayCodeLines, 500);
 });
-
-
-/* Secret-Code Confetti */
 
 document.addEventListener('DOMContentLoaded', () => {
     const correctCode = "4a6H";
@@ -686,9 +665,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
-/* Console ASCII Logo */
-
 function displayConsoleSymbol() {
     const sym = `
      _  _   
@@ -702,9 +678,6 @@ function displayConsoleSymbol() {
 }
 
 document.addEventListener('DOMContentLoaded', displayConsoleSymbol);
-
-
-/* URL-Param Secret */
 
 function checkForSecretParam() {
     const p = new URLSearchParams(window.location.search);
@@ -788,4 +761,78 @@ document.addEventListener('DOMContentLoaded', function() {
     
     adjustAnimationSpeed();
     window.addEventListener('resize', adjustAnimationSpeed);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const elements = document.querySelectorAll('.secret-code-wrapper');
+    
+    elements.forEach(function(element) {
+      element.style.display = 'none';
+    });
+  });
+  
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'z' || event.key === 'Z') {
+      const elements = document.querySelectorAll('.secret-code-wrapper');
+      
+      elements.forEach(function(element) {
+        if (element.style.display === 'none') {
+          element.style.display = '';
+        } else {
+          element.style.display = 'none';
+        }
+      });
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const textContainer = document.getElementById('textContainer');
+    let currentTextElement = null;
+    
+    function animateTextChange(newText) {
+        const newTextElement = document.createElement('div');
+        newTextElement.className = 'animation-text';
+        newTextElement.textContent = newText;
+        
+        textContainer.appendChild(newTextElement);
+        
+        void newTextElement.offsetWidth;
+        
+        if (currentTextElement) {
+            currentTextElement.classList.remove('visible');
+            currentTextElement.classList.remove('normal-color');
+            currentTextElement.classList.add('exiting');
+            
+            const elementToRemove = currentTextElement;
+            setTimeout(() => {
+                if (textContainer.contains(elementToRemove)) {
+                    elementToRemove.remove();
+                }
+            }, 500);
+        }
+        
+        requestAnimationFrame(() => {
+            newTextElement.classList.add('visible');
+            
+            setTimeout(() => {
+                if (textContainer.contains(newTextElement)) {
+                    newTextElement.classList.add('normal-color');
+                }
+            }, 500);
+        });
+        
+        currentTextElement = newTextElement;
+    }
+    
+    animateTextChange('A Student');
+    
+    const textExamples = [
+        'A Developer', 'An Athlete', 'A Leader', 'An Opportunist', 'A Problem-Solver', 'Logical', 'Collaborative', 'Proactive', 'Dependable'
+    ];
+    
+    let textIndex = 0;
+    setInterval(() => {
+        textIndex = (textIndex + 1) % textExamples.length;
+        animateTextChange(textExamples[textIndex]);
+    }, 3000);
 });
