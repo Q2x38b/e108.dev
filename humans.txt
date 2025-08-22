@@ -1,0 +1,11 @@
+/* TEAM */
+Developer: Ethan (e108)
+Site: https://e108.dev/
+Contact: hello@e108.dev
+GitHub: https://github.com/Q2x38b
+
+/* THANKS */
+Fonts: Satoshi, Geist
+Hosting: GitHub Pages
+
+

@@ -107,6 +107,49 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Dynamic spotlight hover for project cards
+document.addEventListener('DOMContentLoaded', function() {
+    const projectCards = document.querySelectorAll('.project');
+    projectCards.forEach(card => {
+        const hover = card.querySelector('.project-hover');
+        if (!hover) return;
+        // base resting state shared via CSS vars on the card so children inherit
+        card.style.setProperty('--tx', '0px');
+        card.style.setProperty('--ty', '0px');
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            const tx = (x - 50) * 0.04; // smoother, smaller movement
+            const ty = (y - 50) * 0.04;
+            card.style.setProperty('--tx', tx + 'px');
+            card.style.setProperty('--ty', ty + 'px');
+        });
+        card.addEventListener('mouseleave', () => {
+            // return to resting offset
+            card.style.setProperty('--tx', '0px');
+            card.style.setProperty('--ty', '0px');
+        });
+    });
+});
+
+// Availability indicator toggle (set status here)
+document.addEventListener('DOMContentLoaded', () => {
+    const status = 'employed'; // 'available' or 'employed'
+    // Header badge
+    const badge = document.getElementById('availabilityBadge');
+    if (badge) {
+        const dot = badge.querySelector('.dot');
+        const tip = badge.querySelector('.availability-tooltip');
+        if (dot) {
+            dot.classList.add(status === 'available' ? 'status-dot--available' : 'status-dot--employed');
+        }
+        if (tip) {
+            tip.textContent = status === 'available' ? 'Available for work' : 'Currently Employed';
+        }
+    }
+});
+
 function setupProjectCards() {
     const projectCards = document.querySelectorAll('.project');
     

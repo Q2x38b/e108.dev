@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://e108.dev/sitemap.xml
+Host: e108.dev
+
+
