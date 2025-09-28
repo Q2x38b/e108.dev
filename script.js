@@ -310,12 +310,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     if (aboutContent) {
-        const paragraphs = aboutContent.querySelectorAll('span');
-        paragraphs.forEach(para => {
-            para.classList.add('fade-scroll');
-            observer.observe(para);
+        const aboutTargets = aboutContent.querySelectorAll('h3, p, li, span, .timeline-item, .timeline-content > *');
+        aboutTargets.forEach(el => {
+            el.classList.add('fade-scroll');
+            observer.observe(el);
         });
     }
+
+    // Ensure other key content blocks also animate on scroll when they enter the viewport
+    const extraTargets = document.querySelectorAll('.section-title, .project-title, .project-description, .quote-container, .quote-container > *, .footer .footer-content > *');
+    extraTargets.forEach(el => {
+        el.classList.add('fade-scroll');
+        observer.observe(el);
+    });
 
     footerFormElements.forEach(element => {
         element.classList.add('fade-scroll');
