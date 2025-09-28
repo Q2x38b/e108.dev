@@ -786,8 +786,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const carousel1 = document.getElementById('carousel1');
     const carousel2 = document.getElementById('carousel2');
     const carousel3 = document.getElementById('carousel3');
-    
+
     function createItems(container) {
+        if (!container) return;
         items.forEach(text => {
             const item = document.createElement('div');
             item.className = 'carousel-item';
@@ -795,22 +796,27 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(item);
         });
     }
-    
-    createItems(carousel1);
-    createItems(carousel2);
-    createItems(carousel3);
-    
-    function adjustAnimationSpeed() {
-        const itemWidth = carousel1.scrollWidth;
-        const speed = itemWidth / 70;
-        
-        document.querySelectorAll('.carousel-content').forEach(carousel => {
-            carousel.style.animationDuration = `${speed}s`;
-        });
+
+    // Only run carousel logic if containers exist on the page
+    if (carousel1 || carousel2 || carousel3) {
+        createItems(carousel1);
+        createItems(carousel2);
+        createItems(carousel3);
+
+        function adjustAnimationSpeed() {
+            const base = carousel1 || carousel2 || carousel3;
+            if (!base) return;
+            const itemWidth = base.scrollWidth || 0;
+            const speed = Math.max(10, itemWidth / 70);
+
+            document.querySelectorAll('.carousel-content').forEach(carousel => {
+                carousel.style.animationDuration = `${speed}s`;
+            });
+        }
+
+        adjustAnimationSpeed();
+        window.addEventListener('resize', adjustAnimationSpeed);
     }
-    
-    adjustAnimationSpeed();
-    window.addEventListener('resize', adjustAnimationSpeed);
 });
 
 document.addEventListener('DOMContentLoaded', function() {

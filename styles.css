@@ -956,6 +956,7 @@ a {
   background: linear-gradient(to right, #9f9f9f 0, #fff 10%, #868686 20%);
   background-position: 0;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shine 3s infinite linear;
   animation-fill-mode: forwards;
@@ -1043,9 +1044,7 @@ a {
   transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.theme-switch:hover .theme-icon {
 
-}
 
 .sun-circle {
   transform-origin: center;
@@ -1800,6 +1799,7 @@ textarea:-webkit-autofill:focus {
   width: 100%;
   flex-wrap: wrap;
   gap: 20px;
+  position: relative;
 }
 
 .footer-left {
@@ -2523,7 +2523,9 @@ textarea:-webkit-autofill:focus {
     flex-direction: column;
     gap: 10px;
   }
-  
+  .footer-right {
+    align-items: center;
+  }
   .footer-left {
     width: 100%;
     display: flex;
@@ -2738,8 +2740,11 @@ textarea:-webkit-autofill:focus {
 
 .animation-text-container {
   overflow: hidden;
-  width: 100%;
+  width: auto;
   max-width: 800px;
+  position: absolute;
+  left: 70px;
+  right: 220px;
 }
 
 .animation-text {
@@ -2793,12 +2798,29 @@ textarea:-webkit-autofill:focus {
 }
 
 @media (max-width: 768px) {
-  .animation-text {
-    display: none;
+  .animation-text-container {
+    position: static;
+    width: 100%;
+    max-width: none;
+    margin-bottom: 6px;
   }
-  
+  .animation-text {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    display: block;
+    padding-left: 0;
+    text-align: center;
+  }
   .animation-text-before {
-    display: none;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    display: inline;
+    padding-left: 0;
+    margin-right: 6px;
   }
 }
 
