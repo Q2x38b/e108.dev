@@ -3,6 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Player | e108</title>
+    <meta name="description" content="Listen to the latest recorded speech from Ethan (e108).">
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+    <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large">
+    <link rel="canonical" href="https://e108.dev/speech">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Speech Player | e108">
+    <meta property="og:description" content="Listen to the latest recorded speech from Ethan (e108).">
+    <meta property="og:url" content="https://e108.dev/speech">
+    <meta property="og:image" content="https://e108.dev/favicon/blog-favicon.png">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Speech Player | e108">
+    <meta name="twitter:description" content="Listen to the latest recorded speech from Ethan (e108).">
+    <meta name="twitter:image" content="https://e108.dev/favicon/blog-favicon.png">
+    <meta name="twitter:site" content="@e108">
+    <link rel="alternate" href="https://e108.dev/speech" hreflang="en-us">
+    <link rel="alternate" href="https://e108.dev/speech" hreflang="x-default">
+    <script src="/analytics.js" defer></script>
     <style>
         :root {
             --primary-color: #9e9e9e;
@@ -272,9 +291,6 @@
             const progressContainer = audioPlayer.querySelector('.progress-container');
             const progressBar = audioPlayer.querySelector('.progress-bar');
             const progressHandle = audioPlayer.querySelector('.progress-handle');
-            const speedButton = audioPlayer.querySelector('.speed-button');
-            const speedOptions = audioPlayer.querySelector('.speed-options');
-            const speedOptionElements = audioPlayer.querySelectorAll('.speed-option');
             const waveform = audioPlayer.querySelector('.waveform');
             const trackName = audioPlayer.querySelector('.track-name');
             const trackArtist = audioPlayer.querySelector('.track-artist');
@@ -469,16 +485,6 @@
                 })
             });
             
-            // Close speed menu when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!speedSelector.contains(e.target)) {
-                    speedOptions.classList.remove('show');
-                }
-            });
-            
-            // We don't need these anymore with the new speed control
-            // Remove code related to the old dropdown
-            
             // Initialize
             audio.addEventListener('loadedmetadata', () => {
                 timeDisplay.textContent = `0:00 / ${formatTime(audio.duration)}`;
@@ -508,11 +514,7 @@
                 stopWaveformAnimation();
             });
             
-            // Make sure speed selector is on top of other elements with proper z-index
-            const speedSelector = audioPlayer.querySelector('.speed-selector');
-
-            // We don't need these anymore with the new speed control
-            // Remove code related to the old dropdown
+            // We don't need dropdown-specific logic anymore with the new button group
         });
     </script>
 </body>

@@ -20,6 +20,65 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
+function initGlobalFadeSequence() {
+    const main = document.querySelector('main');
+    if (!main) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (prefersReducedMotion.matches) {
+        document.body.classList.add('fade-sequence-ready');
+        return;
+    }
+
+    const targets = [main, ...Array.from(
+        main.querySelectorAll('*:not(script):not(style)')
+    )].filter(el => !el.closest('[data-no-fade]'));
+
+    targets.forEach((el, index) => {
+        el.classList.add('fade-sequence-target');
+        const delay = Math.min(index * 0.015, 1.2);
+        el.style.setProperty('--fade-sequence-delay', `${delay.toFixed(3)}s`);
+    });
+
+    requestAnimationFrame(() => {
+        document.body.classList.add('fade-sequence-ready');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initGlobalFadeSequence);
+
+function initAvailabilityTooltipAnimation(badge) {
+    if (!badge) return;
+    const tooltip = badge.querySelector('.availability-tooltip');
+    if (!tooltip) return;
+
+    let hideTimer;
+
+    const showTooltip = () => {
+        clearTimeout(hideTimer);
+        tooltip.classList.add('availability-tooltip--visible');
+    };
+
+    const hideTooltip = () => {
+        hideTimer = setTimeout(() => {
+            tooltip.classList.remove('availability-tooltip--visible');
+        }, 80);
+    };
+
+    ['mouseenter', 'focus'].forEach(eventType => {
+        badge.addEventListener(eventType, showTooltip);
+    });
+
+    ['mouseleave', 'blur'].forEach(eventType => {
+        badge.addEventListener(eventType, hideTooltip);
+    });
+
+    setTimeout(() => {
+        tooltip.classList.add('availability-tooltip--visible', 'availability-tooltip--intro');
+        setTimeout(() => tooltip.classList.remove('availability-tooltip--intro', 'availability-tooltip--visible'), 2200);
+    }, 700);
+}
+
 const projectsData = {
     'achievements': {
         title: 'Achievements & Awards',
@@ -116,6 +175,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // base resting state shared via CSS vars on the card so children inherit
         card.style.setProperty('--tx', '0px');
         card.style.setProperty('--ty', '0px');
+        const header = card.querySelector('.project-header');
+        const description = card.querySelector('.project-description');
+
+        const applyChildTransforms = (txValue, tyValue) => {
+            const transformValue = `translate3d(${txValue}px, ${tyValue}px, 0)`;
+            if (header) header.style.transform = transformValue;
+            if (description) description.style.transform = transformValue;
+        };
+
         card.addEventListener('mousemove', (e) => {
             const rect = card.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -124,12 +192,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const ty = (y - 50) * 0.04;
             card.style.setProperty('--tx', tx + 'px');
             card.style.setProperty('--ty', ty + 'px');
+            applyChildTransforms(tx, ty);
         });
         card.addEventListener('mouseleave', () => {
             // return to resting offset
             card.style.setProperty('--tx', '0px');
             card.style.setProperty('--ty', '0px');
+            applyChildTransforms(0, 0);
         });
+        applyChildTransforms(0, 0);
     });
 });
 
@@ -147,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tip) {
             tip.textContent = status === 'available' ? 'Available for work' : 'Currently Employed';
         }
+        initAvailabilityTooltipAnimation(badge);
     }
 });
 
@@ -261,81 +333,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const animatedElements = [
-        document.querySelector('.header'),
-        document.querySelector('.profile-name'),
-        document.querySelector('.profile-title'),
-        document.querySelector('.button-row'),
-        document.querySelector('.profile-bio'),
-        document.querySelector('.carousel-container'),
-        document.querySelector('.styled-divider-1'),
-        document.querySelector('.sections'),
-        document.querySelector('.styled-divider-2'),
-        document.querySelector('.styled-divider-3'),
-        document.querySelector('.about-content'),
-        document.querySelector('.styled-divider-4'),
-        document.querySelector('.footer-form'),
-        document.querySelector('.carousel-container'),
-        document.querySelector('.footer'),
-        document.querySelector('.secret-code-wrapper')
-    ];
-
-    animatedElements.forEach((element, index) => {
-        if (element) {
-            element.classList.add('fade-element');
-            element.style.animationDelay = `${index * 0.10}s`;
-        }
-    });
-
-    const projectItems = document.querySelectorAll('.project');
-    const aboutContent = document.querySelector('.about-content');
-    const footerFormElements = document.querySelectorAll('.footer-form-row');
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in-visible');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, {
-        threshold: 0.2,
-        rootMargin: '0px 0px -50px 0px'
-    });
-
-    projectItems.forEach(item => {
-        item.classList.add('fade-scroll');
-        observer.observe(item);
-    });
-
-    if (aboutContent) {
-        const aboutTargets = aboutContent.querySelectorAll('h3, p, li, span, .timeline-item, .timeline-content > *');
-        aboutTargets.forEach(el => {
-            el.classList.add('fade-scroll');
-            observer.observe(el);
-        });
-    }
-
-    // Ensure other key content blocks also animate on scroll when they enter the viewport
-    const extraTargets = document.querySelectorAll('.section-title, .project-title, .project-description, .quote-container, .quote-container > *, .footer .footer-content > *');
-    extraTargets.forEach(el => {
-        el.classList.add('fade-scroll');
-        observer.observe(el);
-    });
-
-    footerFormElements.forEach(element => {
-        element.classList.add('fade-scroll');
-        observer.observe(element);
-    });
-
-    const profileBio = document.querySelector('.profile-bio');
-    if (profileBio) {
-        profileBio.classList.add('fade-element');
-        profileBio.style.animationDelay = '0.6s';
-    }
-});
-
 fetch('https://api.github.com/repos/Q2x38b/e108.dev/commits?&per_page=1&page=1')
   .then(response => response.json())
   .then(data => {
@@ -380,7 +377,7 @@ function initSpotlightSearch() {
         const keybindsActive    = keybindsContainer?.classList.contains('active');
         const spotlightActive   = spotlightContainer.classList.contains('active');
 
-        if ((e.key === '1' && e.shiftKey) || e.key === '!') {
+        if (e.altKey && e.code === 'Digit1') {
             e.preventDefault();
             if (keybindsActive) {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -551,7 +548,7 @@ function initKeybindsPopup() {
         const spotlightActive    = spotlightContainer && spotlightContainer.classList.contains('active');
         const keybindsActive     = keybindsContainer.classList.contains('active');
 
-        if ((e.key === '2' && e.shiftKey) || e.key === '@') {
+        if (e.altKey && e.code === 'Digit2') {
             e.preventDefault();
             if (spotlightActive) {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -786,7 +783,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const carousel1 = document.getElementById('carousel1');
     const carousel2 = document.getElementById('carousel2');
     const carousel3 = document.getElementById('carousel3');
-    
+
+    const carousels = [carousel1, carousel2, carousel3].filter(Boolean);
+    if (carousels.length === 0) {
+        return; // No carousels on the page; skip setup to avoid errors
+    }
+
     function createItems(container) {
         items.forEach(text => {
             const item = document.createElement('div');
@@ -795,20 +797,20 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(item);
         });
     }
-    
-    createItems(carousel1);
-    createItems(carousel2);
-    createItems(carousel3);
-    
+
+    carousels.forEach(createItems);
+
     function adjustAnimationSpeed() {
-        const itemWidth = carousel1.scrollWidth;
+        const ref = carousels[0];
+        if (!ref) return;
+        const itemWidth = ref.scrollWidth;
         const speed = itemWidth / 70;
-        
+
         document.querySelectorAll('.carousel-content').forEach(carousel => {
             carousel.style.animationDuration = `${speed}s`;
         });
     }
-    
+
     adjustAnimationSpeed();
     window.addEventListener('resize', adjustAnimationSpeed);
 });
