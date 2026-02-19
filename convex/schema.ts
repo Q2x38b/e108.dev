@@ -11,4 +11,10 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_slug", ["slug"]).index("by_published", ["published"]),
+
+  views: defineTable({
+    postId: v.id("posts"),
+    visitorId: v.string(),
+    viewedAt: v.number(),
+  }).index("by_post", ["postId"]).index("by_post_visitor", ["postId", "visitorId"]),
 });

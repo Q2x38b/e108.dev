@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { SignedIn, SignedOut } from '../contexts/AuthContext'
+import { SignedIn, SignedOut, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { AnimatePresence, motion } from 'framer-motion'
 
 function slugify(text: string) {
   return text
@@ -20,11 +20,205 @@ function slugify(text: string) {
     .trim()
 }
 
+function LoginModal({ onClose }: { onClose: () => void }) {
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(false)
+  const { login } = useAuth()
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (login(password)) {
+      onClose()
+    } else {
+      setError(true)
+      setPassword('')
+    }
+  }
+
+  return (
+    <div className="login-modal-overlay" onClick={onClose}>
+      <motion.div
+        className="login-modal"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+      >
+        <form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(false) }}
+            autoFocus
+            className={error ? 'error' : ''}
+          />
+          <button type="submit">Login</button>
+        </form>
+      </motion.div>
+    </div>
+  )
+}
+
+function Footer() {
+  const [time, setTime] = useState(new Date())
+  const [clickCount, setClickCount] = useState(0)
+  const [showLogin, setShowLogin] = useState(false)
+  const { isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (clickCount >= 5 && !isAuthenticated) {
+      setShowLogin(true)
+      setClickCount(0)
+    }
+    const resetTimer = setTimeout(() => setClickCount(0), 2000)
+    return () => clearTimeout(resetTimer)
+  }, [clickCount, isAuthenticated])
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'America/Los_Angeles'
+    })
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  return (
+    <>
+      <footer className="footer">
+        <div className="footer-left">
+          <span
+            className="footer-text footer-secret"
+            onClick={() => setClickCount(c => c + 1)}
+          >
+            © 2025
+          </span>
+          <span className="footer-dot">•</span>
+          <span className="footer-text">CC BY 4.0</span>
+        </div>
+        <div className="footer-right">
+          <span className="footer-time">{formatTime(time)} PST</span>
+          <button
+            className="back-to-top"
+            onClick={scrollToTop}
+            aria-label="Back to top"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </button>
+        </div>
+      </footer>
+      <AnimatePresence>
+        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      </AnimatePresence>
+    </>
+  )
+}
+
+// Floating toolbar component
+function FloatingToolbar({
+  position,
+  onFormat,
+  onAddCitation,
+  visible
+}: {
+  position: { top: number; left: number }
+  onFormat: (type: string) => void
+  onAddCitation: () => void
+  visible: boolean
+}) {
+  if (!visible) return null
+
+  return (
+    <div
+      className="floating-toolbar"
+      style={{ top: position.top, left: position.left }}
+    >
+      <button onClick={() => onFormat('bold')} title="Bold">
+        <strong>B</strong>
+      </button>
+      <button onClick={() => onFormat('italic')} title="Italic">
+        <em>I</em>
+      </button>
+      <button onClick={() => onFormat('strikethrough')} title="Strikethrough">
+        <s>S</s>
+      </button>
+      <span className="toolbar-divider-v" />
+      <button onClick={() => onFormat('link')} title="Link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </svg>
+      </button>
+      <button onClick={() => onFormat('code')} title="Code">
+        <code>`</code>
+      </button>
+      <button onClick={onAddCitation} title="Add Citation">
+        <sup>[1]</sup>
+      </button>
+    </div>
+  )
+}
+
+// Citation modal
+function CitationModal({
+  onClose,
+  onAdd,
+  citationNum
+}: {
+  onClose: () => void
+  onAdd: (text: string) => void
+  citationNum: number
+}) {
+  const [text, setText] = useState('')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (text.trim()) {
+      onAdd(text.trim())
+    }
+  }
+
+  return (
+    <div className="citation-modal-overlay" onClick={onClose}>
+      <div className="citation-modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Add Citation [{citationNum}]</h3>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            placeholder="Enter citation text (e.g., source, author, URL)"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            autoFocus
+            rows={3}
+          />
+          <div className="citation-modal-actions">
+            <button type="button" onClick={onClose} className="cancel-btn">Cancel</button>
+            <button type="submit" className="save-btn" disabled={!text.trim()}>Add</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function BlogEditor() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
   const isEditing = !!slug
+  const editorRef = useRef<HTMLTextAreaElement>(null)
 
   const existingPost = useQuery(
     api.posts.getBySlug,
@@ -38,8 +232,16 @@ export default function BlogEditor() {
   const [content, setContent] = useState('')
   const [customSlug, setCustomSlug] = useState('')
   const [published, setPublished] = useState(false)
-  const [preview, setPreview] = useState(false)
   const [saving, setSaving] = useState(false)
+
+  // Floating toolbar state
+  const [toolbarVisible, setToolbarVisible] = useState(false)
+  const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 })
+  const [selection, setSelection] = useState({ start: 0, end: 0, text: '' })
+
+  // Citation modal state
+  const [showCitationModal, setShowCitationModal] = useState(false)
+  const [citations, setCitations] = useState<{ num: number; text: string }[]>([])
 
   useEffect(() => {
     if (existingPost) {
@@ -47,6 +249,18 @@ export default function BlogEditor() {
       setContent(existingPost.content)
       setCustomSlug(existingPost.slug)
       setPublished(existingPost.published)
+
+      // Extract existing citations
+      const citationPattern = /\[\^(\d+)\]:\s*(.+?)(?=\n\[\^|\n\n|$)/gs
+      const existingCitations: { num: number; text: string }[] = []
+      let match
+      while ((match = citationPattern.exec(existingPost.content)) !== null) {
+        existingCitations.push({
+          num: parseInt(match[1]),
+          text: match[2].trim()
+        })
+      }
+      setCitations(existingCitations)
     }
   }, [existingPost])
 
@@ -59,20 +273,33 @@ export default function BlogEditor() {
     setSaving(true)
     const postSlug = customSlug || slugify(title)
 
+    // Build content with citations at the end
+    let finalContent = content
+    if (citations.length > 0) {
+      // Remove existing citation definitions
+      finalContent = content.replace(/\n?\[\^(\d+)\]:\s*.+?(?=\n\[\^|\n\n|$)/gs, '')
+      // Add citations at the end
+      const citationDefs = citations
+        .sort((a, b) => a.num - b.num)
+        .map(c => `[^${c.num}]: ${c.text}`)
+        .join('\n')
+      finalContent = finalContent.trimEnd() + '\n\n' + citationDefs
+    }
+
     try {
       if (isEditing && existingPost) {
         await updatePost({
           id: existingPost._id,
           title,
           slug: postSlug,
-          content,
+          content: finalContent,
           published
         })
       } else {
         await createPost({
           title,
           slug: postSlug,
-          content,
+          content: finalContent,
           published
         })
       }
@@ -85,8 +312,110 @@ export default function BlogEditor() {
     }
   }
 
+  const handleTextSelect = useCallback(() => {
+    const textarea = editorRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+
+    if (start !== end) {
+      const selectedText = textarea.value.substring(start, end)
+      setSelection({ start, end, text: selectedText })
+
+      // Calculate position for floating toolbar
+      const rect = textarea.getBoundingClientRect()
+      const lines = textarea.value.substring(0, start).split('\n')
+      const lineHeight = 24 // Approximate line height
+      const topOffset = lines.length * lineHeight - textarea.scrollTop
+
+      setToolbarPosition({
+        top: rect.top + topOffset - 50,
+        left: rect.left + 100
+      })
+      setToolbarVisible(true)
+    } else {
+      setToolbarVisible(false)
+    }
+  }, [])
+
+  const handleFormat = useCallback((type: string) => {
+    const textarea = editorRef.current
+    if (!textarea) return
+
+    const { start, end, text } = selection
+    let newText = ''
+    let cursorOffset = 0
+
+    switch (type) {
+      case 'bold':
+        newText = `**${text}**`
+        cursorOffset = 2
+        break
+      case 'italic':
+        newText = `*${text}*`
+        cursorOffset = 1
+        break
+      case 'strikethrough':
+        newText = `~~${text}~~`
+        cursorOffset = 2
+        break
+      case 'code':
+        newText = `\`${text}\``
+        cursorOffset = 1
+        break
+      case 'link':
+        newText = `[${text}](url)`
+        cursorOffset = text.length + 3
+        break
+      default:
+        newText = text
+    }
+
+    const before = content.substring(0, start)
+    const after = content.substring(end)
+    setContent(before + newText + after)
+    setToolbarVisible(false)
+
+    // Restore focus and cursor position
+    setTimeout(() => {
+      textarea.focus()
+      const newPos = start + newText.length
+      textarea.setSelectionRange(newPos, newPos)
+    }, 0)
+  }, [content, selection])
+
+  const handleAddCitation = useCallback(() => {
+    setToolbarVisible(false)
+    setShowCitationModal(true)
+  }, [])
+
+  const insertCitation = useCallback((citationText: string) => {
+    const textarea = editorRef.current
+    if (!textarea) return
+
+    const newNum = citations.length + 1
+    setCitations([...citations, { num: newNum, text: citationText }])
+
+    // Insert citation reference at cursor
+    const cursor = textarea.selectionStart
+    const before = content.substring(0, cursor)
+    const after = content.substring(cursor)
+    const citationRef = `[^${newNum}]`
+
+    setContent(before + citationRef + after)
+    setShowCitationModal(false)
+
+    // Restore focus
+    setTimeout(() => {
+      textarea.focus()
+      const newPos = cursor + citationRef.length
+      textarea.setSelectionRange(newPos, newPos)
+    }, 0)
+  }, [content, citations])
+
   const insertMarkdown = (syntax: string, wrap = false) => {
-    const textarea = document.getElementById('editor') as HTMLTextAreaElement
+    const textarea = editorRef.current
     if (!textarea) return
 
     const start = textarea.selectionStart
@@ -112,6 +441,9 @@ export default function BlogEditor() {
     }, 0)
   }
 
+  // Extract content without citation definitions for preview
+  const previewContent = content.replace(/\n?\[\^(\d+)\]:\s*.+?(?=\n\[\^|\n\n|$)/gs, '')
+
   return (
     <div className="blog-container editor-container">
       <SignedOut>
@@ -122,12 +454,7 @@ export default function BlogEditor() {
       </SignedOut>
 
       <SignedIn>
-        <motion.header
-          className="blog-header"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
+        <header className="blog-header">
           <nav className="breadcrumb">
             <Link to="/" className="breadcrumb-link">Home</Link>
             <span className="breadcrumb-sep">/</span>
@@ -136,10 +463,9 @@ export default function BlogEditor() {
             <span className="breadcrumb-current">{isEditing ? 'Edit' : 'New'}</span>
           </nav>
           <div className="header-right">
-            <motion.button
+            <button
               className="theme-toggle"
               onClick={toggle}
-              whileTap={{ scale: 0.95 }}
               aria-label="Toggle theme"
             >
               {theme === 'light' ? (
@@ -159,16 +485,11 @@ export default function BlogEditor() {
                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                 </svg>
               )}
-            </motion.button>
+            </button>
           </div>
-        </motion.header>
+        </header>
 
-        <motion.div
-          className="editor-main"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
+        <div className="editor-main">
           <div className="editor-fields">
             <input
               type="text"
@@ -187,7 +508,7 @@ export default function BlogEditor() {
           </div>
 
           <div className="editor-toolbar">
-            <button onClick={() => insertMarkdown('**', true)} title="Bold">B</button>
+            <button onClick={() => insertMarkdown('**', true)} title="Bold"><strong>B</strong></button>
             <button onClick={() => insertMarkdown('*', true)} title="Italic"><em>I</em></button>
             <button onClick={() => insertMarkdown('~~', true)} title="Strikethrough"><s>S</s></button>
             <span className="toolbar-divider" />
@@ -199,70 +520,93 @@ export default function BlogEditor() {
             <button onClick={() => insertMarkdown('1. ')} title="Numbered list">1.</button>
             <button onClick={() => insertMarkdown('> ')} title="Quote">"</button>
             <span className="toolbar-divider" />
-            <button onClick={() => insertMarkdown('[text](url)')} title="Link">🔗</button>
+            <button onClick={() => insertMarkdown('[text](url)')} title="Link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" style={{ display: 'inline' }}>
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            </button>
             <button onClick={() => insertMarkdown('`', true)} title="Inline code">`</button>
             <button onClick={() => insertMarkdown('```\n\n```')} title="Code block">{'</>'}</button>
             <span className="toolbar-divider" />
-            <button
-              className={preview ? 'active' : ''}
-              onClick={() => setPreview(!preview)}
-            >
-              Preview
+            <button onClick={() => setShowCitationModal(true)} title="Add Citation">
+              <sup>[n]</sup>
             </button>
           </div>
 
-          {preview ? (
-            <div className="editor-preview">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeSlug]}
-                components={{
-                  code({ className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || '')
-                    const codeString = String(children).replace(/\n$/, '')
+          <div className="editor-split">
+            <div className="editor-pane">
+              <textarea
+                ref={editorRef}
+                id="editor"
+                className="editor-textarea"
+                placeholder="Write your post in Markdown..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onSelect={handleTextSelect}
+                onBlur={() => setTimeout(() => setToolbarVisible(false), 200)}
+              />
+            </div>
 
-                    if (match) {
-                      return (
-                        <div className="code-block">
-                          <div className="code-header">
-                            <span className="code-language">{match[1]}</span>
+            <div className="preview-pane">
+              <div className="preview-label">Preview</div>
+              <div className="editor-preview article-content">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeSlug]}
+                  components={{
+                    code({ className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '')
+                      const codeString = String(children).replace(/\n$/, '')
+
+                      if (match) {
+                        return (
+                          <div className="code-block">
+                            <div className="code-header">
+                              <span className="code-language">{match[1]}</span>
+                            </div>
+                            <SyntaxHighlighter
+                              style={theme === 'dark' ? oneDark : oneLight}
+                              language={match[1]}
+                              PreTag="div"
+                              customStyle={{
+                                margin: 0,
+                                borderRadius: '0 0 8px 8px',
+                                fontSize: '0.875rem'
+                              }}
+                            >
+                              {codeString}
+                            </SyntaxHighlighter>
                           </div>
-                          <SyntaxHighlighter
-                            style={theme === 'dark' ? oneDark : oneLight}
-                            language={match[1]}
-                            PreTag="div"
-                            customStyle={{
-                              margin: 0,
-                              borderRadius: '0 0 8px 8px',
-                              fontSize: '0.875rem'
-                            }}
-                          >
-                            {codeString}
-                          </SyntaxHighlighter>
-                        </div>
+                        )
+                      }
+
+                      return (
+                        <code className="inline-code" {...props}>
+                          {children}
+                        </code>
                       )
                     }
+                  }}
+                >
+                  {previewContent || '*Start typing to see preview...*'}
+                </ReactMarkdown>
 
-                    return (
-                      <code className="inline-code" {...props}>
-                        {children}
-                      </code>
-                    )
-                  }
-                }}
-              >
-                {content || '*No content yet*'}
-              </ReactMarkdown>
+                {citations.length > 0 && (
+                  <div className="citations-section">
+                    <h3 className="citations-title">References</h3>
+                    <ol className="citations-list">
+                      {citations.map((citation) => (
+                        <li key={citation.num} className="citation-item">
+                          <span className="citation-text">{citation.text}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+              </div>
             </div>
-          ) : (
-            <textarea
-              id="editor"
-              className="editor-textarea"
-              placeholder="Write your post in Markdown..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-          )}
+          </div>
 
           <div className="editor-actions">
             <label className="publish-toggle">
@@ -282,8 +626,25 @@ export default function BlogEditor() {
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
+
+        <Footer />
       </SignedIn>
+
+      <FloatingToolbar
+        position={toolbarPosition}
+        onFormat={handleFormat}
+        onAddCitation={handleAddCitation}
+        visible={toolbarVisible}
+      />
+
+      {showCitationModal && (
+        <CitationModal
+          onClose={() => setShowCitationModal(false)}
+          onAdd={insertCitation}
+          citationNum={citations.length + 1}
+        />
+      )}
     </div>
   )
 }

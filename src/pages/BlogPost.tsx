@@ -1,27 +1,21 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { SignedIn } from '../contexts/AuthContext'
+import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-}
+import { AnimatePresence, motion } from 'framer-motion'
 
 function formatDate(timestamp: number) {
   return new Date(timestamp).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   })
 }
 
@@ -50,13 +44,156 @@ function CopyButton({ text }: { text: string }) {
   )
 }
 
+function LoginModal({ onClose }: { onClose: () => void }) {
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(false)
+  const { login } = useAuth()
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (login(password)) {
+      onClose()
+    } else {
+      setError(true)
+      setPassword('')
+    }
+  }
+
+  return (
+    <div className="login-modal-overlay" onClick={onClose}>
+      <motion.div
+        className="login-modal"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+      >
+        <form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(false) }}
+            autoFocus
+            className={error ? 'error' : ''}
+          />
+          <button type="submit">Login</button>
+        </form>
+      </motion.div>
+    </div>
+  )
+}
+
+function Footer() {
+  const [time, setTime] = useState(new Date())
+  const [clickCount, setClickCount] = useState(0)
+  const [showLogin, setShowLogin] = useState(false)
+  const { isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (clickCount >= 5 && !isAuthenticated) {
+      setShowLogin(true)
+      setClickCount(0)
+    }
+    const resetTimer = setTimeout(() => setClickCount(0), 2000)
+    return () => clearTimeout(resetTimer)
+  }, [clickCount, isAuthenticated])
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'America/Los_Angeles'
+    })
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  return (
+    <>
+      <footer className="footer">
+        <div className="footer-left">
+          <span
+            className="footer-text footer-secret"
+            onClick={() => setClickCount(c => c + 1)}
+          >
+            © 2025
+          </span>
+          <span className="footer-dot">•</span>
+          <span className="footer-text">CC BY 4.0</span>
+        </div>
+        <div className="footer-right">
+          <span className="footer-time">{formatTime(time)} PST</span>
+          <button
+            className="back-to-top"
+            onClick={scrollToTop}
+            aria-label="Back to top"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </button>
+        </div>
+      </footer>
+      <AnimatePresence>
+        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      </AnimatePresence>
+    </>
+  )
+}
+
+// Extract citations from content
+function extractCitations(content: string): { content: string; citations: { num: number; text: string }[] } {
+  const citations: { num: number; text: string }[] = []
+  const citationPattern = /\[\^(\d+)\]:\s*(.+?)(?=\n\[\^|\n\n|$)/gs
+
+  let match
+  while ((match = citationPattern.exec(content)) !== null) {
+    citations.push({
+      num: parseInt(match[1]),
+      text: match[2].trim()
+    })
+  }
+
+  // Remove citation definitions from content
+  const cleanContent = content.replace(/\n?\[\^(\d+)\]:\s*.+?(?=\n\[\^|\n\n|$)/gs, '')
+
+  return { content: cleanContent, citations: citations.sort((a, b) => a.num - b.num) }
+}
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
   const post = useQuery(api.posts.getBySlug, slug ? { slug } : 'skip')
   const deletePost = useMutation(api.posts.remove)
+  const recordView = useMutation(api.views.recordView)
+  const viewCount = useQuery(api.views.getViewCount, post ? { postId: post._id } : 'skip')
   const [linkCopied, setLinkCopied] = useState(false)
+
+  // Record view on mount
+  useEffect(() => {
+    if (post) {
+      // Get or create a visitor ID
+      let visitorId = localStorage.getItem('visitor_id')
+      if (!visitorId) {
+        visitorId = `v-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+        localStorage.setItem('visitor_id', visitorId)
+      }
+      recordView({ postId: post._id, visitorId }).catch(() => {
+        // Silently fail if view recording fails
+      })
+    }
+  }, [post, recordView])
 
   const copyLink = useCallback(() => {
     navigator.clipboard.writeText(window.location.href)
@@ -89,6 +226,11 @@ export default function BlogPost() {
     }
   }, [post])
 
+  const { content: cleanContent, citations } = useMemo(() => {
+    if (!post) return { content: '', citations: [] }
+    return extractCitations(post.content)
+  }, [post])
+
   if (post === undefined) {
     return (
       <div className="blog-container">
@@ -108,12 +250,7 @@ export default function BlogPost() {
 
   return (
     <div className="blog-container">
-      <motion.header
-        className="blog-header"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      <header className="blog-header">
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-sep">/</span>
@@ -122,10 +259,9 @@ export default function BlogPost() {
           <span className="breadcrumb-current">Article</span>
         </nav>
         <div className="header-right">
-          <motion.button
+          <button
             className="theme-toggle"
             onClick={toggle}
-            whileTap={{ scale: 0.95 }}
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (
@@ -145,21 +281,18 @@ export default function BlogPost() {
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
               </svg>
             )}
-          </motion.button>
+          </button>
         </div>
-      </motion.header>
+      </header>
 
-      <motion.article
-        className="blog-article"
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
+      <article className="blog-article">
         <header className="article-header">
           <h1 className="article-title">{post.title}</h1>
           <div className="article-meta">
             <span className="article-date">{formatDate(post.createdAt)}</span>
+            {viewCount !== undefined && viewCount > 0 && (
+              <span className="article-views">{viewCount} views</span>
+            )}
             <button className="copy-link-btn" onClick={copyLink} aria-label="Copy link">
               {linkCopied ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -202,6 +335,22 @@ export default function BlogPost() {
                   <span className="heading-link-icon">#</span>
                 </h3>
               ),
+              // Handle citation references [^1]
+              sup: ({ children }) => {
+                const text = String(children)
+                const citationMatch = text.match(/\[(\d+)\]/)
+                if (citationMatch) {
+                  const num = citationMatch[1]
+                  return (
+                    <sup>
+                      <a href={`#citation-${num}`} className="citation-ref" id={`ref-${num}`}>
+                        [{num}]
+                      </a>
+                    </sup>
+                  )
+                }
+                return <sup>{children}</sup>
+              },
               code({ className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '')
                 const codeString = String(children).replace(/\n$/, '')
@@ -237,10 +386,26 @@ export default function BlogPost() {
               }
             }}
           >
-            {post.content}
+            {cleanContent}
           </ReactMarkdown>
+
+          {citations.length > 0 && (
+            <div className="citations-section">
+              <h3 className="citations-title">References</h3>
+              <ol className="citations-list">
+                {citations.map((citation) => (
+                  <li key={citation.num} id={`citation-${citation.num}`} className="citation-item">
+                    <a href={`#ref-${citation.num}`} className="citation-back">^</a>
+                    <span className="citation-text">{citation.text}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
         </div>
-      </motion.article>
+      </article>
+
+      <Footer />
     </div>
   )
 }

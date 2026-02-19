@@ -1117,3 +1117,276 @@
     font-size: 0.8rem;
   }
 }
+
+/* Simple Post List (like "thoughts" screenshot) */
+.post-list-simple {
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+
+.post-list-simple li {
+  border-bottom: 1px solid var(--border);
+}
+
+.post-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  transition: opacity 0.2s ease;
+}
+
+.post-row:hover {
+  opacity: 0.7;
+}
+
+.post-row-title {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.post-row-date {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-left: 24px;
+}
+
+/* View Count */
+.article-views {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+}
+
+/* Citations */
+.citation-ref {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-size: 0.8em;
+  vertical-align: super;
+}
+
+.citation-ref:hover {
+  text-decoration: underline;
+}
+
+.citations-section {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.citations-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.citations-list {
+  list-style: none;
+  counter-reset: citation;
+  padding-left: 0;
+}
+
+.citation-item {
+  counter-increment: citation;
+  display: flex;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.citation-item:last-child {
+  border-bottom: none;
+}
+
+.citation-item::before {
+  content: counter(citation) ".";
+  color: var(--text-tertiary);
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.citation-back {
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  margin-right: 4px;
+  text-decoration: none;
+}
+
+.citation-back:hover {
+  text-decoration: underline;
+}
+
+.citation-text {
+  flex: 1;
+}
+
+/* Split Editor Layout */
+.editor-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-pane .editor-textarea {
+  flex: 1;
+  min-height: 500px;
+  resize: none;
+}
+
+.preview-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.preview-pane .editor-preview {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Floating Toolbar */
+.floating-toolbar {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.floating-toolbar button {
+  padding: 6px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.floating-toolbar button:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+}
+
+.toolbar-divider-v {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+/* Citation Modal */
+.citation-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.citation-modal {
+  background: var(--bg);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90vw;
+}
+
+.citation-modal h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.citation-modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.citation-modal textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.citation-modal textarea:focus {
+  border-color: var(--text-tertiary);
+}
+
+.citation-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Editor container wider */
+.editor-container {
+  max-width: 1200px;
+}
+
+/* Mobile adjustments for split editor */
+@media (max-width: 768px) {
+  .editor-split {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-pane {
+    order: -1;
+  }
+
+  .post-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .post-row-date {
+    margin-left: 0;
+  }
+}

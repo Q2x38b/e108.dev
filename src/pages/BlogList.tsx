@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { SignedIn } from '../contexts/AuthContext'
+import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 interface Post {
   _id: string
@@ -16,18 +17,119 @@ interface Post {
   updatedAt: number
 }
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-}
-
 function formatDate(timestamp: number) {
   return new Date(timestamp).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   })
+}
+
+function LoginModal({ onClose }: { onClose: () => void }) {
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(false)
+  const { login } = useAuth()
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (login(password)) {
+      onClose()
+    } else {
+      setError(true)
+      setPassword('')
+    }
+  }
+
+  return (
+    <div className="login-modal-overlay" onClick={onClose}>
+      <motion.div
+        className="login-modal"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+      >
+        <form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(false) }}
+            autoFocus
+            className={error ? 'error' : ''}
+          />
+          <button type="submit">Login</button>
+        </form>
+      </motion.div>
+    </div>
+  )
+}
+
+function Footer() {
+  const [time, setTime] = useState(new Date())
+  const [clickCount, setClickCount] = useState(0)
+  const [showLogin, setShowLogin] = useState(false)
+  const { isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (clickCount >= 5 && !isAuthenticated) {
+      setShowLogin(true)
+      setClickCount(0)
+    }
+    const resetTimer = setTimeout(() => setClickCount(0), 2000)
+    return () => clearTimeout(resetTimer)
+  }, [clickCount, isAuthenticated])
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'America/Los_Angeles'
+    })
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  return (
+    <>
+      <footer className="footer">
+        <div className="footer-left">
+          <span
+            className="footer-text footer-secret"
+            onClick={() => setClickCount(c => c + 1)}
+          >
+            © 2025
+          </span>
+          <span className="footer-dot">•</span>
+          <span className="footer-text">CC BY 4.0</span>
+        </div>
+        <div className="footer-right">
+          <span className="footer-time">{formatTime(time)} PST</span>
+          <button
+            className="back-to-top"
+            onClick={scrollToTop}
+            aria-label="Back to top"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </button>
+        </div>
+      </footer>
+      <AnimatePresence>
+        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      </AnimatePresence>
+    </>
+  )
 }
 
 export default function BlogList() {
@@ -36,22 +138,16 @@ export default function BlogList() {
 
   return (
     <div className="blog-container">
-      <motion.header
-        className="blog-header"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      <header className="blog-header">
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-current">Writing</span>
         </nav>
         <div className="header-right">
-          <motion.button
+          <button
             className="theme-toggle"
             onClick={toggle}
-            whileTap={{ scale: 0.95 }}
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (
@@ -71,7 +167,7 @@ export default function BlogList() {
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
               </svg>
             )}
-          </motion.button>
+          </button>
           <SignedIn>
             <Link to="/blog/new" className="add-post-btn" aria-label="New post">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -81,39 +177,30 @@ export default function BlogList() {
             </Link>
           </SignedIn>
         </div>
-      </motion.header>
+      </header>
 
-      <motion.main
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <h1 className="blog-title">Writing</h1>
+      <main>
+        <h1 className="blog-title">thoughts</h1>
 
         {posts === undefined ? (
           <p className="blog-loading">Loading...</p>
         ) : posts.length === 0 ? (
           <p className="blog-empty">No posts yet.</p>
         ) : (
-          <ul className="post-list">
-            {(posts as Post[]).map((post: Post, index: number) => (
-              <motion.li
-                key={post._id}
-                variants={fadeInUp}
-                initial="hidden"
-                animate="visible"
-                transition={{ duration: 0.4, delay: 0.15 + index * 0.05 }}
-              >
-                <Link to={`/blog/${post.slug}`} className="post-item">
-                  <span className="post-date">{formatDate(post.createdAt)}</span>
-                  <span className="post-title-link">{post.title}</span>
+          <ul className="post-list-simple">
+            {(posts as Post[]).map((post: Post) => (
+              <li key={post._id}>
+                <Link to={`/blog/${post.slug}`} className="post-row">
+                  <span className="post-row-title">{post.title}</span>
+                  <span className="post-row-date">{formatDate(post.createdAt)}</span>
                 </Link>
-              </motion.li>
+              </li>
             ))}
           </ul>
         )}
-      </motion.main>
+      </main>
+
+      <Footer />
     </div>
   )
 }
