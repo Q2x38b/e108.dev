@@ -25,38 +25,6 @@ function formatDate(timestamp: number) {
   })
 }
 
-function extractHeadings(content: string) {
-  const headingRegex = /^(#{1,3})\s+(.+)$/gm
-  const headings: { level: number; text: string; id: string }[] = []
-  let match
-
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = match[1].length
-    const text = match[2]
-    const id = text.toLowerCase().replace(/[^\w]+/g, '-')
-    headings.push({ level, text, id })
-  }
-
-  return headings
-}
-
-function TableOfContents({ headings }: { headings: { level: number; text: string; id: string }[] }) {
-  if (headings.length === 0) return null
-
-  return (
-    <div className="toc">
-      <h3 className="toc-title">Table of Contents</h3>
-      <ul className="toc-list">
-        {headings.map((heading) => (
-          <li key={heading.id} className={`toc-item toc-level-${heading.level}`}>
-            <a href={`#${heading.id}`} className="toc-link">{heading.text}</a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
 
@@ -138,8 +106,6 @@ export default function BlogPost() {
     )
   }
 
-  const headings = extractHeadings(post.content)
-
   return (
     <div className="blog-container">
       <motion.header
@@ -194,8 +160,17 @@ export default function BlogPost() {
           <h1 className="article-title">{post.title}</h1>
           <div className="article-meta">
             <span className="article-date">{formatDate(post.createdAt)}</span>
-            <button className="copy-link-btn" onClick={copyLink}>
-              {linkCopied ? 'Copied!' : 'Copy link'}
+            <button className="copy-link-btn" onClick={copyLink} aria-label="Copy link">
+              {linkCopied ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              )}
             </button>
             <SignedIn>
               <Link to={`/blog/edit/${post.slug}`} className="edit-link">Edit</Link>
@@ -203,8 +178,6 @@ export default function BlogPost() {
             </SignedIn>
           </div>
         </header>
-
-        {headings.length > 0 && <TableOfContents headings={headings} />}
 
         <div className="article-content">
           <ReactMarkdown
