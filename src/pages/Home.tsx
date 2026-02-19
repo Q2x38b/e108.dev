@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SignedIn, UserButton } from '@clerk/clerk-react'
+import { SignedIn, useAuth } from '../contexts/AuthContext'
 
 // Animation variants
 const fadeInUp = {
@@ -140,6 +140,8 @@ export function useTheme() {
 
 // Components
 function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: () => void }) {
+  const { isAuthenticated, logout } = useAuth()
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id.toLowerCase())
     element?.scrollIntoView({ behavior: 'smooth' })
@@ -194,7 +196,18 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
           )}
         </motion.button>
         <SignedIn>
-          <UserButton />
+          <motion.button
+            className="logout-btn"
+            onClick={logout}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Logout"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </motion.button>
         </SignedIn>
       </div>
     </motion.header>
@@ -376,13 +389,65 @@ function Experience() {
   )
 }
 
+function LoginModal({ onClose }: { onClose: () => void }) {
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(false)
+  const { login } = useAuth()
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (login(password)) {
+      onClose()
+    } else {
+      setError(true)
+      setPassword('')
+    }
+  }
+
+  return (
+    <div className="login-modal-overlay" onClick={onClose}>
+      <motion.div
+        className="login-modal"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+      >
+        <form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(false) }}
+            autoFocus
+            className={error ? 'error' : ''}
+          />
+          <button type="submit">Login</button>
+        </form>
+      </motion.div>
+    </div>
+  )
+}
+
 function Footer() {
   const [time, setTime] = useState(new Date())
+  const [clickCount, setClickCount] = useState(0)
+  const [showLogin, setShowLogin] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (clickCount >= 5 && !isAuthenticated) {
+      setShowLogin(true)
+      setClickCount(0)
+    }
+    const resetTimer = setTimeout(() => setClickCount(0), 2000)
+    return () => clearTimeout(resetTimer)
+  }, [clickCount, isAuthenticated])
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
@@ -399,32 +464,42 @@ function Footer() {
   }
 
   return (
-    <motion.footer
-      className="footer"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.7 }}
-    >
-      <div className="footer-left">
-        <span className="footer-text">© 2025</span>
-        <span className="footer-dot">•</span>
-        <span className="footer-text">CC BY 4.0</span>
-      </div>
-      <div className="footer-right">
-        <span className="footer-time">{formatTime(time)} PST</span>
-        <motion.button
-          className="back-to-top"
-          onClick={scrollToTop}
-          whileHover={{ y: -2 }}
-          whileTap={{ scale: 0.95 }}
-          aria-label="Back to top"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 19V5M5 12l7-7 7 7" />
-          </svg>
-        </motion.button>
-      </div>
-    </motion.footer>
+    <>
+      <motion.footer
+        className="footer"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.7 }}
+      >
+        <div className="footer-left">
+          <span
+            className="footer-text footer-secret"
+            onClick={() => setClickCount(c => c + 1)}
+          >
+            © 2025
+          </span>
+          <span className="footer-dot">•</span>
+          <span className="footer-text">CC BY 4.0</span>
+        </div>
+        <div className="footer-right">
+          <span className="footer-time">{formatTime(time)} PST</span>
+          <motion.button
+            className="back-to-top"
+            onClick={scrollToTop}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Back to top"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </motion.button>
+        </div>
+      </motion.footer>
+      <AnimatePresence>
+        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      </AnimatePresence>
+    </>
   )
 }
 
