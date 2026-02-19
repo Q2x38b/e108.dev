@@ -1,0 +1,63 @@
+@font-face {
+  font-family: 'ABC Diatype';
+  src: local('ABC Diatype Regular'), local('ABCDiatype-Regular');
+  font-weight: 400;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #fafafa;
+  --text: #171717;
+  --text-secondary: #525252;
+  --text-tertiary: #a3a3a3;
+  --border: #e5e5e5;
+  --accent: #171717;
+  --hover-bg: #f5f5f5;
+  --accent-color: #3b82f6;
+}
+
+[data-theme="dark"] {
+  --bg: #141414;
+  --text: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
+  --border: #2a2a2a;
+  --accent: #3a3a3a;
+  --hover-bg: #1f1f1f;
+  --accent-color: #60a5fa;
+}
+
+html {
+  font-size: 15px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'ABC Diatype', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--text);
+  color: var(--bg);
+}
+
+button {
+  font-family: inherit;
+}
