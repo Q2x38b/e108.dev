@@ -49,22 +49,24 @@ const projects = [
 
 const experiences = [
   {
-    role: 'Senior Developer',
-    company: 'Tech Company',
-    companyUrl: '#',
+    role: 'Intern at Law Firm',
+    description: 'Learning about legal practice and gaining professional experience',
     date: '2024 - Present'
   },
   {
-    role: 'Full Stack Developer',
-    company: 'Startup Inc',
-    companyUrl: '#',
-    date: '2022 - 2024'
+    role: 'Restaurant Team Member',
+    description: 'First job experience in customer service',
+    date: '2023 - Present'
   },
   {
-    role: 'Frontend Developer',
-    company: 'Agency',
-    companyUrl: '#',
-    date: '2020 - 2022'
+    role: 'Started High School',
+    description: 'Active in sports, extracurriculars, and academics',
+    date: '2022 - 2026'
+  },
+  {
+    role: 'Future: University of Texas at Austin',
+    description: 'Planning to study Law',
+    date: '2023 - 2026'
   }
 ]
 
@@ -232,7 +234,7 @@ function Profile() {
         />
       </div>
       <h1 className="profile-name">Ethan Jerla</h1>
-      <p className="profile-title">Student</p>
+      <p className="profile-title">Student • Developer</p>
     </motion.section>
   )
 }
@@ -369,16 +371,14 @@ function Experience() {
       <div className="experience-list">
         {experiences.map((exp, index) => (
           <motion.div
-            key={exp.role + exp.company}
+            key={exp.role}
             className="experience-item"
             variants={fadeInUp}
             transition={{ duration: 0.4, delay: 0.55 + index * 0.05 }}
           >
             <div>
               <div className="experience-role">{exp.role}</div>
-              <div className="experience-company">
-                <a href={exp.companyUrl}>{exp.company}</a>
-              </div>
+              <div className="experience-company">{exp.description}</div>
             </div>
             <div className="experience-date">{exp.date}</div>
           </motion.div>
@@ -470,29 +470,32 @@ function Footer() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.7 }}
       >
-        <div className="footer-left">
-          <span
-            className="footer-text footer-secret"
-            onClick={() => setClickCount(c => c + 1)}
-          >
-            © 2025
-          </span>
-          <span className="footer-dot">•</span>
-          <span className="footer-text">CC BY 4.0</span>
-        </div>
-        <div className="footer-right">
-          <span className="footer-time">{formatTime(time)} PST</span>
-          <motion.button
-            className="back-to-top"
-            onClick={scrollToTop}
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Back to top"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 19V5M5 12l7-7 7 7" />
-            </svg>
-          </motion.button>
+        <div className="footer-quote">The only limit is yourself.</div>
+        <div className="footer-bottom">
+          <div className="footer-left">
+            <span
+              className="footer-text footer-secret"
+              onClick={() => setClickCount(c => c + 1)}
+            >
+              © 2025
+            </span>
+            <span className="footer-dot">•</span>
+            <span className="footer-text">CC BY 4.0</span>
+          </div>
+          <div className="footer-right">
+            <span className="footer-time">{formatTime(time)} PST</span>
+            <motion.button
+              className="back-to-top"
+              onClick={scrollToTop}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Back to top"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+            </motion.button>
+          </div>
         </div>
       </motion.footer>
       <AnimatePresence>
