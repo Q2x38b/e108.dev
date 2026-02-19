@@ -5,6 +5,17 @@ import { api } from '../../convex/_generated/api'
 import { SignedIn } from '@clerk/clerk-react'
 import { useTheme } from './Home'
 
+interface Post {
+  _id: string
+  title: string
+  slug: string
+  content: string
+  excerpt?: string
+  published: boolean
+  createdAt: number
+  updatedAt: number
+}
+
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 }
@@ -86,7 +97,7 @@ export default function BlogList() {
           <p className="blog-empty">No posts yet.</p>
         ) : (
           <ul className="post-list">
-            {posts.map((post, index) => (
+            {(posts as Post[]).map((post: Post, index: number) => (
               <motion.li
                 key={post._id}
                 variants={fadeInUp}
