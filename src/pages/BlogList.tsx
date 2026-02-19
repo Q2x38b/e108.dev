@@ -101,28 +101,31 @@ function Footer() {
 
   return (
     <>
-      <footer className="footer">
-        <div className="footer-left">
-          <span
-            className="footer-text footer-secret"
-            onClick={() => setClickCount(c => c + 1)}
-          >
-            © 2025
-          </span>
-          <span className="footer-dot">•</span>
-          <span className="footer-text">CC BY 4.0</span>
-        </div>
-        <div className="footer-right">
-          <span className="footer-time">{formatTime(time)} PST</span>
-          <button
-            className="back-to-top"
-            onClick={scrollToTop}
-            aria-label="Back to top"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 19V5M5 12l7-7 7 7" />
-            </svg>
-          </button>
+      <footer className="footer blog-list-footer">
+        <div className="footer-quote">The only limit is yourself.</div>
+        <div className="footer-bottom">
+          <div className="footer-left">
+            <span
+              className="footer-text footer-secret"
+              onClick={() => setClickCount(c => c + 1)}
+            >
+              © 2025
+            </span>
+            <span className="footer-dot">•</span>
+            <span className="footer-text">CC BY 4.0</span>
+          </div>
+          <div className="footer-right">
+            <span className="footer-time">{formatTime(time)} PST</span>
+            <button
+              className="back-to-top"
+              onClick={scrollToTop}
+              aria-label="Back to top"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </footer>
       <AnimatePresence>
@@ -137,8 +140,8 @@ export default function BlogList() {
   const posts = useQuery(api.posts.list)
 
   return (
-    <div className="blog-container">
-      <header className="blog-header">
+    <div className="blog-list-layout">
+      <header className="blog-header blog-list-header">
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-sep">/</span>
@@ -179,9 +182,11 @@ export default function BlogList() {
         </div>
       </header>
 
-      <main>
+      <div className="blog-list-title">
         <h1 className="blog-title">thoughts</h1>
+      </div>
 
+      <main className="blog-list-content">
         {posts === undefined ? (
           <p className="blog-loading">Loading...</p>
         ) : posts.length === 0 ? (

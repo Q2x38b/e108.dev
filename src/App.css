@@ -113,13 +113,6 @@
   height: 100%;
   border-radius: 12px;
   object-fit: cover;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.profile-image:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .profile-name {
@@ -454,8 +447,7 @@
 }
 
 .accordion-content {
-  overflow: hidden;
-  padding-bottom: 16px;
+  padding: 8px 0 16px;
 }
 
 .accordion-content p {
@@ -1118,21 +1110,72 @@
   }
 }
 
+/* Blog List Fixed Layout */
+.blog-list-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.blog-list-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.blog-list-title {
+  flex-shrink: 0;
+  padding: 0 24px;
+  background: var(--bg);
+}
+
+.blog-list-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
+  padding-bottom: 24px;
+}
+
+.blog-list-footer {
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  margin-top: 0;
+  padding: 16px 24px 24px;
+}
+
+.footer-quote {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
 /* Simple Post List (like "thoughts" screenshot) */
 .post-list-simple {
   list-style: none;
-  border-top: 1px solid var(--border);
-}
-
-.post-list-simple li {
-  border-bottom: 1px solid var(--border);
 }
 
 .post-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
+  padding: 12px 0;
   transition: opacity 0.2s ease;
 }
 

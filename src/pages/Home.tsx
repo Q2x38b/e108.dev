@@ -100,19 +100,20 @@ function Accordion({ title, content, isOpen, onToggle }: {
         <span className={`accordion-title ${isOpen ? 'active' : ''}`}>{title}</span>
         <span className="accordion-icon">{isOpen ? '−' : '+'}</span>
       </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="accordion-content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
+      <div
+        className="accordion-content-wrapper"
+        style={{
+          display: 'grid',
+          gridTemplateRows: isOpen ? '1fr' : '0fr',
+          transition: 'grid-template-rows 0.25s ease-out'
+        }}
+      >
+        <div style={{ overflow: 'hidden' }}>
+          <div className="accordion-content">
             <p>{content}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -169,7 +170,7 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
       <div className="header-right">
         <div className="location">
           <span className="location-dot" />
-          San Francisco, CA
+          Houston, TX
         </div>
         <motion.button
           className="theme-toggle"
@@ -231,7 +232,7 @@ function Profile() {
         />
       </div>
       <h1 className="profile-name">Ethan Jerla</h1>
-      <p className="profile-title">Designer & Developer</p>
+      <p className="profile-title">Student</p>
     </motion.section>
   )
 }
@@ -249,12 +250,10 @@ function About() {
       <h2 className="section-title">About</h2>
       <div className="bio">
         <p>
-          I'm a designer and developer focused on creating thoughtful digital experiences.
-          I care deeply about craft, simplicity, and making things that feel right.
+          I'm a student, athlete, developer, and leader who thrives on collaboration and continuous learning. When I'm not busy designing or engineering, I'm playing sports, traveling, and exploring.
         </p>
         <p>
-          Currently building products that help people work better. Previously at{' '}
-          <a href="#">Company</a> and <a href="#">Startup</a>.
+          I'm currently working on my future and my college goals. Driven by a passion for growth and learning, I create web experiences that solve problems and create delightful experiences.
         </p>
       </div>
       <div className="social-links">
