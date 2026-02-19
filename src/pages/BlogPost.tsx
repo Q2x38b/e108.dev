@@ -6,10 +6,315 @@ import { useTheme } from './Home'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { AnimatePresence, motion } from 'framer-motion'
+
+// Text-to-speech utilities
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+    .replace(/`[^`]+`/g, '') // Remove inline code
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Links to text
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // Remove images
+    .replace(/#{1,6}\s*/g, '') // Remove heading markers
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // Bold
+    .replace(/\*([^*]+)\*/g, '$1') // Italic
+    .replace(/__([^_]+)__/g, '$1') // Bold underscore
+    .replace(/_([^_]+)_/g, '$1') // Italic underscore
+    .replace(/~~([^~]+)~~/g, '$1') // Strikethrough
+    .replace(/^\s*[-*+]\s+/gm, '') // List items
+    .replace(/^\s*\d+\.\s+/gm, '') // Numbered lists
+    .replace(/^\s*>/gm, '') // Blockquotes
+    .replace(/\[\^(\d+)\]/g, '') // Citation refs
+    .replace(/\[\^(\d+)\]:.*/g, '') // Citation definitions
+    .replace(/\|.*\|/g, '') // Tables
+    .replace(/---+/g, '') // Horizontal rules
+    .replace(/\n{3,}/g, '\n\n') // Multiple newlines
+    .trim()
+}
+
+function splitIntoSections(text: string): string[] {
+  const cleanText = stripMarkdown(text)
+  // Split by paragraphs (double newlines) or sentences for better chunking
+  const paragraphs = cleanText.split(/\n\n+/).filter(p => p.trim().length > 0)
+  return paragraphs
+}
+
+interface AudioPlayerProps {
+  content: string
+  title: string
+  onClose: () => void
+}
+
+function AudioPlayer({ content, title, onClose }: AudioPlayerProps) {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentSection, setCurrentSection] = useState(0)
+  const [progress, setProgress] = useState(0)
+  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null)
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [showVoiceMenu, setShowVoiceMenu] = useState(false)
+  const [playbackRate, setPlaybackRate] = useState(1)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
+  const sectionsRef = useRef<string[]>([])
+  const progressIntervalRef = useRef<number | null>(null)
+
+  const sections = useMemo(() => splitIntoSections(content), [content])
+
+  useEffect(() => {
+    sectionsRef.current = sections
+  }, [sections])
+
+  // Load voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = speechSynthesis.getVoices()
+      // Prefer English voices, prioritize natural/premium voices
+      const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'))
+      const sortedVoices = englishVoices.sort((a, b) => {
+        // Prioritize voices with "Natural" or "Premium" in name
+        const aScore = (a.name.includes('Natural') || a.name.includes('Premium') || a.name.includes('Enhanced')) ? 1 : 0
+        const bScore = (b.name.includes('Natural') || b.name.includes('Premium') || b.name.includes('Enhanced')) ? 1 : 0
+        return bScore - aScore
+      })
+      setVoices(sortedVoices.length > 0 ? sortedVoices : availableVoices)
+      if (sortedVoices.length > 0 && !selectedVoice) {
+        setSelectedVoice(sortedVoices[0])
+      } else if (availableVoices.length > 0 && !selectedVoice) {
+        setSelectedVoice(availableVoices[0])
+      }
+    }
+
+    loadVoices()
+    speechSynthesis.addEventListener('voiceschanged', loadVoices)
+    return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices)
+  }, [selectedVoice])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      speechSynthesis.cancel()
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+      }
+    }
+  }, [])
+
+  const speakSection = useCallback((index: number) => {
+    if (index >= sectionsRef.current.length) {
+      setIsPlaying(false)
+      setProgress(100)
+      return
+    }
+
+    const utterance = new SpeechSynthesisUtterance(sectionsRef.current[index])
+    if (selectedVoice) {
+      utterance.voice = selectedVoice
+    }
+    utterance.rate = playbackRate
+    utterance.pitch = 1
+
+    utterance.onend = () => {
+      const nextIndex = index + 1
+      if (nextIndex < sectionsRef.current.length) {
+        setCurrentSection(nextIndex)
+        speakSection(nextIndex)
+      } else {
+        setIsPlaying(false)
+        setProgress(100)
+      }
+    }
+
+    utterance.onerror = () => {
+      setIsPlaying(false)
+    }
+
+    utteranceRef.current = utterance
+    speechSynthesis.speak(utterance)
+  }, [selectedVoice, playbackRate])
+
+  // Update progress
+  useEffect(() => {
+    if (isPlaying && sections.length > 0) {
+      progressIntervalRef.current = window.setInterval(() => {
+        const baseProgress = (currentSection / sections.length) * 100
+        const sectionProgress = (1 / sections.length) * 100 * 0.5 // Estimate mid-section
+        setProgress(Math.min(baseProgress + sectionProgress, 100))
+      }, 100)
+    } else if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current)
+    }
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+      }
+    }
+  }, [isPlaying, currentSection, sections.length])
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      speechSynthesis.cancel()
+      setIsPlaying(false)
+    } else {
+      setIsPlaying(true)
+      speakSection(currentSection)
+    }
+  }
+
+  const seekToSection = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const percentage = x / rect.width
+    const sectionIndex = Math.floor(percentage * sections.length)
+
+    speechSynthesis.cancel()
+    setCurrentSection(sectionIndex)
+    setProgress(percentage * 100)
+
+    if (isPlaying) {
+      setTimeout(() => speakSection(sectionIndex), 100)
+    }
+  }
+
+  const skipBack = () => {
+    const newSection = Math.max(0, currentSection - 1)
+    speechSynthesis.cancel()
+    setCurrentSection(newSection)
+    setProgress((newSection / sections.length) * 100)
+    if (isPlaying) {
+      setTimeout(() => speakSection(newSection), 100)
+    }
+  }
+
+  const skipForward = () => {
+    const newSection = Math.min(sections.length - 1, currentSection + 1)
+    speechSynthesis.cancel()
+    setCurrentSection(newSection)
+    setProgress((newSection / sections.length) * 100)
+    if (isPlaying) {
+      setTimeout(() => speakSection(newSection), 100)
+    }
+  }
+
+  const cyclePlaybackRate = () => {
+    const rates = [0.75, 1, 1.25, 1.5, 1.75, 2]
+    const currentIndex = rates.indexOf(playbackRate)
+    const nextIndex = (currentIndex + 1) % rates.length
+    setPlaybackRate(rates[nextIndex])
+  }
+
+  return (
+    <motion.div
+      className="audio-player"
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 100, opacity: 0 }}
+      transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+    >
+      <div className="audio-player-content">
+        <div className="audio-player-info">
+          <span className="audio-player-title">{title}</span>
+          <span className="audio-player-section">
+            Section {currentSection + 1} of {sections.length}
+          </span>
+        </div>
+
+        <div className="audio-player-progress" onClick={seekToSection}>
+          <div className="audio-player-progress-bar" style={{ width: `${progress}%` }} />
+          <div className="audio-player-progress-sections">
+            {sections.map((_, i) => (
+              <div
+                key={i}
+                className={`audio-player-section-marker ${i <= currentSection ? 'played' : ''}`}
+                style={{ left: `${(i / sections.length) * 100}%` }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="audio-player-controls">
+          <button className="audio-player-btn speed-btn" onClick={cyclePlaybackRate} title="Playback speed">
+            {playbackRate}x
+          </button>
+
+          <button className="audio-player-btn" onClick={skipBack} aria-label="Previous section">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="19 20 9 12 19 4 19 20" />
+              <line x1="5" y1="19" x2="5" y2="5" />
+            </svg>
+          </button>
+
+          <button className="audio-player-btn play-btn" onClick={togglePlayPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
+            {isPlaying ? (
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16" />
+                <rect x="14" y="4" width="4" height="16" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            )}
+          </button>
+
+          <button className="audio-player-btn" onClick={skipForward} aria-label="Next section">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="5 4 15 12 5 20 5 4" />
+              <line x1="19" y1="5" x2="19" y2="19" />
+            </svg>
+          </button>
+
+          <div className="voice-selector">
+            <button
+              className="audio-player-btn voice-btn"
+              onClick={() => setShowVoiceMenu(!showVoiceMenu)}
+              aria-label="Select voice"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="23" />
+                <line x1="8" y1="23" x2="16" y2="23" />
+              </svg>
+            </button>
+            <AnimatePresence>
+              {showVoiceMenu && (
+                <motion.div
+                  className="voice-menu"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                >
+                  {voices.slice(0, 8).map((voice) => (
+                    <button
+                      key={voice.name}
+                      className={`voice-option ${selectedVoice?.name === voice.name ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedVoice(voice)
+                        setShowVoiceMenu(false)
+                      }}
+                    >
+                      {voice.name.replace('Microsoft ', '').replace(' Online (Natural)', '')}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <button className="audio-player-close" onClick={onClose} aria-label="Close player">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+    </motion.div>
+  )
+}
 
 function formatDate(timestamp: number) {
   return new Date(timestamp).toLocaleDateString('en-US', {
@@ -179,6 +484,7 @@ export default function BlogPost() {
   const recordView = useMutation(api.views.recordView)
   const viewCount = useQuery(api.views.getViewCount, post ? { postId: post._id } : 'skip')
   const [linkCopied, setLinkCopied] = useState(false)
+  const [showAudioPlayer, setShowAudioPlayer] = useState(false)
 
   // Record view on mount
   useEffect(() => {
@@ -293,6 +599,12 @@ export default function BlogPost() {
             {viewCount !== undefined && viewCount > 0 && (
               <span className="article-views">{viewCount} views</span>
             )}
+            <button className="listen-btn" onClick={() => setShowAudioPlayer(true)} aria-label="Listen to article">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              <span>Listen</span>
+            </button>
             <button className="copy-link-btn" onClick={copyLink} aria-label="Copy link">
               {linkCopied ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -406,6 +718,19 @@ export default function BlogPost() {
       </article>
 
       <Footer />
+
+      <AnimatePresence>
+        {showAudioPlayer && (
+          <AudioPlayer
+            content={cleanContent}
+            title={post.title}
+            onClose={() => {
+              speechSynthesis.cancel()
+              setShowAudioPlayer(false)
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
