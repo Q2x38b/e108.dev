@@ -37,12 +37,14 @@
   transition: width 0.2s ease;
 }
 
-.nav-link:hover {
-  color: var(--text);
-}
+@media (hover: hover) {
+  .nav-link:hover {
+    color: var(--text);
+  }
 
-.nav-link:hover::after {
-  width: 100%;
+  .nav-link:hover::after {
+    width: 100%;
+  }
 }
 
 .header-right {
@@ -65,9 +67,11 @@
   color: var(--text-secondary);
 }
 
-.theme-toggle:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .theme-toggle:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
 .theme-toggle svg {
@@ -166,8 +170,10 @@
   transition: text-decoration-color 0.2s ease;
 }
 
-.bio a:hover {
-  text-decoration-color: var(--text);
+@media (hover: hover) {
+  .bio a:hover {
+    text-decoration-color: var(--text);
+  }
 }
 
 .bio kbd {
@@ -217,8 +223,10 @@
   z-index: -1;
 }
 
-.work-item:hover .work-arrow {
-  opacity: 1;
+@media (hover: hover) {
+  .work-item:hover .work-arrow {
+    opacity: 1;
+  }
 }
 
 .work-info {
@@ -338,9 +346,11 @@
   transition: all 0.2s ease;
 }
 
-.work-modal-close:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .work-modal-close:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
 .work-modal-close svg {
@@ -422,8 +432,10 @@
   transition: color 0.2s ease;
 }
 
-.social-link:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .social-link:hover {
+    color: var(--text);
+  }
 }
 
 .social-link svg {
@@ -432,8 +444,10 @@
   transition: transform 0.2s ease;
 }
 
-.social-link:hover svg {
-  transform: none;
+@media (hover: hover) {
+  .social-link:hover svg {
+    transform: none;
+  }
 }
 
 /* Footer */
@@ -468,8 +482,10 @@
   transition: color 0.2s ease;
 }
 
-.footer-link:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .footer-link:hover {
+    color: var(--text);
+  }
 }
 
 .footer-quote-inline {
@@ -509,9 +525,11 @@
   color: var(--text-tertiary);
 }
 
-.back-to-top:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .back-to-top:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
 .back-to-top svg {
@@ -533,8 +551,10 @@
   transition: background 0.2s ease;
 }
 
-.status-badge:hover {
-  background: var(--border);
+@media (hover: hover) {
+  .status-badge:hover {
+    background: var(--border);
+  }
 }
 
 .status-dot {
@@ -582,8 +602,10 @@
   transition: color 0.2s ease;
 }
 
-.accordion-header:hover {
-  color: var(--accent-color);
+@media (hover: hover) {
+  .accordion-header:hover {
+    color: var(--accent-color);
+  }
 }
 
 .accordion-title.active {
@@ -635,8 +657,10 @@
   transition: color 0.2s ease;
 }
 
-.breadcrumb-link:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .breadcrumb-link:hover {
+    color: var(--text);
+  }
 }
 
 .breadcrumb-sep {
@@ -674,8 +698,10 @@
   transition: background 0.15s ease;
 }
 
-.post-item:hover {
-  background: var(--hover-bg);
+@media (hover: hover) {
+  .post-item:hover {
+    background: var(--hover-bg);
+  }
 }
 
 .post-date {
@@ -703,9 +729,11 @@
   transition: background 0.2s ease, color 0.2s ease;
 }
 
-.add-post-btn:hover {
-  background: var(--border);
-  color: var(--text);
+@media (hover: hover) {
+  .add-post-btn:hover {
+    background: var(--border);
+    color: var(--text);
+  }
 }
 
 .add-post-btn svg {
@@ -768,9 +796,11 @@
   height: 14px;
 }
 
-.copy-link-btn:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .copy-link-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
 .edit-link,
@@ -785,19 +815,23 @@
   transition: background 0.2s ease, color 0.2s ease;
 }
 
-.edit-link:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .edit-link:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
-.delete-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
-}
+@media (hover: hover) {
+  .delete-btn:hover {
+    background: #fef2f2;
+    color: #dc2626;
+  }
 
-[data-theme="dark"] .delete-btn:hover {
-  background: #2a1515;
-  color: #f87171;
+  [data-theme="dark"] .delete-btn:hover {
+    background: #2a1515;
+    color: #f87171;
+  }
 }
 
 /* Article Content */
@@ -861,8 +895,10 @@
   transition: opacity 0.2s ease;
 }
 
-.heading-with-link:hover .heading-link-icon {
-  opacity: 1;
+@media (hover: hover) {
+  .heading-with-link:hover .heading-link-icon {
+    opacity: 1;
+  }
 }
 
 /* Code Blocks */
@@ -903,9 +939,11 @@
   transition: background 0.2s ease, color 0.2s ease;
 }
 
-.copy-btn:hover {
-  background: var(--border);
-  color: var(--text);
+@media (hover: hover) {
+  .copy-btn:hover {
+    background: var(--border);
+    color: var(--text);
+  }
 }
 
 .copy-btn svg {
@@ -987,10 +1025,16 @@
   transition: background 0.2s ease, color 0.2s ease;
 }
 
-.editor-toolbar button:hover,
 .editor-toolbar button.active {
   background: var(--bg);
   color: var(--text);
+}
+
+@media (hover: hover) {
+  .editor-toolbar button:hover {
+    background: var(--bg);
+    color: var(--text);
+  }
 }
 
 .toolbar-divider {
@@ -1009,7 +1053,7 @@
   background: var(--bg);
   color: var(--text);
   font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 0.9rem;
+  font-size: 16px; /* Minimum 16px to prevent iOS zoom on focus */
   line-height: 1.6;
   resize: vertical;
   outline: none;
@@ -1067,9 +1111,11 @@
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 
-.cancel-btn:hover {
-  border-color: var(--text-tertiary);
-  color: var(--text);
+@media (hover: hover) {
+  .cancel-btn:hover {
+    border-color: var(--text-tertiary);
+    color: var(--text);
+  }
 }
 
 .save-btn {
@@ -1083,8 +1129,10 @@
   transition: opacity 0.2s ease;
 }
 
-.save-btn:hover {
-  opacity: 0.9;
+@media (hover: hover) {
+  .save-btn:hover {
+    opacity: 0.9;
+  }
 }
 
 .save-btn:disabled {
@@ -1108,8 +1156,10 @@
   transition: color 0.2s ease;
 }
 
-.back-link:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .back-link:hover {
+    color: var(--text);
+  }
 }
 
 /* Logout Button */
@@ -1127,9 +1177,11 @@
   color: var(--text-secondary);
 }
 
-.logout-btn:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .logout-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
 .logout-btn svg {
@@ -1177,7 +1229,7 @@
   border-radius: 6px;
   background: var(--bg);
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 16px; /* Minimum 16px to prevent iOS zoom on focus */
   outline: none;
   transition: border-color 0.2s ease;
 }
@@ -1208,8 +1260,10 @@
   transition: opacity 0.2s ease;
 }
 
-.login-modal button:hover {
-  opacity: 0.9;
+@media (hover: hover) {
+  .login-modal button:hover {
+    opacity: 0.9;
+  }
 }
 
 /* Mobile adjustments */
@@ -1351,8 +1405,10 @@
   transition: opacity 0.2s ease;
 }
 
-.post-row:hover {
-  opacity: 0.7;
+@media (hover: hover) {
+  .post-row:hover {
+    opacity: 0.7;
+  }
 }
 
 .post-row-title {
@@ -1382,8 +1438,10 @@
   vertical-align: super;
 }
 
-.citation-ref:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .citation-ref:hover {
+    text-decoration: underline;
+  }
 }
 
 .citations-section {
@@ -1434,8 +1492,10 @@
   text-decoration: none;
 }
 
-.citation-back:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .citation-back:hover {
+    text-decoration: underline;
+  }
 }
 
 .citation-text {
@@ -1507,9 +1567,11 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.floating-toolbar button:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .floating-toolbar button:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
 .toolbar-divider-v {
@@ -1562,7 +1624,7 @@
   border-radius: 8px;
   background: var(--bg);
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 16px; /* Minimum 16px to prevent iOS zoom on focus */
   line-height: 1.5;
   resize: vertical;
   font-family: inherit;
@@ -1622,9 +1684,11 @@
   transition: all 0.2s ease;
 }
 
-.listen-btn:hover {
-  opacity: 0.9;
-  transform: scale(1.02);
+@media (hover: hover) {
+  .listen-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
 }
 
 .listen-btn svg {
@@ -1666,8 +1730,10 @@
   flex-shrink: 0;
 }
 
-.audio-player-btn:hover {
-  opacity: 0.85;
+@media (hover: hover) {
+  .audio-player-btn:hover {
+    opacity: 0.85;
+  }
 }
 
 .audio-player-btn svg {
@@ -1710,8 +1776,10 @@
   flex-shrink: 0;
 }
 
-.audio-player-close:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .audio-player-close:hover {
+    color: var(--text);
+  }
 }
 
 .audio-player-close svg {
@@ -1819,9 +1887,11 @@
   transition: all 0.2s ease;
 }
 
-.engagement-btn:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .engagement-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
 .engagement-btn svg {
@@ -1841,8 +1911,10 @@
   transition: all 0.2s ease;
 }
 
-.share-btn:hover {
-  background: var(--hover-bg);
+@media (hover: hover) {
+  .share-btn:hover {
+    background: var(--hover-bg);
+  }
 }
 
 .article-admin-actions {
@@ -1872,9 +1944,11 @@
   transition: all 0.2s ease;
 }
 
-.toc-toggle-btn:hover {
-  background: var(--hover-bg);
-  border-color: var(--text-tertiary);
+@media (hover: hover) {
+  .toc-toggle-btn:hover {
+    background: var(--hover-bg);
+    border-color: var(--text-tertiary);
+  }
 }
 
 .toc-lines {
@@ -1938,9 +2012,11 @@
   text-overflow: ellipsis;
 }
 
-.toc-item:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .toc-item:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
 }
 
 .toc-level-1 {
@@ -1988,8 +2064,10 @@
   transition: all 0.2s ease;
 }
 
-.more-articles-tab:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .more-articles-tab:hover {
+    color: var(--text);
+  }
 }
 
 .more-articles-tab.active {
@@ -2029,8 +2107,10 @@
   border-bottom: none;
 }
 
-.more-article-item:hover {
-  opacity: 0.7;
+@media (hover: hover) {
+  .more-article-item:hover {
+    opacity: 0.7;
+  }
 }
 
 .more-article-content {
@@ -2089,8 +2169,10 @@
   transition: all 0.2s ease;
 }
 
-.see-all-btn:hover {
-  background: var(--hover-bg);
+@media (hover: hover) {
+  .see-all-btn:hover {
+    background: var(--hover-bg);
+  }
 }
 
 .see-all-btn svg {
@@ -2120,9 +2202,11 @@
   transition: all 0.2s ease;
 }
 
-.listen-btn-large:hover {
-  opacity: 0.9;
-  transform: scale(1.02);
+@media (hover: hover) {
+  .listen-btn-large:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
 }
 
 .listen-btn-large svg {
@@ -2153,7 +2237,7 @@
 }
 
 .editor-image-input {
-  font-size: 0.85rem;
+  font-size: 16px; /* Minimum 16px to prevent iOS zoom on focus */
   padding: 10px 12px;
   border: 1px dashed var(--border);
   border-radius: 8px;
@@ -2204,8 +2288,10 @@
   transition: background 0.2s ease;
 }
 
-.editor-image-remove:hover {
-  background: rgba(0, 0, 0, 0.9);
+@media (hover: hover) {
+  .editor-image-remove:hover {
+    background: rgba(0, 0, 0, 0.9);
+  }
 }
 
 .editor-image-remove svg {
@@ -2227,8 +2313,10 @@
   border-bottom: none;
 }
 
-.post-row-enhanced:hover {
-  opacity: 0.7;
+@media (hover: hover) {
+  .post-row-enhanced:hover {
+    opacity: 0.7;
+  }
 }
 
 .post-row-content {
@@ -2300,3 +2388,63 @@
     font-size: 1rem;
   }
 }
+
+/* ==========================================================================
+   Touch & Performance Optimizations
+   ========================================================================== */
+
+/*
+ * Disable touch-action for custom pan/zoom gestures
+ * Apply to components that implement custom pan/zoom behavior
+ */
+.touch-none {
+  touch-action: none;
+}
+
+.touch-pan-x {
+  touch-action: pan-x;
+}
+
+.touch-pan-y {
+  touch-action: pan-y;
+}
+
+/*
+ * GPU Rendering Utilities
+ * Use sparingly - only for unperformant animations
+ */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/*
+ * will-change utilities
+ * Toggle on before animation, remove after animation completes
+ */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.will-change-scroll {
+  will-change: scroll-position;
+}
+
+/*
+ * Video autoplay requirements for iOS
+ * Apply muted and playsinline attributes to video tags
+ * Example: <video muted playsinline>
+ */
+
+/*
+ * Performance notes:
+ * - Avoid large blur() values for filter/backdrop-filter (can be slow)
+ * - Use radial gradients instead of scaling/blurring filled rectangles (prevents banding)
+ * - Pause/unmount off-screen videos on iOS to prevent choking
+ * - Use refs for real-time values that update frequently (bypass React render cycle)
+ * - Detect device capabilities with matchMedia or navigator.hardwareConcurrency
+ */
