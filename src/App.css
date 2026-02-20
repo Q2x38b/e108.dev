@@ -172,7 +172,7 @@
 
 .bio kbd {
   display: inline-block;
-  padding: 0px 4px;
+  padding: 0 3px;
   font-size: 0.9em;
   font-family: inherit;
   background: var(--hover-bg);
@@ -386,7 +386,6 @@
   color: var(--text-tertiary);
   white-space: nowrap;
   text-align: right;
-  min-width: 120px;
 }
 
 .experience-date {

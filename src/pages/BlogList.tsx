@@ -6,6 +6,11 @@ import { useTheme } from './Home'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+}
+
 interface Post {
   _id: string
   title: string
@@ -141,7 +146,12 @@ export default function BlogList() {
 
   return (
     <div className="blog-list-layout">
-      <header className="blog-header blog-list-header">
+      <motion.header
+        className="blog-header blog-list-header"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-sep">/</span>
@@ -180,30 +190,48 @@ export default function BlogList() {
             </Link>
           </SignedIn>
         </div>
-      </header>
+      </motion.header>
 
-      <div className="blog-list-title">
+      <motion.div
+        className="blog-list-title"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <h1 className="blog-title">Writing</h1>
-      </div>
+      </motion.div>
 
-      <main className="blog-list-content">
+      <motion.main
+        className="blog-list-content"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         {posts === undefined ? (
           <p className="blog-loading">Loading...</p>
         ) : posts.length === 0 ? (
           <p className="blog-empty">No posts yet.</p>
         ) : (
           <ul className="post-list-simple">
-            {(posts as Post[]).map((post: Post) => (
-              <li key={post._id}>
+            {(posts as Post[]).map((post: Post, index: number) => (
+              <motion.li
+                key={post._id}
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+                transition={{ duration: 0.4, delay: 0.25 + index * 0.05 }}
+              >
                 <Link to={`/blog/${post.slug}`} className="post-row">
                   <span className="post-row-title">{post.title}</span>
                   <span className="post-row-date">{formatDate(post.createdAt)}</span>
                 </Link>
-              </li>
+              </motion.li>
             ))}
           </ul>
         )}
-      </main>
+      </motion.main>
 
       <Footer />
       <div className="blog-blur-bottom" />

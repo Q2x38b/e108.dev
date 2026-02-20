@@ -11,6 +11,11 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { AnimatePresence, motion } from 'framer-motion'
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+}
+
 // Text-to-speech utilities
 function stripMarkdown(text: string): string {
   return text
@@ -487,7 +492,13 @@ export default function BlogPost() {
         </div>
       </header>
 
-      <article className="blog-article">
+      <motion.article
+        className="blog-article"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <header className="article-header">
           <h1 className="article-title">{post.title}</h1>
           <div className="article-meta">
@@ -613,7 +624,7 @@ export default function BlogPost() {
             </div>
           )}
         </div>
-      </article>
+      </motion.article>
 
       <Footer />
 

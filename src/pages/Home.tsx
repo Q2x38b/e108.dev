@@ -524,11 +524,27 @@ function LoginModal({ onClose }: { onClose: () => void }) {
   )
 }
 
+function getLastUpdated() {
+  const deployDate = new Date('2025-02-19')
+  const now = new Date()
+  const diffMs = now.getTime() - deployDate.getTime()
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffDays === 0) return 'Last updated today'
+  if (diffDays === 1) return 'Last updated yesterday'
+  if (diffDays < 7) return `Last updated ${diffDays} days ago`
+  if (diffDays < 14) return 'Last updated 1 week ago'
+  if (diffDays < 30) return `Last updated ${Math.floor(diffDays / 7)} weeks ago`
+  if (diffDays < 60) return 'Last updated 1 month ago'
+  return `Last updated ${Math.floor(diffDays / 30)} months ago`
+}
+
 function Footer() {
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
   const { isAuthenticated } = useAuth()
+  const lastUpdated = getLastUpdated()
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -565,7 +581,7 @@ function Footer() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.7 }}
       >
-        <div className="footer-updated">Last updated 1 week ago</div>
+        <div className="footer-updated">{lastUpdated}</div>
         <div className="footer-bottom">
           <div className="footer-left">
             <span
