@@ -113,7 +113,7 @@
   height: 100%;
   border-radius: 10px;
   object-fit: cover;
-  object-position: center top;
+  object-position: center 15%;
   background: white;
   border: 1px solid var(--border);
 }
@@ -357,19 +357,20 @@
   flex: 1;
   height: 1px;
   background: var(--border);
-  min-width: 40px;
-}
-
-.experience-role {
-  font-size: 0.9rem;
-  color: var(--text-tertiary);
-  white-space: nowrap;
+  min-width: 20px;
 }
 
 .experience-date {
   font-size: 0.9rem;
   color: var(--text-tertiary);
   white-space: nowrap;
+}
+
+.experience-role {
+  font-size: 0.9rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  text-align: right;
 }
 
 .blink-cursor {

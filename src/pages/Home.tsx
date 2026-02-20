@@ -242,7 +242,7 @@ function Profile() {
         />
       </div>
       <h1 className="profile-name">Ethan Jerla</h1>
-      <p className="profile-title">Student • Developer • Eagle Scout • Athlete</p>
+      <p className="profile-title">Student • Developer</p>
     </motion.section>
   )
 }
@@ -349,18 +349,17 @@ function Work() {
           {projects.map((project, index) => (
             <motion.div
               key={project.name}
-              layoutId={project.name}
               className="work-item"
               variants={fadeInUp}
               transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
               onClick={() => setSelectedId(project.name)}
             >
               <div className="work-info">
-                <motion.div layoutId={`title-${project.name}`} className="work-name">{project.name}</motion.div>
-                <motion.div layoutId={`desc-${project.name}`} className="work-description">{project.description}</motion.div>
+                <div className="work-name">{project.name}</div>
+                <div className="work-description">{project.description}</div>
               </div>
               <div className="work-meta">
-                <motion.span layoutId={`year-${project.name}`} className="work-year">{project.year}</motion.span>
+                <span className="work-year">{project.year}</span>
                 <span className="work-arrow">+</span>
               </div>
             </motion.div>
@@ -374,48 +373,40 @@ function Work() {
             className="work-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             onClick={() => setSelectedId(null)}
           >
             <motion.div
-              layoutId={selectedId}
               className="work-modal"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="work-modal-header">
-                <motion.h3 layoutId={`title-${selectedId}`} className="work-modal-title">{selectedProject.name}</motion.h3>
-                <motion.span layoutId={`year-${selectedId}`} className="work-modal-year">{selectedProject.year}</motion.span>
+                <h3 className="work-modal-title">{selectedProject.name}</h3>
+                <span className="work-modal-year">{selectedProject.year}</span>
               </div>
-              <motion.p
-                className="work-modal-details"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
+              <p className="work-modal-details">
                 {selectedProject.details}
-              </motion.p>
-              <motion.div
-                className="work-modal-tech"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.25 }}
-              >
+              </p>
+              <div className="work-modal-tech">
                 {selectedProject.tech.map((t) => (
                   <span key={t} className="work-modal-tag">{t}</span>
                 ))}
-              </motion.div>
-              <motion.button
+              </div>
+              <button
                 className="work-modal-close"
                 onClick={() => setSelectedId(null)}
                 aria-label="Close"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
-              </motion.button>
+              </button>
             </motion.div>
           </motion.div>
         )}
@@ -450,11 +441,11 @@ function Experience() {
           >
             <span className="experience-company">{exp.company}</span>
             <span className="experience-line" />
+            {exp.date && <span className="experience-date">{exp.date}</span>}
             <span className="experience-role">
               {exp.role}
               {!exp.date && <span className="blink-cursor">_</span>}
             </span>
-            {exp.date && <span className="experience-date">{exp.date}</span>}
           </motion.div>
         ))}
       </div>
@@ -554,7 +545,7 @@ function Footer() {
             <span className="footer-dot">•</span>
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
             <span className="footer-dot">•</span>
-            <span className="footer-quote-inline">The only limit is yourself.</span>
+            <span className="footer-quote-inline">The only limit is yourself</span>
           </div>
           <div className="footer-right">
             <span className="footer-time">{formatTime(time)}</span>
