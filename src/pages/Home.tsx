@@ -260,10 +260,10 @@ function About() {
       <h2 className="section-title">About</h2>
       <div className="bio">
         <p>
-          I'm a <kbd>student</kbd>, <kbd>athlete</kbd>, <kbd>developer</kbd>, and <kbd>leader</kbd> who thrives on collaboration and continuous learning. When I'm not busy designing or engineering, I'm playing <kbd>sports</kbd>, traveling, and exploring.
+          I'm a <kbd>student</kbd>, <kbd>athlete</kbd>, <kbd>developer</kbd>, and <kbd>leader</kbd> who thrives on <em>collaboration</em> and <em>continuous learning</em>. When I'm not busy designing or engineering, I'm playing <kbd>sports</kbd>, traveling, and exploring.
         </p>
         <p>
-          I'm currently working on my future and my <kbd>college goals</kbd>. Driven by a passion for growth and learning, I create <kbd>web experiences</kbd> that solve problems and create delightful experiences.
+          I'm currently working on my future and my <kbd>college goals</kbd>. Driven by a passion for <em>growth</em> and <em>learning</em>, I create <kbd>web experiences</kbd> that solve problems and create <em>delightful experiences</em>.
         </p>
       </div>
       <div className="social-links">
@@ -318,6 +318,7 @@ function Work() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const selectedProject = projects.find(p => p.name === selectedId)
   const listRef = useRef<HTMLDivElement>(null)
+  const hoverTimeoutRef = useRef<number | null>(null)
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -330,6 +331,20 @@ function Work() {
       document.body.style.overflow = ''
     }
   }, [selectedId])
+
+  const handleMouseEnter = (index: number) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
+    setHoveredIndex(index)
+  }
+
+  const handleMouseLeave = () => {
+    hoverTimeoutRef.current = window.setTimeout(() => {
+      setHoveredIndex(null)
+    }, 50)
+  }
 
   return (
     <>
@@ -356,8 +371,8 @@ function Work() {
                 variants={fadeInUp}
                 transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
                 onClick={() => setSelectedId(project.name)}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseEnter={() => handleMouseEnter(index)}
+                onMouseLeave={handleMouseLeave}
               >
                 {hoveredIndex === index && (
                   <motion.div
@@ -455,6 +470,7 @@ function Experience() {
             variants={fadeInUp}
             transition={{ duration: 0.4, delay: 0.55 + index * 0.05 }}
           >
+            <span className="experience-company">{exp.company}</span>
             <span className="experience-line" />
             <span className="experience-role">
               {exp.role}
