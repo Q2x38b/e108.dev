@@ -172,7 +172,7 @@
 
 .bio kbd {
   display: inline-block;
-  padding: 1px 5px;
+  padding: 0px 4px;
   font-size: 0.9em;
   font-family: inherit;
   background: var(--hover-bg);
@@ -183,7 +183,6 @@
 
 .bio em {
   font-style: italic;
-  color: var(--text);
 }
 
 /* Work Items */
@@ -376,24 +375,26 @@
 }
 
 .experience-line {
-  width: 40px;
+  flex: 1;
   height: 1px;
   background: var(--border);
-  flex-shrink: 0;
+  min-width: 20px;
 }
 
 .experience-role {
   font-size: 0.9rem;
   color: var(--text-tertiary);
   white-space: nowrap;
-  flex: 1;
+  text-align: right;
+  min-width: 120px;
 }
 
 .experience-date {
   font-size: 0.9rem;
   color: var(--text-tertiary);
   white-space: nowrap;
-  text-align: right;
+  text-align: left;
+  min-width: 90px;
 }
 
 .blink-cursor {
@@ -1237,23 +1238,21 @@
   .experience-company {
     min-width: auto;
     font-size: 0.9rem;
+    width: 100%;
   }
 
   .experience-line {
-    flex: 1;
-    min-width: 20px;
+    display: none;
   }
 
   .experience-role {
-    flex: none;
-    width: auto;
+    min-width: auto;
+    text-align: left;
   }
 
   .experience-date {
-    width: 100%;
-    text-align: left;
-    order: 4;
-    padding-left: 0;
+    min-width: auto;
+    margin-left: auto;
     font-size: 0.8rem;
   }
 
