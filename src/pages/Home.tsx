@@ -49,24 +49,24 @@ const projects = [
 
 const experiences = [
   {
-    role: 'Intern at Law Firm',
-    description: 'Learning about legal practice and gaining professional experience',
-    date: '2024 - Present'
+    company: 'Law Firm',
+    role: 'Legal Intern',
+    date: '2024 - now'
   },
   {
-    role: 'Restaurant Team Member',
-    description: 'First job experience in customer service',
-    date: '2023 - Present'
+    company: 'Restaurant',
+    role: 'Team Member',
+    date: '2023 - now'
   },
   {
-    role: 'Started High School',
-    description: 'Active in sports, extracurriculars, and academics',
+    company: 'High School',
+    role: 'Student & Athlete',
     date: '2022 - 2026'
   },
   {
-    role: 'Future: University of Texas at Austin',
-    description: 'Planning to study Law',
-    date: '2023 - 2026'
+    company: 'UT Austin',
+    role: 'Future Law Student',
+    date: '2026 - 2030'
   }
 ]
 
@@ -365,16 +365,15 @@ function Experience() {
       <div className="experience-list">
         {experiences.map((exp, index) => (
           <motion.div
-            key={exp.role}
-            className="experience-item"
+            key={exp.company}
+            className="experience-row"
             variants={fadeInUp}
             transition={{ duration: 0.4, delay: 0.55 + index * 0.05 }}
           >
-            <div>
-              <div className="experience-role">{exp.role}</div>
-              <div className="experience-company">{exp.description}</div>
-            </div>
-            <div className="experience-date">{exp.date}</div>
+            <span className="experience-company">{exp.company}</span>
+            <span className="experience-line" />
+            <span className="experience-role">{exp.role}</span>
+            <span className="experience-date">{exp.date}</span>
           </motion.div>
         ))}
       </div>
