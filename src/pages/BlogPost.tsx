@@ -629,6 +629,7 @@ export default function BlogPost() {
           />
         )}
       </AnimatePresence>
+      <div className="blog-blur-bottom" />
     </div>
   )
 }

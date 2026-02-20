@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 
 // Animation variants
@@ -260,10 +260,10 @@ function About() {
       <h2 className="section-title">About</h2>
       <div className="bio">
         <p>
-          I'm a student, athlete, developer, and leader who thrives on collaboration and continuous learning. When I'm not busy designing or engineering, I'm playing sports, traveling, and exploring.
+          I'm a <kbd>student</kbd>, <kbd>athlete</kbd>, <kbd>developer</kbd>, and <kbd>leader</kbd> who thrives on collaboration and continuous learning. When I'm not busy designing or engineering, I'm playing <kbd>sports</kbd>, traveling, and exploring.
         </p>
         <p>
-          I'm currently working on my future and my college goals. Driven by a passion for growth and learning, I create web experiences that solve problems and create delightful experiences.
+          I'm currently working on my future and my <kbd>college goals</kbd>. Driven by a passion for growth and learning, I create <kbd>web experiences</kbd> that solve problems and create delightful experiences.
         </p>
       </div>
       <div className="social-links">
@@ -315,7 +315,9 @@ function Skills() {
 
 function Work() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const selectedProject = projects.find(p => p.name === selectedId)
+  const listRef = useRef<HTMLDivElement>(null)
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -345,26 +347,40 @@ function Work() {
         >
           Work
         </motion.h2>
-        <div className="work-list">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.name}
-              className="work-item"
-              variants={fadeInUp}
-              transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
-              onClick={() => setSelectedId(project.name)}
-            >
-              <div className="work-info">
-                <div className="work-name">{project.name}</div>
-                <div className="work-description">{project.description}</div>
-              </div>
-              <div className="work-meta">
-                <span className="work-year">{project.year}</span>
-                <span className="work-arrow">+</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <LayoutGroup>
+          <div className="work-list" ref={listRef}>
+            {projects.map((project, index) => (
+              <motion.div
+                key={project.name}
+                className="work-item"
+                variants={fadeInUp}
+                transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
+                onClick={() => setSelectedId(project.name)}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                {hoveredIndex === index && (
+                  <motion.div
+                    className="work-item-bg"
+                    layoutId="work-hover-bg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.3 }}
+                  />
+                )}
+                <div className="work-info">
+                  <div className="work-name">{project.name}</div>
+                  <div className="work-description">{project.description}</div>
+                </div>
+                <div className="work-meta">
+                  <span className="work-year">{project.year}</span>
+                  <span className="work-arrow">+</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </LayoutGroup>
       </motion.section>
 
       <AnimatePresence>
@@ -439,13 +455,12 @@ function Experience() {
             variants={fadeInUp}
             transition={{ duration: 0.4, delay: 0.55 + index * 0.05 }}
           >
-            <span className="experience-company">{exp.company}</span>
             <span className="experience-line" />
-            {exp.date && <span className="experience-date">{exp.date}</span>}
             <span className="experience-role">
               {exp.role}
               {!exp.date && <span className="blink-cursor">_</span>}
             </span>
+            {exp.date && <span className="experience-date">{exp.date}</span>}
           </motion.div>
         ))}
       </div>
@@ -534,6 +549,7 @@ function Footer() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.7 }}
       >
+        <div className="footer-updated">Last updated 1 week ago</div>
         <div className="footer-bottom">
           <div className="footer-left">
             <span

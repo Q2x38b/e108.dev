@@ -206,6 +206,7 @@ export default function BlogList() {
       </main>
 
       <Footer />
+      <div className="blog-blur-bottom" />
     </div>
   )
 }

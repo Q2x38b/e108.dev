@@ -170,6 +170,17 @@
   text-decoration-color: var(--text);
 }
 
+.bio kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.9em;
+  font-family: inherit;
+  background: var(--hover-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+}
+
 /* Work Items */
 .work-list {
   display: flex;
@@ -185,16 +196,21 @@
   margin: 0 -12px;
   border-radius: 12px;
   text-decoration: none;
-  background: var(--bg);
+  background: transparent;
   border: 1px solid transparent;
   width: calc(100% + 24px);
   text-align: left;
   color: inherit;
   font-family: inherit;
+  position: relative;
 }
 
-.work-item:hover {
+.work-item-bg {
+  position: absolute;
+  inset: 0;
   background: var(--hover-bg);
+  border-radius: 12px;
+  z-index: -1;
 }
 
 .work-item:hover .work-arrow {
@@ -354,19 +370,20 @@
 }
 
 .experience-line {
-  flex: 1;
+  width: 40px;
   height: 1px;
   background: var(--border);
-  min-width: 20px;
-}
-
-.experience-date {
-  font-size: 0.9rem;
-  color: var(--text-tertiary);
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .experience-role {
+  font-size: 0.9rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  flex: 1;
+}
+
+.experience-date {
   font-size: 0.9rem;
   color: var(--text-tertiary);
   white-space: nowrap;
@@ -418,6 +435,12 @@
   margin-top: 64px;
   padding-top: 24px;
   border-top: 1px solid var(--border);
+}
+
+.footer-updated {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-bottom: 12px;
 }
 
 .footer-left {
@@ -1240,6 +1263,43 @@
     padding: 4px 8px;
     font-size: 0.8rem;
   }
+}
+
+/* Blog Bottom Blur Effect */
+.blog-blur-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 720px;
+  height: 100px;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.blog-blur-bottom::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  mask-image: linear-gradient(to top, black 0%, black 20%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 20%, transparent 100%);
+}
+
+.blog-blur-bottom::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--bg) 0%,
+    transparent 100%
+  );
+  opacity: 0.9;
+  mask-image: linear-gradient(to top, black 0%, transparent 80%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 80%);
 }
 
 /* Blog List Fixed Layout */
