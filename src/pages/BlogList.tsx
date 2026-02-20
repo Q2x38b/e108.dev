@@ -14,9 +14,11 @@ const fadeInUp = {
 interface Post {
   _id: string
   title: string
+  subtitle?: string
   slug: string
   content: string
   excerpt?: string
+  titleImage?: string
   published: boolean
   createdAt: number
   updatedAt: number
@@ -223,9 +225,19 @@ export default function BlogList() {
                 animate="visible"
                 transition={{ duration: 0.4, delay: 0.25 + index * 0.05 }}
               >
-                <Link to={`/blog/${post.slug}`} className="post-row">
-                  <span className="post-row-title">{post.title}</span>
-                  <span className="post-row-date">{formatDate(post.createdAt)}</span>
+                <Link to={`/blog/${post.slug}`} className="post-row-enhanced">
+                  <div className="post-row-content">
+                    <span className="post-row-title">{post.title}</span>
+                    {post.subtitle && (
+                      <span className="post-row-subtitle">{post.subtitle}</span>
+                    )}
+                    <span className="post-row-date">{formatDate(post.createdAt)}</span>
+                  </div>
+                  {post.titleImage && (
+                    <div className="post-row-image">
+                      <img src={post.titleImage} alt="" />
+                    </div>
+                  )}
                 </Link>
               </motion.li>
             ))}

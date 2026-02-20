@@ -525,7 +525,9 @@ function LoginModal({ onClose }: { onClose: () => void }) {
 }
 
 function getLastUpdated() {
-  const deployDate = new Date('2025-02-19')
+  // Use build-time environment variable, falls back to current date
+  const buildDateStr = import.meta.env.VITE_BUILD_DATE || new Date().toISOString().split('T')[0]
+  const deployDate = new Date(buildDateStr)
   const now = new Date()
   const diffMs = now.getTime() - deployDate.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))

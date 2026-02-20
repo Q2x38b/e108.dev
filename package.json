@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "VITE_BUILD_DATE=$(date +%Y-%m-%d) vite build",
+    "build:win": "set VITE_BUILD_DATE=%date:~10,4%-%date:~4,2%-%date:~7,2% && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

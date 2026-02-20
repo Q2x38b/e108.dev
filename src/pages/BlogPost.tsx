@@ -219,7 +219,7 @@ function formatDate(timestamp: number) {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
-  })
+  }).toUpperCase()
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -376,16 +376,211 @@ function extractCitations(content: string): { content: string; citations: { num:
   return { content: cleanContent, citations: citations.sort((a, b) => a.num - b.num) }
 }
 
+// Extract headings from markdown content
+function extractHeadings(content: string): { id: string; text: string; level: number }[] {
+  const headingRegex = /^(#{1,3})\s+(.+)$/gm
+  const headings: { id: string; text: string; level: number }[] = []
+  let match
+
+  while ((match = headingRegex.exec(content)) !== null) {
+    const level = match[1].length
+    const text = match[2].trim()
+    const id = text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+    headings.push({ id, text, level })
+  }
+
+  return headings
+}
+
+// Table of Contents Sidebar Component
+interface TOCSidebarProps {
+  headings: { id: string; text: string; level: number }[]
+  isOpen: boolean
+  onToggle: () => void
+}
+
+function TOCSidebar({ headings, isOpen, onToggle }: TOCSidebarProps) {
+  const scrollToHeading = (id: string) => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <>
+      <button
+        className="toc-toggle-btn"
+        onClick={onToggle}
+        aria-label="Toggle table of contents"
+      >
+        <div className="toc-lines">
+          {headings.filter(h => h.level === 1).map((_, i) => (
+            <span key={i} className="toc-line" />
+          ))}
+          {headings.filter(h => h.level === 1).length === 0 &&
+            headings.slice(0, 5).map((_, i) => (
+              <span key={i} className="toc-line" />
+            ))
+          }
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="toc-sidebar"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="toc-header">CONTENTS</div>
+            <nav className="toc-nav">
+              {headings.map((heading, index) => (
+                <button
+                  key={index}
+                  className={`toc-item toc-level-${heading.level}`}
+                  onClick={() => scrollToHeading(heading.id)}
+                >
+                  {heading.text}
+                </button>
+              ))}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
+
+// More Articles Section
+interface Post {
+  _id: string
+  title: string
+  subtitle?: string
+  slug: string
+  titleImage?: string
+  createdAt: number
+  viewCount?: number
+}
+
+interface MoreArticlesProps {
+  currentPostId: string
+  posts: Post[]
+}
+
+function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
+  const [activeTab, setActiveTab] = useState<'top' | 'latest' | 'all'>('top')
+  const navigate = useNavigate()
+
+  const filteredPosts = useMemo(() => {
+    const otherPosts = posts.filter(p => p._id !== currentPostId)
+
+    switch (activeTab) {
+      case 'top':
+        return [...otherPosts].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 3)
+      case 'latest':
+        return [...otherPosts].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3)
+      case 'all':
+        return otherPosts.slice(0, 3)
+      default:
+        return otherPosts.slice(0, 3)
+    }
+  }, [posts, currentPostId, activeTab])
+
+  const formatArticleDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }).toUpperCase()
+  }
+
+  if (filteredPosts.length === 0) return null
+
+  return (
+    <section className="more-articles">
+      <div className="more-articles-tabs">
+        <button
+          className={`more-articles-tab ${activeTab === 'top' ? 'active' : ''}`}
+          onClick={() => setActiveTab('top')}
+        >
+          Top
+        </button>
+        <button
+          className={`more-articles-tab ${activeTab === 'latest' ? 'active' : ''}`}
+          onClick={() => setActiveTab('latest')}
+        >
+          Latest
+        </button>
+        <button
+          className={`more-articles-tab ${activeTab === 'all' ? 'active' : ''}`}
+          onClick={() => setActiveTab('all')}
+        >
+          Discussions
+        </button>
+        <div className="more-articles-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </div>
+      </div>
+
+      <div className="more-articles-list">
+        {filteredPosts.map((post) => (
+          <Link
+            key={post._id}
+            to={`/blog/${post.slug}`}
+            className="more-article-item"
+          >
+            <div className="more-article-content">
+              <h3 className="more-article-title">{post.title}</h3>
+              {post.subtitle && (
+                <p className="more-article-subtitle">{post.subtitle}</p>
+              )}
+              <span className="more-article-meta">
+                {formatArticleDate(post.createdAt)} · ETHAN JERLA
+              </span>
+            </div>
+            {post.titleImage && (
+              <div className="more-article-image">
+                <img src={post.titleImage} alt="" />
+              </div>
+            )}
+          </Link>
+        ))}
+      </div>
+
+      <button
+        className="see-all-btn"
+        onClick={() => navigate('/blog')}
+      >
+        See all
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </button>
+    </section>
+  )
+}
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
   const post = useQuery(api.posts.getBySlug, slug ? { slug } : 'skip')
+  const allPosts = useQuery(api.posts.listWithViews)
   const deletePost = useMutation(api.posts.remove)
   const recordView = useMutation(api.views.recordView)
   const viewCount = useQuery(api.views.getViewCount, post ? { postId: post._id } : 'skip')
   const [linkCopied, setLinkCopied] = useState(false)
   const [showAudioPlayer, setShowAudioPlayer] = useState(false)
+  const [tocOpen, setTocOpen] = useState(false)
 
   // Record view on mount
   useEffect(() => {
@@ -438,6 +633,11 @@ export default function BlogPost() {
     return extractCitations(post.content)
   }, [post])
 
+  const headings = useMemo(() => {
+    if (!post) return []
+    return extractHeadings(post.content)
+  }, [post])
+
   if (post === undefined) {
     return (
       <div className="blog-container">
@@ -456,7 +656,16 @@ export default function BlogPost() {
   }
 
   return (
-    <div className="blog-container">
+    <div className="blog-container blog-post-layout">
+      {/* Table of Contents Sidebar */}
+      {headings.length > 0 && (
+        <TOCSidebar
+          headings={headings}
+          isOpen={tocOpen}
+          onToggle={() => setTocOpen(!tocOpen)}
+        />
+      )}
+
       <header className="blog-header">
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
@@ -499,39 +708,60 @@ export default function BlogPost() {
         animate="visible"
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <header className="article-header">
-          <h1 className="article-title">{post.title}</h1>
-          <div className="article-meta">
-            <span className="article-date">{formatDate(post.createdAt)}</span>
-            <SignedIn>
+        <header className="article-header-new">
+          <h1 className="article-title-main">{post.title}</h1>
+          {post.subtitle && (
+            <p className="article-subtitle">{post.subtitle}</p>
+          )}
+
+          <div className="article-author-row">
+            <img
+              src="/profile.png"
+              alt="Ethan Jerla"
+              className="article-author-image"
+            />
+            <div className="article-author-info">
+              <span className="article-author-name">ETHAN JERLA</span>
+              <span className="article-author-date">{formatDate(post.createdAt)}</span>
+            </div>
+          </div>
+
+          <div className="article-actions-row">
+            <div className="article-engagement">
+              <button className="engagement-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+                <span>{viewCount || 0}</span>
+              </button>
+              <button className="engagement-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </button>
+              <button className="engagement-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="17 1 21 5 17 9" />
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                  <polyline points="7 23 3 19 7 15" />
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+              </button>
+            </div>
+            <button className="share-btn" onClick={copyLink}>
+              {linkCopied ? 'Copied!' : 'Share'}
+            </button>
+          </div>
+
+          <SignedIn>
+            <div className="article-admin-actions">
               <Link to={`/blog/edit/${post.slug}`} className="edit-link">Edit</Link>
               <button className="delete-btn" onClick={handleDelete}>Delete</button>
-            </SignedIn>
-          </div>
-          <div className="article-actions">
-            {viewCount !== undefined && viewCount > 0 && (
-              <span className="article-views">{viewCount} views</span>
-            )}
-            <button className="listen-btn" onClick={() => setShowAudioPlayer(true)} aria-label="Listen to article">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-              <span>Listen</span>
-            </button>
-            <button className="copy-link-btn" onClick={copyLink} aria-label="Copy link">
-              {linkCopied ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                </svg>
-              )}
-            </button>
-          </div>
+            </div>
+          </SignedIn>
         </header>
+
+        <div className="article-divider" />
 
         <div className="article-content">
           <ReactMarkdown
@@ -624,7 +854,24 @@ export default function BlogPost() {
             </div>
           )}
         </div>
+
+        <div className="article-listen-section">
+          <button className="listen-btn-large" onClick={() => setShowAudioPlayer(true)}>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            <span>Listen to article</span>
+          </button>
+        </div>
       </motion.article>
+
+      {/* More Articles Section */}
+      {allPosts && (
+        <MoreArticles
+          currentPostId={post._id}
+          posts={allPosts as Post[]}
+        />
+      )}
 
       <Footer />
 

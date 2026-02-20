@@ -229,8 +229,10 @@ export default function BlogEditor() {
   const updatePost = useMutation(api.posts.update)
 
   const [title, setTitle] = useState('')
+  const [subtitle, setSubtitle] = useState('')
   const [content, setContent] = useState('')
   const [customSlug, setCustomSlug] = useState('')
+  const [titleImage, setTitleImage] = useState('')
   const [published, setPublished] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -246,8 +248,10 @@ export default function BlogEditor() {
   useEffect(() => {
     if (existingPost) {
       setTitle(existingPost.title)
+      setSubtitle(existingPost.subtitle || '')
       setContent(existingPost.content)
       setCustomSlug(existingPost.slug)
+      setTitleImage(existingPost.titleImage || '')
       setPublished(existingPost.published)
 
       // Extract existing citations
@@ -291,15 +295,19 @@ export default function BlogEditor() {
         await updatePost({
           id: existingPost._id,
           title,
+          subtitle: subtitle || undefined,
           slug: postSlug,
           content: finalContent,
+          titleImage: titleImage || undefined,
           published
         })
       } else {
         await createPost({
           title,
+          subtitle: subtitle || undefined,
           slug: postSlug,
           content: finalContent,
+          titleImage: titleImage || undefined,
           published
         })
       }
@@ -500,11 +508,43 @@ export default function BlogEditor() {
             />
             <input
               type="text"
+              className="editor-subtitle-input"
+              placeholder="Subtitle (optional, e.g., 'Lesson #36: noticing the unnoticed')"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+            />
+            <input
+              type="text"
               className="editor-slug-input"
               placeholder="custom-slug (optional)"
               value={customSlug}
               onChange={(e) => setCustomSlug(e.target.value)}
             />
+            <div className="editor-image-field">
+              <input
+                type="text"
+                className="editor-image-input"
+                placeholder="Title image URL (optional)"
+                value={titleImage}
+                onChange={(e) => setTitleImage(e.target.value)}
+              />
+              {titleImage && (
+                <div className="editor-image-preview">
+                  <img src={titleImage} alt="Title preview" />
+                  <button
+                    type="button"
+                    className="editor-image-remove"
+                    onClick={() => setTitleImage('')}
+                    aria-label="Remove image"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="editor-toolbar">

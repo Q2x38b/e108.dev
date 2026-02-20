@@ -42,9 +42,11 @@ export const getById = query({
 export const create = mutation({
   args: {
     title: v.string(),
+    subtitle: v.optional(v.string()),
     slug: v.string(),
     content: v.string(),
     excerpt: v.optional(v.string()),
+    titleImage: v.optional(v.string()),
     published: v.boolean(),
   },
   handler: async (ctx, args) => {
@@ -61,9 +63,11 @@ export const update = mutation({
   args: {
     id: v.id("posts"),
     title: v.string(),
+    subtitle: v.optional(v.string()),
     slug: v.string(),
     content: v.string(),
     excerpt: v.optional(v.string()),
+    titleImage: v.optional(v.string()),
     published: v.boolean(),
   },
   handler: async (ctx, args) => {
@@ -79,5 +83,28 @@ export const remove = mutation({
   args: { id: v.id("posts") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+  },
+});
+
+// Get posts with view counts for sorting
+export const listWithViews = query({
+  args: {},
+  handler: async (ctx) => {
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_published", (q) => q.eq("published", true))
+      .collect();
+
+    const postsWithViews = await Promise.all(
+      posts.map(async (post) => {
+        const views = await ctx.db
+          .query("views")
+          .withIndex("by_post", (q) => q.eq("postId", post._id))
+          .collect();
+        return { ...post, viewCount: views.length };
+      })
+    );
+
+    return postsWithViews;
   },
 });
