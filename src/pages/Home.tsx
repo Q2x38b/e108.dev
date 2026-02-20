@@ -22,70 +22,78 @@ const navLinks = ['About', 'Work', 'Experience']
 
 const projects = [
   {
-    name: 'Project Alpha',
-    description: 'Design system & component library',
+    name: 'Eagle Scout Project',
+    description: 'Community service & leadership',
     year: '2025',
+    details: 'Restored and improved a ceremonial area at Goforth Elementary. Planned, organized, and led volunteers through the entire project.',
+    tech: ['Leadership', 'Project Management', 'Community Service'],
     url: '#'
   },
   {
-    name: 'Dashboard Pro',
-    description: 'Analytics platform for startups',
-    year: '2024',
+    name: 'American Rocketry Challenge',
+    description: 'Top 25 national finish',
+    year: '2022',
+    details: 'Led rocket club team to a top 25 national finish. Invited to the NASA Student Launch Program for exceptional performance.',
+    tech: ['Engineering', 'Team Lead', 'NASA'],
     url: '#'
   },
   {
-    name: 'Mobile App',
-    description: 'iOS app for daily habits',
-    year: '2024',
+    name: 'Portfolio Website',
+    description: 'Personal site you\'re viewing now',
+    year: '2025',
+    details: 'Built this portfolio from scratch with React, TypeScript, and Convex. Features a blog, dark mode, and text-to-speech.',
+    tech: ['React', 'TypeScript', 'Convex'],
     url: '#'
   },
   {
-    name: 'E-commerce Site',
-    description: 'Modern shopping experience',
-    year: '2023',
+    name: 'Science Fair',
+    description: '1st place district • Houston qualifier',
+    year: '2022',
+    details: 'Won first place in division at district science fair and qualified for the Houston Science Fair competition.',
+    tech: ['Research', 'Presentation', 'Analysis'],
     url: '#'
   }
 ]
 
 const experiences = [
   {
-    company: 'Law Firm',
+    company: 'Chad T Wilson Law',
     role: 'Legal Intern',
+    date: '2025 - now'
+  },
+  {
+    company: 'Red River Cantina',
+    role: 'Server & ToGo',
     date: '2024 - now'
   },
   {
-    company: 'Restaurant',
-    role: 'Team Member',
-    date: '2023 - now'
-  },
-  {
-    company: 'High School',
-    role: 'Student & Athlete',
+    company: 'Clear Creek High School',
+    role: 'Senior • 3.97 GPA',
     date: '2022 - 2026'
   },
   {
     company: 'UT Austin',
-    role: 'Future Law Student',
-    date: '2026 - 2030'
+    role: 'Aspiring Law Student',
+    date: '_'
   }
 ]
 
 const skills = [
   {
-    title: 'Frontend Development',
-    content: 'Building modern web applications with React, TypeScript, and Next.js. Creating responsive, accessible interfaces with attention to detail and performance.'
+    title: 'Leadership',
+    content: 'Eagle Scout and Senior Patrol Leader leading 50+ scouts. Water polo team captain. PALs Program mentor for 2 years. National Youth Leadership Training graduate.'
   },
   {
-    title: 'Backend Development',
-    content: 'Designing APIs and server-side logic with Node.js, Python, and Go. Working with databases like PostgreSQL, MongoDB, and Redis.'
+    title: 'Athletics',
+    content: '2-time UIL Water Polo State Champion. Southwest Zone Olympic Development Team goalie. All-State tournament team. TISCA All-Region. THSCA Super Elite team.'
   },
   {
-    title: 'Design Systems',
-    content: 'Creating scalable design systems and component libraries. Establishing design tokens, documentation, and patterns for consistent user experiences.'
+    title: 'Academics',
+    content: '3.97 GPA with 10 AP courses including Computer Science, Physics, Economics, and Government. 1st place district science fair. Houston Science Fair qualifier.'
   },
   {
-    title: 'DevOps & Infrastructure',
-    content: 'Setting up CI/CD pipelines, containerization with Docker, and cloud infrastructure on AWS and Vercel. Monitoring and observability.'
+    title: 'Technical',
+    content: 'Web development with React, TypeScript, and modern frameworks. Computer programming through AP CS coursework. Microsoft Office proficiency.'
   }
 ]
 
@@ -172,7 +180,7 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
       <div className="header-right">
         <div className="location">
           <span className="location-dot" />
-          Houston, TX
+          League City, TX
         </div>
         <motion.button
           className="theme-toggle"
@@ -234,7 +242,7 @@ function Profile() {
         />
       </div>
       <h1 className="profile-name">Ethan Jerla</h1>
-      <p className="profile-title">Student • Developer</p>
+      <p className="profile-title">Student • Developer • Eagle Scout • Athlete</p>
     </motion.section>
   )
 }
@@ -252,10 +260,10 @@ function About() {
       <h2 className="section-title">About</h2>
       <div className="bio">
         <p>
-          I'm a student, athlete, developer, and leader who thrives on collaboration and continuous learning. When I'm not busy designing or engineering, I'm playing sports, traveling, and exploring.
+          I'm a high school senior, Eagle Scout, 2-time UIL State Champion water polo goalie, and aspiring legal professional. I lead with purpose—whether as team captain, Senior Patrol Leader of 50+ scouts, or PALs mentor.
         </p>
         <p>
-          I'm currently working on my future and my college goals. Driven by a passion for growth and learning, I create web experiences that solve problems and create delightful experiences.
+          Committed to pursuing law school and building a career at the intersection of law, technology, and advocacy. When I'm not in the pool or studying, I'm building web experiences and exploring new ideas.
         </p>
       </div>
       <div className="social-links">
@@ -305,44 +313,84 @@ function Skills() {
   )
 }
 
-function Work() {
+function WorkModal({ project, onClose }: { project: typeof projects[0]; onClose: () => void }) {
   return (
-    <motion.section
-      id="work"
-      className="section"
-      variants={stagger}
-      initial="hidden"
-      animate="visible"
-    >
-      <motion.h2
-        className="section-title"
-        variants={fadeInUp}
-        transition={{ duration: 0.5, delay: 0.3 }}
+    <div className="work-modal-overlay" onClick={onClose}>
+      <motion.div
+        className="work-modal"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
       >
-        Work
-      </motion.h2>
-      <div className="work-list">
-        {projects.map((project, index) => (
-          <motion.a
-            key={project.name}
-            href={project.url}
-            className="work-item"
-            variants={fadeInUp}
-            transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
-            whileHover={{ x: 2 }}
-          >
-            <div className="work-info">
-              <div className="work-name">{project.name}</div>
-              <div className="work-description">{project.description}</div>
-            </div>
-            <div className="work-meta">
-              <span className="work-year">{project.year}</span>
-              <span className="work-arrow">↗</span>
-            </div>
-          </motion.a>
-        ))}
-      </div>
-    </motion.section>
+        <div className="work-modal-header">
+          <h3 className="work-modal-title">{project.name}</h3>
+          <span className="work-modal-year">{project.year}</span>
+        </div>
+        <p className="work-modal-details">{project.details}</p>
+        <div className="work-modal-tech">
+          {project.tech.map((t) => (
+            <span key={t} className="work-modal-tag">{t}</span>
+          ))}
+        </div>
+        <button className="work-modal-close" onClick={onClose} aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </motion.div>
+    </div>
+  )
+}
+
+function Work() {
+  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null)
+
+  return (
+    <>
+      <motion.section
+        id="work"
+        className="section"
+        variants={stagger}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.h2
+          className="section-title"
+          variants={fadeInUp}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          Work
+        </motion.h2>
+        <div className="work-list">
+          {projects.map((project, index) => (
+            <motion.button
+              key={project.name}
+              className="work-item"
+              variants={fadeInUp}
+              transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
+              onClick={() => setSelectedProject(project)}
+            >
+              <div className="work-info">
+                <div className="work-name">{project.name}</div>
+                <div className="work-description">{project.description}</div>
+              </div>
+              <div className="work-meta">
+                <span className="work-year">{project.year}</span>
+                <span className="work-arrow">+</span>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </motion.section>
+      <AnimatePresence>
+        {selectedProject && (
+          <WorkModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 
@@ -373,7 +421,7 @@ function Experience() {
             <span className="experience-company">{exp.company}</span>
             <span className="experience-line" />
             <span className="experience-role">{exp.role}</span>
-            <span className="experience-date">{exp.date}</span>
+            <span className={`experience-date ${exp.date === '_' ? 'blink' : ''}`}>{exp.date}</span>
           </motion.div>
         ))}
       </div>
@@ -446,7 +494,7 @@ function Footer() {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
   }
 
@@ -480,7 +528,6 @@ function Footer() {
             <motion.button
               className="back-to-top"
               onClick={scrollToTop}
-              whileHover={{ y: -2 }}
               whileTap={{ scale: 0.95 }}
               aria-label="Back to top"
             >
