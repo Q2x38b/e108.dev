@@ -72,7 +72,7 @@ const experiences = [
     date: '2022 - 2026'
   },
   {
-    company: 'UT Austin',
+    company: 'Future: UT Austin',
     role: 'Aspiring Law Student',
     date: ''
   }
@@ -374,7 +374,6 @@ function Work() {
             className="work-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             onClick={() => setSelectedId(null)}
           >
             <motion.div
