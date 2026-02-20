@@ -90,8 +90,7 @@ function Footer() {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false,
-      timeZone: 'America/Los_Angeles'
+      hour12: false
     })
   }
 
@@ -102,7 +101,6 @@ function Footer() {
   return (
     <>
       <footer className="footer blog-list-footer">
-        <div className="footer-quote">The only limit is yourself.</div>
         <div className="footer-bottom">
           <div className="footer-left">
             <span
@@ -112,10 +110,12 @@ function Footer() {
               © 2025
             </span>
             <span className="footer-dot">•</span>
-            <span className="footer-text">CC BY 4.0</span>
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
+            <span className="footer-dot">•</span>
+            <span className="footer-quote-inline">The only limit is yourself.</span>
           </div>
           <div className="footer-right">
-            <span className="footer-time">{formatTime(time)} PST</span>
+            <span className="footer-time">{formatTime(time)}</span>
             <button
               className="back-to-top"
               onClick={scrollToTop}
@@ -183,7 +183,7 @@ export default function BlogList() {
       </header>
 
       <div className="blog-list-title">
-        <h1 className="blog-title">thoughts</h1>
+        <h1 className="blog-title">Writing</h1>
       </div>
 
       <main className="blog-list-content">
