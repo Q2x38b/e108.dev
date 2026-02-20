@@ -113,6 +113,8 @@
   height: 100%;
   border-radius: 12px;
   object-fit: cover;
+  background: white;
+  border: 1px solid var(--border);
 }
 
 .profile-name {
@@ -179,12 +181,11 @@
   align-items: flex-start;
   padding: 14px 12px;
   cursor: pointer;
-  transition: background 0.15s ease;
   margin: 0 -12px;
-  border-radius: 8px;
+  border-radius: 12px;
   text-decoration: none;
-  background: none;
-  border: none;
+  background: var(--bg);
+  border: 1px solid transparent;
   width: calc(100% + 24px);
   text-align: left;
   color: inherit;
@@ -253,9 +254,10 @@
   border-radius: 16px;
   padding: 24px;
   max-width: 420px;
-  width: 100%;
-  position: relative;
+  width: calc(100% - 48px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  position: relative;
 }
 
 .work-modal-header {
@@ -263,6 +265,7 @@
   justify-content: space-between;
   align-items: baseline;
   margin-bottom: 12px;
+  padding-right: 32px;
 }
 
 .work-modal-title {
@@ -299,24 +302,29 @@
 
 .work-modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 28px;
-  height: 28px;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
+  background: var(--hover-bg);
   border: none;
   cursor: pointer;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   border-radius: 50%;
   transition: all 0.2s ease;
 }
 
 .work-modal-close:hover {
-  background: var(--hover-bg);
+  background: var(--border);
   color: var(--text);
+}
+
+.work-modal-close svg {
+  width: 16px;
+  height: 16px;
 }
 
 .work-modal-close svg {
@@ -363,8 +371,9 @@
   white-space: nowrap;
 }
 
-.experience-date.blink {
+.blink-cursor {
   animation: blink 1s step-end infinite;
+  margin-left: 2px;
 }
 
 @keyframes blink {

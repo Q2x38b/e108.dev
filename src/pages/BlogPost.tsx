@@ -68,14 +68,26 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
       const availableVoices = speechSynthesis.getVoices()
       const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'))
 
-      // Prioritize: Samantha (macOS), Google voices, then Natural/Premium voices
+      // Prioritize high-quality voices: Premium/Enhanced macOS, then Google, then others
       const sortedVoices = englishVoices.sort((a, b) => {
         const getScore = (v: SpeechSynthesisVoice) => {
-          if (v.name === 'Samantha') return 100
-          if (v.name.includes('Google')) return 90
-          if (v.name.includes('Samantha')) return 85
-          if (v.name.includes('Natural') || v.name.includes('Premium') || v.name.includes('Enhanced')) return 80
-          if (v.name.includes('Karen') || v.name.includes('Daniel')) return 70
+          const name = v.name.toLowerCase()
+          // Premium macOS voices (most natural)
+          if (name.includes('zoe') && name.includes('premium')) return 100
+          if (name.includes('ava') && name.includes('premium')) return 99
+          if (name.includes('samantha') && name.includes('premium')) return 98
+          // Enhanced macOS voices
+          if (name.includes('enhanced') || name.includes('premium')) return 95
+          // Standard high-quality voices
+          if (v.name === 'Samantha') return 90
+          if (v.name === 'Ava') return 89
+          if (v.name === 'Zoe') return 88
+          // Google voices (good quality)
+          if (name.includes('google')) return 85
+          // Microsoft natural voices
+          if (name.includes('natural')) return 80
+          // Other decent voices
+          if (v.name === 'Karen' || v.name === 'Daniel' || v.name === 'Alex') return 70
           return 0
         }
         return getScore(b) - getScore(a)

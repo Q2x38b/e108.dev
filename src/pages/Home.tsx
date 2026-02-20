@@ -41,7 +41,7 @@ const projects = [
     name: 'Portfolio Website',
     description: 'Personal site you\'re viewing now',
     year: '2025',
-    details: 'Built this portfolio from scratch with React, TypeScript, and Convex. Features a blog, dark mode, and text-to-speech.',
+    details: 'Built this portfolio from scratch with React, TypeScript..',
     tech: ['React', 'TypeScript', 'Convex'],
     url: '#'
   },
@@ -68,13 +68,13 @@ const experiences = [
   },
   {
     company: 'Clear Creek High School',
-    role: 'Senior • 3.97 GPA',
+    role: 'Senior',
     date: '2022 - 2026'
   },
   {
     company: 'UT Austin',
     role: 'Aspiring Law Student',
-    date: '_'
+    date: ''
   }
 ]
 
@@ -89,7 +89,7 @@ const skills = [
   },
   {
     title: 'Academics',
-    content: '3.97 GPA with 10 AP courses including Computer Science, Physics, Economics, and Government. 1st place district science fair. Houston Science Fair qualifier.'
+    content: '10 AP courses including Computer Science, Physics, Economics, and Government. 1st place district science fair. Houston Science Fair qualifier.'
   },
   {
     title: 'Technical',
@@ -180,7 +180,7 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
       <div className="header-right">
         <div className="location">
           <span className="location-dot" />
-          League City, TX
+          Houston, TX
         </div>
         <motion.button
           className="theme-toggle"
@@ -236,7 +236,7 @@ function Profile() {
     >
       <div className="profile-image-wrapper">
         <img
-          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face"
+          src="/profile.svg"
           alt="Profile"
           className="profile-image"
         />
@@ -260,10 +260,10 @@ function About() {
       <h2 className="section-title">About</h2>
       <div className="bio">
         <p>
-          I'm a high school senior, Eagle Scout, 2-time UIL State Champion water polo goalie, and aspiring legal professional. I lead with purpose—whether as team captain, Senior Patrol Leader of 50+ scouts, or PALs mentor.
+          I'm a student, athlete, developer, and leader who thrives on collaboration and continuous learning. When I'm not busy designing or engineering, I'm playing sports, traveling, and exploring.
         </p>
         <p>
-          Committed to pursuing law school and building a career at the intersection of law, technology, and advocacy. When I'm not in the pool or studying, I'm building web experiences and exploring new ideas.
+          I'm currently working on my future and my college goals. Driven by a passion for growth and learning, I create web experiences that solve problems and create delightful experiences.
         </p>
       </div>
       <div className="social-links">
@@ -313,40 +313,21 @@ function Skills() {
   )
 }
 
-function WorkModal({ project, onClose }: { project: typeof projects[0]; onClose: () => void }) {
-  return (
-    <div className="work-modal-overlay" onClick={onClose}>
-      <motion.div
-        className="work-modal"
-        onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.2 }}
-      >
-        <div className="work-modal-header">
-          <h3 className="work-modal-title">{project.name}</h3>
-          <span className="work-modal-year">{project.year}</span>
-        </div>
-        <p className="work-modal-details">{project.details}</p>
-        <div className="work-modal-tech">
-          {project.tech.map((t) => (
-            <span key={t} className="work-modal-tag">{t}</span>
-          ))}
-        </div>
-        <button className="work-modal-close" onClick={onClose} aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </motion.div>
-    </div>
-  )
-}
-
 function Work() {
-  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selectedProject = projects.find(p => p.name === selectedId)
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (selectedId) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [selectedId])
 
   return (
     <>
@@ -366,28 +347,78 @@ function Work() {
         </motion.h2>
         <div className="work-list">
           {projects.map((project, index) => (
-            <motion.button
+            <motion.div
               key={project.name}
+              layoutId={project.name}
               className="work-item"
               variants={fadeInUp}
               transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
-              onClick={() => setSelectedProject(project)}
+              onClick={() => setSelectedId(project.name)}
             >
               <div className="work-info">
-                <div className="work-name">{project.name}</div>
-                <div className="work-description">{project.description}</div>
+                <motion.div layoutId={`title-${project.name}`} className="work-name">{project.name}</motion.div>
+                <motion.div layoutId={`desc-${project.name}`} className="work-description">{project.description}</motion.div>
               </div>
               <div className="work-meta">
-                <span className="work-year">{project.year}</span>
+                <motion.span layoutId={`year-${project.name}`} className="work-year">{project.year}</motion.span>
                 <span className="work-arrow">+</span>
               </div>
-            </motion.button>
+            </motion.div>
           ))}
         </div>
       </motion.section>
+
       <AnimatePresence>
-        {selectedProject && (
-          <WorkModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+        {selectedId && selectedProject && (
+          <motion.div
+            className="work-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedId(null)}
+          >
+            <motion.div
+              layoutId={selectedId}
+              className="work-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="work-modal-header">
+                <motion.h3 layoutId={`title-${selectedId}`} className="work-modal-title">{selectedProject.name}</motion.h3>
+                <motion.span layoutId={`year-${selectedId}`} className="work-modal-year">{selectedProject.year}</motion.span>
+              </div>
+              <motion.p
+                className="work-modal-details"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                {selectedProject.details}
+              </motion.p>
+              <motion.div
+                className="work-modal-tech"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25 }}
+              >
+                {selectedProject.tech.map((t) => (
+                  <span key={t} className="work-modal-tag">{t}</span>
+                ))}
+              </motion.div>
+              <motion.button
+                className="work-modal-close"
+                onClick={() => setSelectedId(null)}
+                aria-label="Close"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </motion.button>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>
@@ -420,8 +451,11 @@ function Experience() {
           >
             <span className="experience-company">{exp.company}</span>
             <span className="experience-line" />
-            <span className="experience-role">{exp.role}</span>
-            <span className={`experience-date ${exp.date === '_' ? 'blink' : ''}`}>{exp.date}</span>
+            <span className="experience-role">
+              {exp.role}
+              {!exp.date && <span className="blink-cursor">_</span>}
+            </span>
+            {exp.date && <span className="experience-date">{exp.date}</span>}
           </motion.div>
         ))}
       </div>
