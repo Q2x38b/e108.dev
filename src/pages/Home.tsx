@@ -236,7 +236,7 @@ function Profile() {
     >
       <div className="profile-image-wrapper">
         <img
-          src="/profile.svg"
+          src="/profile.png"
           alt="Profile"
           className="profile-image"
         />
