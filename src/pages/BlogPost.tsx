@@ -400,50 +400,53 @@ interface TOCSidebarProps {
   headings: { id: string; text: string; level: number }[]
   isOpen: boolean
   onToggle: () => void
+  activeHeadingId: string | null
 }
 
-function TOCSidebar({ headings, isOpen, onToggle }: TOCSidebarProps) {
+function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarProps) {
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
+      onToggle() // Close after clicking
     }
   }
+
+  // Get the display headings for the lines
+  const displayHeadings = headings.filter(h => h.level <= 2).slice(0, 6)
 
   return (
     <>
       <button
-        className="toc-toggle-btn"
+        className="toc-toggle-btn-minimal"
         onClick={onToggle}
         aria-label="Toggle table of contents"
       >
-        <div className="toc-lines">
-          {headings.filter(h => h.level === 1).map((_, i) => (
-            <span key={i} className="toc-line" />
+        <div className="toc-lines-minimal">
+          {displayHeadings.map((heading, i) => (
+            <span
+              key={i}
+              className={`toc-line-minimal ${activeHeadingId === heading.id ? 'active' : ''}`}
+            />
           ))}
-          {headings.filter(h => h.level === 1).length === 0 &&
-            headings.slice(0, 5).map((_, i) => (
-              <span key={i} className="toc-line" />
-            ))
-          }
         </div>
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="toc-sidebar"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
+            className="toc-popup"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
           >
-            <div className="toc-header">CONTENTS</div>
-            <nav className="toc-nav">
+            <div className="toc-popup-header">CONTENTS</div>
+            <nav className="toc-popup-nav">
               {headings.map((heading, index) => (
                 <button
                   key={index}
-                  className={`toc-item toc-level-${heading.level}`}
+                  className={`toc-popup-item ${heading.level > 1 ? 'toc-popup-item-sub' : ''} ${activeHeadingId === heading.id ? 'active' : ''}`}
                   onClick={() => scrollToHeading(heading.id)}
                 >
                   {heading.text}
@@ -581,6 +584,7 @@ export default function BlogPost() {
   const [linkCopied, setLinkCopied] = useState(false)
   const [showAudioPlayer, setShowAudioPlayer] = useState(false)
   const [tocOpen, setTocOpen] = useState(false)
+  const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null)
 
   // Record view on mount
   useEffect(() => {
@@ -638,6 +642,35 @@ export default function BlogPost() {
     return extractHeadings(post.content)
   }, [post])
 
+  // Track active heading on scroll
+  useEffect(() => {
+    if (headings.length === 0) return
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 150 // Offset for header
+
+      // Find the heading closest to (but above) the current scroll position
+      let currentHeading: string | null = null
+
+      for (const heading of headings) {
+        const element = document.getElementById(heading.id)
+        if (element) {
+          const top = element.offsetTop
+          if (top <= scrollPosition) {
+            currentHeading = heading.id
+          }
+        }
+      }
+
+      setActiveHeadingId(currentHeading)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll() // Run once on mount
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [headings])
+
   if (post === undefined) {
     return (
       <div className="blog-container">
@@ -663,6 +696,7 @@ export default function BlogPost() {
           headings={headings}
           isOpen={tocOpen}
           onToggle={() => setTocOpen(!tocOpen)}
+          activeHeadingId={activeHeadingId}
         />
       )}
 
@@ -727,26 +761,8 @@ export default function BlogPost() {
           </div>
 
           <div className="article-actions-row">
-            <div className="article-engagement">
-              <button className="engagement-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-                <span>{viewCount || 0}</span>
-              </button>
-              <button className="engagement-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              </button>
-              <button className="engagement-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="17 1 21 5 17 9" />
-                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-                  <polyline points="7 23 3 19 7 15" />
-                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-                </svg>
-              </button>
+            <div className="article-views">
+              {viewCount || 0} views
             </div>
             <button className="share-btn" onClick={copyLink}>
               {linkCopied ? 'Copied!' : 'Share'}

@@ -87,17 +87,10 @@
   gap: 6px;
 }
 
-.location-dot {
-  width: 6px;
-  height: 6px;
-  background: #22c55e;
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+.location-icon {
+  width: 14px;
+  height: 14px;
+  stroke: var(--text-tertiary);
 }
 
 /* Profile */
@@ -1929,110 +1922,119 @@
   margin: 24px 0;
 }
 
-/* Table of Contents Sidebar */
-.toc-toggle-btn {
+/* Table of Contents - Minimal Style */
+.toc-toggle-btn-minimal {
   position: fixed;
   left: 24px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 100;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 8px;
+  background: transparent;
+  border: none;
+  padding: 8px;
   cursor: pointer;
+}
+
+.toc-lines-minimal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toc-line-minimal {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
   transition: all 0.2s ease;
 }
 
+.toc-line-minimal.active {
+  width: 24px;
+  height: 3px;
+  background: var(--text);
+}
+
 @media (hover: hover) {
-  .toc-toggle-btn:hover {
-    background: var(--hover-bg);
-    border-color: var(--text-tertiary);
+  .toc-toggle-btn-minimal:hover .toc-line-minimal {
+    background: var(--text-secondary);
+  }
+  .toc-toggle-btn-minimal:hover .toc-line-minimal.active {
+    background: var(--text);
   }
 }
 
-.toc-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.toc-line {
-  display: block;
-  width: 16px;
-  height: 2px;
-  background: var(--text-tertiary);
-  border-radius: 1px;
-}
-
-.toc-sidebar {
+/* TOC Popup - Clean Style */
+.toc-popup {
   position: fixed;
-  left: 24px;
+  left: 56px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 99;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 16px;
+  padding: 16px 20px;
+  min-width: 200px;
   max-width: 280px;
-  max-height: 60vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-.toc-header {
+.toc-popup-header {
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-tertiary);
   letter-spacing: 0.5px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.toc-nav {
+.toc-popup-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-.toc-item {
+.toc-popup-item {
   display: block;
   width: 100%;
   text-align: left;
   background: none;
   border: none;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  padding: 8px 0;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
   cursor: pointer;
-  border-radius: 6px;
   transition: all 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.toc-popup-item.active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.toc-popup-item-sub {
+  padding-left: 12px;
+  font-size: 0.9rem;
+}
+
 @media (hover: hover) {
-  .toc-item:hover {
-    background: var(--hover-bg);
+  .toc-popup-item:hover {
     color: var(--text);
   }
 }
 
-.toc-level-1 {
-  font-weight: 600;
-  color: var(--text);
+/* Legacy TOC styles (kept for compatibility) */
+.toc-toggle-btn {
+  display: none;
 }
 
-.toc-level-2 {
-  padding-left: 20px;
-  font-size: 0.85rem;
-}
-
-.toc-level-3 {
-  padding-left: 32px;
-  font-size: 0.8rem;
-  color: var(--text-tertiary);
+.toc-sidebar {
+  display: none;
 }
 
 /* More Articles Section */
@@ -2348,8 +2350,8 @@
 
 /* Mobile adjustments for new components */
 @media (max-width: 1024px) {
-  .toc-toggle-btn,
-  .toc-sidebar {
+  .toc-toggle-btn-minimal,
+  .toc-popup {
     display: none;
   }
 }
