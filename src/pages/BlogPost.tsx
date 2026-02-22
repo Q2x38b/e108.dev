@@ -60,10 +60,13 @@ async function initPiperEngine(): Promise<PiperEngine> {
   if (piperEnginePromise) return piperEnginePromise
 
   piperEnginePromise = (async () => {
-    const { PiperWebEngine, HuggingFaceVoiceProvider } = await import('piper-tts-web')
+    const { PiperWebEngine, HuggingFaceVoiceProvider, OnnxWebRuntime } = await import('piper-tts-web')
     const voiceProvider = new HuggingFaceVoiceProvider()
+    // Use single-threaded ONNX to avoid SharedArrayBuffer/COEP requirements
+    const onnxRuntime = new OnnxWebRuntime({ numThreads: 1 })
     // Disable expression runtime to avoid worker errors (not needed for audio-only TTS)
     const engine = new PiperWebEngine({
+      onnxRuntime,
       voiceProvider,
       expressionRuntime: new NoOpExpressionRuntime()
     })
