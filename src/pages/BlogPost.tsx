@@ -1179,7 +1179,7 @@ export default function BlogPost() {
               className="article-author-image article-author-image-bg"
             />
             <div className="article-author-info">
-              <span className="article-author-name">ETHAN JERLA</span>
+              <span className="article-author-name">Ethan Jerla</span>
               <span className="article-author-date">{formatDate(post.createdAt)}</span>
             </div>
             <div className="article-author-actions">
