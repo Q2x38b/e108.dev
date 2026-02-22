@@ -103,15 +103,6 @@ async function initPiperEngine(): Promise<PiperEngine> {
   return piperEnginePromise
 }
 
-// Check if connection is fast enough for preloading
-function shouldPreload(): boolean {
-  const connection = (navigator as { connection?: { effectiveType?: string; saveData?: boolean } }).connection
-  if (!connection) return true // Default to preload if API not available
-  if (connection.saveData) return false
-  const effectiveType = connection.effectiveType
-  return effectiveType === '4g' || effectiveType === undefined
-}
-
 interface AudioPlayerProps {
   content: string
   title: string
@@ -133,15 +124,13 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
   // Clean text for TTS
   const cleanContent = useMemo(() => stripMarkdown(content), [content])
 
-  // Preload engine on mount if connection is fast
+  // Always preload the Piper TTS engine on mount
   useEffect(() => {
-    if (shouldPreload()) {
-      setLoadingProgress('Initializing voice engine...')
-      initPiperEngine().then(engine => {
-        engineRef.current = engine
-        setLoadingProgress('')
-      }).catch(() => setLoadingProgress(''))
-    }
+    setLoadingProgress('Initializing voice engine...')
+    initPiperEngine().then(engine => {
+      engineRef.current = engine
+      setLoadingProgress('')
+    }).catch(() => setLoadingProgress(''))
   }, [])
 
   // Cleanup on unmount
