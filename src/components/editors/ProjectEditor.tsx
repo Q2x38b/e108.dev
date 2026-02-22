@@ -3,10 +3,9 @@ import { useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion } from 'framer-motion'
-import { Id } from '../../../convex/_generated/dataModel'
 
 interface ProjectData {
-  _id: Id<"projects">
+  _id: string
   name: string
   description: string
   year: string
@@ -42,7 +41,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
 
   const addProject = () => {
     setLocalProjects([...localProjects, {
-      _id: `new-${Date.now()}` as Id<"projects">,
+      _id: `new-${Date.now()}`,
       name: '',
       description: '',
       year: new Date().getFullYear().toString(),

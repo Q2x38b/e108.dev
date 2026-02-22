@@ -3,10 +3,9 @@ import { useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion } from 'framer-motion'
-import { Id } from '../../../convex/_generated/dataModel'
 
 interface ExperienceData {
-  _id: Id<"experiences">
+  _id: string
   company: string
   role: string
   date: string
@@ -35,7 +34,7 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
 
   const addExperience = () => {
     setLocalExperiences([...localExperiences, {
-      _id: `new-${Date.now()}` as Id<"experiences">,
+      _id: `new-${Date.now()}`,
       company: '',
       role: '',
       date: '',

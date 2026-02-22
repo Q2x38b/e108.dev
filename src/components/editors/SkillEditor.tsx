@@ -3,10 +3,9 @@ import { useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion } from 'framer-motion'
-import { Id } from '../../../convex/_generated/dataModel'
 
 interface SkillData {
-  _id: Id<"skills">
+  _id: string
   title: string
   content: string
   order: number
@@ -34,7 +33,7 @@ export function SkillEditor({ skills, onClose }: SkillEditorProps) {
 
   const addSkill = () => {
     setLocalSkills([...localSkills, {
-      _id: `new-${Date.now()}` as Id<"skills">,
+      _id: `new-${Date.now()}`,
       title: '',
       content: '',
       order: localSkills.length,
