@@ -57,7 +57,7 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentSection, setCurrentSection] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null)
+  const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null)
   const sectionsRef = useRef<string[]>([])
   const progressIntervalRef = useRef<number | null>(null)
 
@@ -115,17 +115,17 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
         return getScore(b) - getScore(a)
       })
 
-      if (sortedVoices.length > 0 && !selectedVoice) {
-        setSelectedVoice(sortedVoices[0])
-      } else if (availableVoices.length > 0 && !selectedVoice) {
-        setSelectedVoice(availableVoices[0])
+      if (sortedVoices.length > 0 && !selectedVoiceRef.current) {
+        selectedVoiceRef.current = sortedVoices[0]
+      } else if (availableVoices.length > 0 && !selectedVoiceRef.current) {
+        selectedVoiceRef.current = availableVoices[0]
       }
     }
 
     loadVoices()
     speechSynthesis.addEventListener('voiceschanged', loadVoices)
     return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices)
-  }, [selectedVoice])
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -142,7 +142,7 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
     }
 
     const utterance = new SpeechSynthesisUtterance(sectionsRef.current[index])
-    if (selectedVoice) utterance.voice = selectedVoice
+    if (selectedVoiceRef.current) utterance.voice = selectedVoiceRef.current
 
     // Natural speech settings - slightly slower, natural pitch
     utterance.rate = 0.9
@@ -163,7 +163,7 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
 
     utterance.onerror = () => setIsPlaying(false)
     speechSynthesis.speak(utterance)
-  }, [selectedVoice])
+  }, [])
 
   useEffect(() => {
     if (isPlaying && sections.length > 0) {
@@ -185,6 +185,14 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
       speechSynthesis.cancel()
       setIsPlaying(false)
     } else {
+      // Ensure voice is ready before playing
+      if (!selectedVoiceRef.current) {
+        // Try to load voices again if not ready
+        const voices = speechSynthesis.getVoices()
+        if (voices.length > 0) {
+          selectedVoiceRef.current = voices.find(v => v.lang.startsWith('en')) || voices[0]
+        }
+      }
       setIsPlaying(true)
       speakSection(currentSection)
     }

@@ -554,29 +554,12 @@ function LoginModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-function getLastUpdated() {
-  const buildDateStr = import.meta.env.VITE_BUILD_DATE || new Date().toISOString().split('T')[0]
-  const deployDate = new Date(buildDateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - deployDate.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 0) return 'Last updated today'
-  if (diffDays === 1) return 'Last updated yesterday'
-  if (diffDays < 7) return `Last updated ${diffDays} days ago`
-  if (diffDays < 14) return 'Last updated 1 week ago'
-  if (diffDays < 30) return `Last updated ${Math.floor(diffDays / 7)} weeks ago`
-  if (diffDays < 60) return 'Last updated 1 month ago'
-  return `Last updated ${Math.floor(diffDays / 30)} months ago`
-}
-
 function Footer({ copyrightYear }: { copyrightYear: string }) {
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
   const { isAuthenticated, logout } = useAuth()
   const { isEditMode, toggleEditMode } = useEditMode()
-  const lastUpdated = getLastUpdated()
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -634,10 +617,7 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
           </div>
           <div className="footer-right">
-            <div className="footer-time-group">
-              <span className="footer-updated-inline">{lastUpdated}</span>
-              <span className="footer-time">{formatTime(time)}</span>
-            </div>
+            <span className="footer-time">{formatTime(time)}</span>
 
             <SignedIn>
               <motion.button

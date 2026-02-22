@@ -1288,10 +1288,11 @@
   display: none;
   position: absolute;
   top: 100%;
-  left: 0;
-  right: 0;
+  left: -20px;
+  right: -20px;
   background: var(--bg);
   border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   padding: 12px 0;
   flex-direction: column;
   gap: 4px;
@@ -1316,21 +1317,6 @@
 /* Footer Quote Row */
 .footer-quote-row {
   margin-bottom: 12px;
-}
-
-/* Footer Time Group */
-.footer-time-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  margin-right: 8px;
-}
-
-.footer-updated-inline {
-  font-size: 0.7rem;
-  color: var(--text-tertiary);
-  white-space: nowrap;
 }
 
 /* Mobile adjustments */
@@ -1392,17 +1378,6 @@
     order: 1;
     width: 100%;
     justify-content: space-between;
-  }
-
-  .footer-time-group {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-  }
-
-  .footer-updated-inline {
-    font-size: 0.75rem;
   }
 
   .footer-time {
