@@ -66,9 +66,11 @@ export const create = mutation({
     subtitle: v.optional(v.string()),
     slug: v.string(),
     content: v.string(),
+    contentJson: v.optional(v.any()), // TipTap JSONContent
     excerpt: v.optional(v.string()),
     titleImage: v.optional(v.string()),
     published: v.boolean(),
+    publishedAt: v.optional(v.number()), // Custom publish date
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -78,6 +80,7 @@ export const create = mutation({
       shortId,
       createdAt: now,
       updatedAt: now,
+      publishedAt: args.publishedAt || now,
     });
   },
 });
@@ -89,9 +92,11 @@ export const update = mutation({
     subtitle: v.optional(v.string()),
     slug: v.string(),
     content: v.string(),
+    contentJson: v.optional(v.any()), // TipTap JSONContent
     excerpt: v.optional(v.string()),
     titleImage: v.optional(v.string()),
     published: v.boolean(),
+    publishedAt: v.optional(v.number()), // Custom publish date
   },
   handler: async (ctx, args) => {
     const { id, ...rest } = args;

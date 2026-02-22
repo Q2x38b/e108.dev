@@ -8,9 +8,11 @@ export default defineSchema({
     slug: v.string(),
     shortId: v.optional(v.string()),
     content: v.string(),
+    contentJson: v.optional(v.any()), // TipTap JSONContent for block editor
     excerpt: v.optional(v.string()),
     titleImage: v.optional(v.string()),
     published: v.boolean(),
+    publishedAt: v.optional(v.number()), // Custom publish date (user can override)
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_slug", ["slug"]).index("by_short_id", ["shortId"]).index("by_published", ["published"]),
