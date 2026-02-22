@@ -576,9 +576,9 @@ function extractCitations(content: string): { content: string; citations: { num:
   return { content: cleanContent, citations: citations.sort((a, b) => a.num - b.num) }
 }
 
-// Extract headings from markdown content
+// Extract headings from markdown content (H1 only for TOC)
 function extractHeadings(content: string): { id: string; text: string; level: number }[] {
-  const headingRegex = /^(#{1,3})\s+(.+)$/gm
+  const headingRegex = /^(#)\s+(.+)$/gm
   const headings: { id: string; text: string; level: number }[] = []
   let match
 
@@ -860,13 +860,18 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
             to={`/blog/${post.shortId}`}
             className="more-article-item"
           >
-            <h3 className="more-article-title">{post.title}</h3>
-            {post.subtitle && (
-              <p className="more-article-subtitle">{post.subtitle}</p>
+            <div className="more-article-content">
+              <h3 className="more-article-title">{post.title}</h3>
+              {post.subtitle && (
+                <p className="more-article-subtitle">{post.subtitle}</p>
+              )}
+              <span className="more-article-meta">
+                {formatArticleDate(post.createdAt)} · ETHAN JERLA
+              </span>
+            </div>
+            {post.titleImage && (
+              <img src={post.titleImage} alt="" className="more-article-image" />
             )}
-            <span className="more-article-meta">
-              {formatArticleDate(post.createdAt)} · ETHAN JERLA
-            </span>
           </Link>
         ))}
       </div>

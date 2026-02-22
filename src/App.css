@@ -2026,9 +2026,9 @@
 /* Floating Audio Player */
 .audio-player {
   position: fixed;
-  top: 50%;
+  bottom: 24px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   z-index: 1000;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -2117,8 +2117,8 @@
   .audio-player {
     width: calc(100% - 32px);
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    bottom: 24px;
+    transform: translateX(-50%);
   }
 
   .audio-player-progress {
@@ -2316,7 +2316,7 @@
 /* TOC Popup - Clean Style */
 .toc-popup {
   position: fixed;
-  left: 60px;
+  left: 80px;
   transform-origin: left center;
   z-index: 99;
   background: var(--bg);
@@ -2442,7 +2442,9 @@
 
 .more-article-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
   padding: 24px 0;
   border-bottom: 1px solid var(--border);
   text-decoration: none;
@@ -2457,6 +2459,19 @@
   .more-article-item:hover {
     opacity: 0.7;
   }
+}
+
+.more-article-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.more-article-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .more-article-title {
@@ -2483,14 +2498,14 @@
 .see-all-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   margin-top: 24px;
-  padding: 14px 24px;
+  padding: 8px 14px;
   background: var(--hover-bg);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2503,8 +2518,8 @@
 }
 
 .see-all-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 /* Listen Button Large */
