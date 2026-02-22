@@ -49,52 +49,13 @@ interface PiperEngine {
 let piperEnginePromise: Promise<PiperEngine> | null = null
 let piperEngineInstance: PiperEngine | null = null
 
-// Custom voice provider for local model
-class LocalVoiceProvider {
-  private cache: Map<string, string | object> = new Map()
-
-  async fetch(voice: string): Promise<[object, string]> {
-    const jsonUrl = '/tts/en_US-kusal-medium.onnx.json'
-    const onnxUrl = '/tts/en_US-kusal-medium.onnx'
-
-    let modelJson = this.cache.get(jsonUrl)
-    if (!modelJson) {
-      const response = await fetch(jsonUrl)
-      modelJson = await response.json()
-      this.cache.set(jsonUrl, modelJson)
-    }
-
-    let modelUrl = this.cache.get(onnxUrl)
-    if (!modelUrl) {
-      const response = await fetch(onnxUrl)
-      modelUrl = URL.createObjectURL(await response.blob())
-      this.cache.set(onnxUrl, modelUrl)
-    }
-
-    return [modelJson as object, modelUrl as string]
-  }
-
-  async list() {
-    return { 'en_US-kusal-medium': { num_speakers: 1 } }
-  }
-
-  destroy() {
-    this.cache.forEach((value) => {
-      if (typeof value === 'string' && value.startsWith('blob:')) {
-        URL.revokeObjectURL(value)
-      }
-    })
-    this.cache.clear()
-  }
-}
-
 async function initPiperEngine(): Promise<PiperEngine> {
   if (piperEngineInstance) return piperEngineInstance
   if (piperEnginePromise) return piperEnginePromise
 
   piperEnginePromise = (async () => {
-    const { PiperWebEngine } = await import('piper-tts-web')
-    const voiceProvider = new LocalVoiceProvider()
+    const { PiperWebEngine, HuggingFaceVoiceProvider } = await import('piper-tts-web')
+    const voiceProvider = new HuggingFaceVoiceProvider()
     const engine = new PiperWebEngine({ voiceProvider })
     piperEngineInstance = engine
     return engine
