@@ -890,23 +890,14 @@ export default function BlogPost() {
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
               </button>
-              <button className="share-btn-icon" onClick={copyLink} aria-label="Share">
-                {linkCopied ? (
-                  <>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    <span>Copied!</span>
-                  </>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="18" cy="5" r="3" />
-                    <circle cx="6" cy="12" r="3" />
-                    <circle cx="18" cy="19" r="3" />
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                  </svg>
-                )}
+              <button className={`share-btn-icon ${linkCopied ? 'copied' : ''}`} onClick={copyLink} aria-label="Share">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
               </button>
               <div className="article-views-pill">
                 {viewCount || 0} views
@@ -1040,6 +1031,24 @@ export default function BlogPost() {
           />
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {linkCopied && (
+          <motion.div
+            className="toast"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Copied
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="blog-blur-bottom" />
     </div>
   )

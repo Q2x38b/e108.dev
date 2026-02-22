@@ -1463,14 +1463,14 @@
 .share-btn-icon {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: 50%;
   color: var(--text);
-  font-size: 0.85rem;
-  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1480,10 +1480,40 @@
   height: 16px;
 }
 
+.share-btn-icon.copied {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
 @media (hover: hover) {
   .share-btn-icon:hover {
     background: var(--hover-bg);
   }
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.toast svg {
+  width: 16px;
+  height: 16px;
+  color: #22c55e;
 }
 
 /* Citations */
@@ -2456,11 +2486,8 @@
   }
 
   .share-btn-icon {
-    padding: 6px 12px;
-  }
-
-  .share-btn-icon span {
-    display: none;
+    width: 32px;
+    height: 32px;
   }
 
   .article-views-pill {
