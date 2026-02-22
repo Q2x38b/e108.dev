@@ -930,7 +930,7 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
                 <p className="more-article-subtitle">{post.subtitle}</p>
               )}
               <span className="more-article-meta">
-                {formatArticleDate(post.createdAt)} · ETHAN JERLA
+                {formatArticleDate(post.createdAt)} · Ethan Jerla
               </span>
             </div>
             {post.titleImage && (
