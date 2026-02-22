@@ -1,6 +1,16 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
+// Generate a short random ID (8 characters, alphanumeric)
+function generateShortId(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
@@ -32,6 +42,17 @@ export const getBySlug = query({
   },
 });
 
+export const getByShortId = query({
+  args: { shortId: v.string() },
+  handler: async (ctx, args) => {
+    const post = await ctx.db
+      .query("posts")
+      .withIndex("by_short_id", (q) => q.eq("shortId", args.shortId))
+      .first();
+    return post;
+  },
+});
+
 export const getById = query({
   args: { id: v.id("posts") },
   handler: async (ctx, args) => {
@@ -51,8 +72,10 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+    const shortId = generateShortId();
     return await ctx.db.insert("posts", {
       ...args,
+      shortId,
       createdAt: now,
       updatedAt: now,
     });
@@ -106,5 +129,26 @@ export const listWithViews = query({
     );
 
     return postsWithViews;
+  },
+});
+
+// Migration: Add shortId to existing posts that don't have one
+export const migrateAddShortIds = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const posts = await ctx.db.query("posts").collect();
+    let migrated = 0;
+
+    for (const post of posts) {
+      // Check if post already has a shortId
+      if (!post.shortId) {
+        await ctx.db.patch(post._id, {
+          shortId: generateShortId(),
+        });
+        migrated++;
+      }
+    }
+
+    return { migrated, total: posts.length };
   },
 });

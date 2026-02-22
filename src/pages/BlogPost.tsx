@@ -67,32 +67,49 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
     sectionsRef.current = sections
   }, [sections])
 
-  // Load best available voice
+  // Load best available voice - prioritize neural/natural voices
   useEffect(() => {
     const loadVoices = () => {
       const availableVoices = speechSynthesis.getVoices()
       const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'))
 
-      // Prioritize high-quality voices: Premium/Enhanced macOS, then Google, then others
+      // Prioritize neural/natural voices for best quality
       const sortedVoices = englishVoices.sort((a, b) => {
         const getScore = (v: SpeechSynthesisVoice) => {
           const name = v.name.toLowerCase()
-          // Premium macOS voices (most natural)
-          if (name.includes('zoe') && name.includes('premium')) return 100
-          if (name.includes('ava') && name.includes('premium')) return 99
-          if (name.includes('samantha') && name.includes('premium')) return 98
-          // Enhanced macOS voices
-          if (name.includes('enhanced') || name.includes('premium')) return 95
-          // Standard high-quality voices
-          if (v.name === 'Samantha') return 90
-          if (v.name === 'Ava') return 89
-          if (v.name === 'Zoe') return 88
-          // Google voices (good quality)
-          if (name.includes('google')) return 85
+
+          // Microsoft Edge Neural voices (best cross-platform quality)
+          if (name.includes('neural') || name.includes('online')) return 150
+
+          // Apple macOS Premium voices
+          if (name.includes('premium')) return 140
+          if (name.includes('zoe') && name.includes('premium')) return 145
+          if (name.includes('ava') && name.includes('premium')) return 144
+          if (name.includes('samantha') && name.includes('premium')) return 143
+
+          // Apple macOS Enhanced voices
+          if (name.includes('enhanced')) return 130
+
+          // Google voices (Chrome)
+          if (name.includes('google us english')) return 125
+          if (name.includes('google uk english')) return 124
+          if (name.includes('google')) return 120
+
           // Microsoft natural voices
-          if (name.includes('natural')) return 80
-          // Other decent voices
-          if (v.name === 'Karen' || v.name === 'Daniel' || v.name === 'Alex') return 70
+          if (name.includes('natural')) return 115
+          if (name.includes('microsoft')) return 110
+
+          // Good macOS standard voices
+          if (v.name === 'Samantha') return 100
+          if (v.name === 'Ava') return 99
+          if (v.name === 'Zoe') return 98
+          if (v.name === 'Karen') return 97
+          if (v.name === 'Daniel') return 96
+
+          // Prefer US English slightly
+          if (v.lang === 'en-US') return 50
+          if (v.lang === 'en-GB') return 45
+
           return 0
         }
         return getScore(b) - getScore(a)
@@ -126,14 +143,18 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
 
     const utterance = new SpeechSynthesisUtterance(sectionsRef.current[index])
     if (selectedVoice) utterance.voice = selectedVoice
-    utterance.rate = 0.95
-    utterance.pitch = 1
+
+    // Natural speech settings - slightly slower, natural pitch
+    utterance.rate = 0.9
+    utterance.pitch = 1.0
+    utterance.volume = 1.0
 
     utterance.onend = () => {
       const nextIndex = index + 1
       if (nextIndex < sectionsRef.current.length) {
         setCurrentSection(nextIndex)
-        speakSection(nextIndex)
+        // Small pause between sections for natural reading
+        setTimeout(() => speakSection(nextIndex), 200)
       } else {
         setIsPlaying(false)
         setProgress(100)
@@ -284,6 +305,185 @@ function LoginModal({ onClose }: { onClose: () => void }) {
         </form>
       </motion.div>
     </div>
+  )
+}
+
+interface ShareModalProps {
+  title: string
+  subtitle?: string
+  titleImage?: string
+  onClose: () => void
+  onCopy: () => void
+}
+
+function ShareModal({ title, subtitle, titleImage, onClose, onCopy }: ShareModalProps) {
+  const [showMore, setShowMore] = useState(false)
+  const url = window.location.href
+
+  const handleCopyLink = () => {
+    onCopy()
+    onClose()
+  }
+
+  const handlePreviewClick = () => {
+    onCopy()
+    onClose()
+  }
+
+  const shareToFacebook = () => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400')
+  }
+
+  const shareToEmail = () => {
+    window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`
+  }
+
+  const shareToTwitter = () => {
+    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
+  }
+
+  const shareToLinkedIn = () => {
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400')
+  }
+
+  const shareToReddit = () => {
+    window.open(`https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
+  }
+
+  const shareToBluesky = () => {
+    window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(title + ' ' + url)}`, '_blank', 'width=600,height=400')
+  }
+
+  const shareToHackerNews = () => {
+    window.open(`https://news.ycombinator.com/submitlink?u=${encodeURIComponent(url)}&t=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
+  }
+
+  return (
+    <motion.div
+      className="share-modal-overlay"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="share-modal"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+      >
+        <div className="share-modal-header">
+          <h2>Share this post</h2>
+          <button className="share-modal-close" onClick={onClose} aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <button className="share-preview-card" onClick={handlePreviewClick}>
+          {titleImage ? (
+            <img src={titleImage} alt="" className="share-preview-image" />
+          ) : (
+            <div className="share-preview-placeholder" />
+          )}
+          <div className="share-preview-info">
+            <div className="share-preview-source">
+              <img src="/profile.png" alt="" className="share-preview-icon" />
+              <span>Ethan Jerla</span>
+            </div>
+            <h3 className="share-preview-title">{title}</h3>
+          </div>
+        </button>
+
+        <div className="share-options">
+          <button className="share-option" onClick={handleCopyLink}>
+            <div className="share-option-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            </div>
+            <span>Copy link</span>
+          </button>
+
+          <button className="share-option" onClick={shareToFacebook}>
+            <div className="share-option-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </div>
+            <span>Facebook</span>
+          </button>
+
+          <button className="share-option" onClick={shareToEmail}>
+            <div className="share-option-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="M22 6l-10 7L2 6" />
+              </svg>
+            </div>
+            <span>Email</span>
+          </button>
+
+          <div className="share-option-wrapper">
+            <button className="share-option" onClick={() => setShowMore(!showMore)}>
+              <div className="share-option-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="5" cy="12" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="19" cy="12" r="2" />
+                </svg>
+              </div>
+              <span>More</span>
+            </button>
+
+            <AnimatePresence>
+              {showMore && (
+                <motion.div
+                  className="share-more-dropdown"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <button onClick={shareToBluesky}>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                      <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/>
+                    </svg>
+                    <span>Bluesky</span>
+                  </button>
+                  <button onClick={shareToTwitter}>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>X (Twitter)</span>
+                  </button>
+                  <button onClick={shareToLinkedIn}>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    <span>LinkedIn</span>
+                  </button>
+                  <button onClick={shareToReddit}>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                      <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                    </svg>
+                    <span>Reddit</span>
+                  </button>
+                  <button onClick={shareToHackerNews}>
+                    <div className="share-hn-icon">Y</div>
+                    <span>Hacker News</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -552,9 +752,9 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
         {isOpen && linesRef.current && (
           <motion.div
             className="toc-popup"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.95, y: "-50%" }}
+            animate={{ opacity: 1, scale: 1, y: "-50%" }}
+            exit={{ opacity: 0, scale: 0.95, y: "-50%" }}
             transition={{ duration: 0.15 }}
             style={{
               top: linesRef.current.getBoundingClientRect().top +
@@ -586,6 +786,7 @@ interface Post {
   title: string
   subtitle?: string
   slug: string
+  shortId?: string
   titleImage?: string
   createdAt: number
   viewCount?: number
@@ -597,7 +798,7 @@ interface MoreArticlesProps {
 }
 
 function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
-  const [activeTab, setActiveTab] = useState<'top' | 'latest' | 'all'>('top')
+  const [activeTab, setActiveTab] = useState<'top' | 'latest' | 'discussions'>('top')
   const navigate = useNavigate()
 
   const filteredPosts = useMemo(() => {
@@ -608,7 +809,7 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
         return [...otherPosts].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 3)
       case 'latest':
         return [...otherPosts].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3)
-      case 'all':
+      case 'discussions':
         return otherPosts.slice(0, 3)
       default:
         return otherPosts.slice(0, 3)
@@ -627,54 +828,45 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
 
   return (
     <section className="more-articles">
-      <div className="more-articles-tabs">
-        <button
-          className={`more-articles-tab ${activeTab === 'top' ? 'active' : ''}`}
-          onClick={() => setActiveTab('top')}
-        >
-          Top
-        </button>
-        <button
-          className={`more-articles-tab ${activeTab === 'latest' ? 'active' : ''}`}
-          onClick={() => setActiveTab('latest')}
-        >
-          Latest
-        </button>
-        <button
-          className={`more-articles-tab ${activeTab === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveTab('all')}
-        >
-          Discussions
-        </button>
-        <div className="more-articles-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+      <div className="more-articles-tabs-container">
+        <div className="more-articles-tabs">
+          <button
+            className={`more-articles-tab ${activeTab === 'top' ? 'active' : ''}`}
+            onClick={() => setActiveTab('top')}
+          >
+            Top
+          </button>
+          <button
+            className={`more-articles-tab ${activeTab === 'latest' ? 'active' : ''}`}
+            onClick={() => setActiveTab('latest')}
+          >
+            Latest
+          </button>
+          <button
+            className={`more-articles-tab ${activeTab === 'discussions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('discussions')}
+          >
+            Discussions
+          </button>
         </div>
       </div>
+
+      <div className="more-articles-divider" />
 
       <div className="more-articles-list">
         {filteredPosts.map((post) => (
           <Link
             key={post._id}
-            to={`/blog/${post.slug}`}
+            to={`/blog/${post.shortId}`}
             className="more-article-item"
           >
-            <div className="more-article-content">
-              <h3 className="more-article-title">{post.title}</h3>
-              {post.subtitle && (
-                <p className="more-article-subtitle">{post.subtitle}</p>
-              )}
-              <span className="more-article-meta">
-                {formatArticleDate(post.createdAt)} · ETHAN JERLA
-              </span>
-            </div>
-            {post.titleImage && (
-              <div className="more-article-image">
-                <img src={post.titleImage} alt="" />
-              </div>
+            <h3 className="more-article-title">{post.title}</h3>
+            {post.subtitle && (
+              <p className="more-article-subtitle">{post.subtitle}</p>
             )}
+            <span className="more-article-meta">
+              {formatArticleDate(post.createdAt)} · ETHAN JERLA
+            </span>
           </Link>
         ))}
       </div>
@@ -685,7 +877,7 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
       >
         See all
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M5 12h14M12 5l7 7-7 7" />
+          <path d="M9 18l6-6-6-6" />
         </svg>
       </button>
     </section>
@@ -693,16 +885,17 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
 }
 
 export default function BlogPost() {
-  const { slug } = useParams<{ slug: string }>()
+  const { shortId } = useParams<{ shortId: string }>()
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
-  const post = useQuery(api.posts.getBySlug, slug ? { slug } : 'skip')
+  const post = useQuery(api.posts.getByShortId, shortId ? { shortId } : 'skip')
   const allPosts = useQuery(api.posts.listWithViews)
   const deletePost = useMutation(api.posts.remove)
   const recordView = useMutation(api.views.recordView)
   const viewCount = useQuery(api.views.getViewCount, post ? { postId: post._id } : 'skip')
   const [linkCopied, setLinkCopied] = useState(false)
   const [showAudioPlayer, setShowAudioPlayer] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [tocOpen, setTocOpen] = useState(false)
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null)
 
@@ -890,7 +1083,7 @@ export default function BlogPost() {
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
               </button>
-              <button className={`share-btn-icon ${linkCopied ? 'copied' : ''}`} onClick={copyLink} aria-label="Share">
+              <button className={`share-btn-icon ${linkCopied ? 'copied' : ''}`} onClick={() => setShowShareModal(true)} aria-label="Share">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="18" cy="5" r="3" />
                   <circle cx="6" cy="12" r="3" />
@@ -907,7 +1100,7 @@ export default function BlogPost() {
 
           <SignedIn>
             <div className="article-admin-actions">
-              <Link to={`/blog/edit/${post.slug}`} className="edit-link">Edit</Link>
+              <Link to={`/blog/edit/${post.shortId}`} className="edit-link">Edit</Link>
               <button className="delete-btn" onClick={handleDelete}>Delete</button>
             </div>
           </SignedIn>
@@ -1028,6 +1221,18 @@ export default function BlogPost() {
               speechSynthesis.cancel()
               setShowAudioPlayer(false)
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showShareModal && (
+          <ShareModal
+            title={post.title}
+            subtitle={post.subtitle}
+            titleImage={post.titleImage}
+            onClose={() => setShowShareModal(false)}
+            onCopy={copyLink}
           />
         )}
       </AnimatePresence>

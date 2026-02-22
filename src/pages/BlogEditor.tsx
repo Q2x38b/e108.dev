@@ -214,15 +214,15 @@ function CitationModal({
 }
 
 export default function BlogEditor() {
-  const { slug } = useParams<{ slug: string }>()
+  const { shortId } = useParams<{ shortId: string }>()
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
-  const isEditing = !!slug
+  const isEditing = !!shortId
   const editorRef = useRef<HTMLTextAreaElement>(null)
 
   const existingPost = useQuery(
-    api.posts.getBySlug,
-    slug ? { slug } : 'skip'
+    api.posts.getByShortId,
+    shortId ? { shortId } : 'skip'
   )
 
   const createPost = useMutation(api.posts.create)
@@ -301,6 +301,7 @@ export default function BlogEditor() {
           titleImage: titleImage || undefined,
           published
         })
+        navigate(`/blog/${existingPost.shortId}`)
       } else {
         await createPost({
           title,
@@ -310,8 +311,8 @@ export default function BlogEditor() {
           titleImage: titleImage || undefined,
           published
         })
-      }
-      navigate(`/blog/${postSlug}`)
+        // Navigate to blog list - the new post will appear there
+        navigate('/blog')
     } catch (error) {
       console.error('Error saving post:', error)
       alert('Error saving post')

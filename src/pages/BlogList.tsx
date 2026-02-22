@@ -16,6 +16,7 @@ interface Post {
   title: string
   subtitle?: string
   slug: string
+  shortId?: string
   content: string
   excerpt?: string
   titleImage?: string
@@ -225,7 +226,7 @@ export default function BlogList() {
                 animate="visible"
                 transition={{ duration: 0.4, delay: 0.25 + index * 0.05 }}
               >
-                <Link to={`/blog/${post.slug}`} className="post-row-enhanced">
+                <Link to={`/blog/${post.shortId}`} className="post-row-enhanced">
                   <div className="post-row-content">
                     <span className="post-row-title">{post.title}</span>
                     {post.subtitle && (
