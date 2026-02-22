@@ -1423,6 +1423,41 @@
   color: var(--text-tertiary);
 }
 
+.article-views-pill {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background: var(--hover-bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+/* Share Button Icon */
+.share-btn-icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.share-btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (hover: hover) {
+  .share-btn-icon:hover {
+    background: var(--hover-bg);
+  }
+}
+
 /* Citations */
 .citation-ref {
   color: var(--accent-color);
@@ -1835,6 +1870,10 @@
   border: 1px solid var(--border);
 }
 
+.article-author-image-bg {
+  background: white;
+}
+
 .article-author-info {
   display: flex;
   flex-direction: column;
@@ -1856,8 +1895,8 @@
 
 .article-actions-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -1932,13 +1971,19 @@
   background: transparent;
   border: none;
   padding: 8px;
-  cursor: pointer;
+  cursor: grab;
+  user-select: none;
+}
+
+.toc-toggle-btn-minimal:active {
+  cursor: grabbing;
 }
 
 .toc-lines-minimal {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
 }
 
 .toc-line-minimal {
@@ -1951,7 +1996,7 @@
 }
 
 .toc-line-minimal.active {
-  width: 24px;
+  width: 28px;
   height: 3px;
   background: var(--text);
 }
@@ -1968,7 +2013,7 @@
 /* TOC Popup - Clean Style */
 .toc-popup {
   position: fixed;
-  left: 56px;
+  left: 60px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 99;
@@ -2366,14 +2411,22 @@
   }
 
   .article-actions-row {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
   }
 
-  .share-btn {
-    width: 100%;
-    text-align: center;
+  .share-btn-icon {
+    padding: 6px 12px;
+  }
+
+  .share-btn-icon span {
+    display: none;
+  }
+
+  .article-views-pill {
+    font-size: 0.75rem;
+    padding: 5px 10px;
   }
 
   .more-articles-tabs {

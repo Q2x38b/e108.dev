@@ -404,6 +404,12 @@ interface TOCSidebarProps {
 }
 
 function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarProps) {
+  const linesRef = useRef<HTMLDivElement>(null)
+  const isDraggingRef = useRef(false)
+  const hasDraggedRef = useRef(false)
+  const startYRef = useRef(0)
+  const startScrollRef = useRef(0)
+
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
@@ -415,14 +421,95 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
   // Get the display headings for the lines
   const displayHeadings = headings.filter(h => h.level <= 2).slice(0, 6)
 
+  // Handle drag to scroll
+  const handleDragStart = useCallback((clientY: number) => {
+    isDraggingRef.current = true
+    hasDraggedRef.current = false
+    startYRef.current = clientY
+    startScrollRef.current = window.scrollY
+    document.body.style.userSelect = 'none'
+  }, [])
+
+  const handleDragMove = useCallback((clientY: number) => {
+    if (!isDraggingRef.current || !linesRef.current) return
+
+    const deltaY = clientY - startYRef.current
+
+    // Only consider it a drag if moved more than 5 pixels
+    if (Math.abs(deltaY) > 5) {
+      hasDraggedRef.current = true
+    }
+
+    const linesHeight = linesRef.current.offsetHeight
+
+    // Calculate the scroll ratio - map drag distance to document scroll
+    const documentHeight = document.documentElement.scrollHeight - window.innerHeight
+    const scrollRatio = documentHeight / linesHeight
+
+    // Apply scroll with some smoothing factor
+    const newScroll = startScrollRef.current + (deltaY * scrollRatio * 2)
+    window.scrollTo({ top: newScroll, behavior: 'auto' })
+  }, [])
+
+  const handleDragEnd = useCallback(() => {
+    isDraggingRef.current = false
+    document.body.style.userSelect = ''
+  }, [])
+
+  // Mouse events
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    handleDragStart(e.clientY)
+  }, [handleDragStart])
+
+  // Touch events
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    handleDragStart(e.touches[0].clientY)
+  }, [handleDragStart])
+
+  // Global mouse/touch move and end
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientY)
+    const handleMouseUp = () => handleDragEnd()
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isDraggingRef.current) {
+        e.preventDefault()
+        handleDragMove(e.touches[0].clientY)
+      }
+    }
+    const handleTouchEnd = () => handleDragEnd()
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', handleTouchEnd)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [handleDragMove, handleDragEnd])
+
   return (
     <>
-      <button
+      <div
         className="toc-toggle-btn-minimal"
-        onClick={onToggle}
-        aria-label="Toggle table of contents"
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onClick={() => {
+          // Only toggle if didn't drag (clicked)
+          if (!hasDraggedRef.current) {
+            onToggle()
+          }
+          hasDraggedRef.current = false
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Toggle table of contents or drag to scroll"
       >
-        <div className="toc-lines-minimal">
+        <div className="toc-lines-minimal" ref={linesRef}>
           {displayHeadings.map((heading, i) => (
             <span
               key={i}
@@ -430,7 +517,7 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
             />
           ))}
         </div>
-      </button>
+      </div>
 
       <AnimatePresence>
         {isOpen && (
@@ -662,6 +749,12 @@ export default function BlogPost() {
         }
       }
 
+      // If no heading found (scrolled above first heading), default to first heading
+      // This ensures there's always an active indicator
+      if (!currentHeading && headings.length > 0) {
+        currentHeading = headings[0].id
+      }
+
       setActiveHeadingId(currentHeading)
     }
 
@@ -752,7 +845,7 @@ export default function BlogPost() {
             <img
               src="/profile.png"
               alt="Ethan Jerla"
-              className="article-author-image"
+              className="article-author-image article-author-image-bg"
             />
             <div className="article-author-info">
               <span className="article-author-name">ETHAN JERLA</span>
@@ -761,12 +854,27 @@ export default function BlogPost() {
           </div>
 
           <div className="article-actions-row">
-            <div className="article-views">
+            <button className="share-btn-icon" onClick={copyLink} aria-label="Share">
+              {linkCopied ? (
+                <>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              )}
+            </button>
+            <div className="article-views-pill">
               {viewCount || 0} views
             </div>
-            <button className="share-btn" onClick={copyLink}>
-              {linkCopied ? 'Copied!' : 'Share'}
-            </button>
           </div>
 
           <SignedIn>
