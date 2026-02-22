@@ -40,11 +40,76 @@ function stripMarkdown(text: string): string {
     .trim()
 }
 
-function splitIntoSections(text: string): string[] {
-  const cleanText = stripMarkdown(text)
-  // Split by paragraphs (double newlines) or sentences for better chunking
-  const paragraphs = cleanText.split(/\n\n+/).filter(p => p.trim().length > 0)
-  return paragraphs
+// Piper TTS types
+interface PiperEngine {
+  generate: (text: string, voice: string, speaker: number) => Promise<{ file: Blob }>
+}
+
+// Global engine instance to persist across component mounts
+let piperEnginePromise: Promise<PiperEngine> | null = null
+let piperEngineInstance: PiperEngine | null = null
+
+// Custom voice provider for local model
+class LocalVoiceProvider {
+  private cache: Map<string, string | object> = new Map()
+
+  async fetch(voice: string): Promise<[object, string]> {
+    const jsonUrl = '/tts/en_US-kusal-medium.onnx.json'
+    const onnxUrl = '/tts/en_US-kusal-medium.onnx'
+
+    let modelJson = this.cache.get(jsonUrl)
+    if (!modelJson) {
+      const response = await fetch(jsonUrl)
+      modelJson = await response.json()
+      this.cache.set(jsonUrl, modelJson)
+    }
+
+    let modelUrl = this.cache.get(onnxUrl)
+    if (!modelUrl) {
+      const response = await fetch(onnxUrl)
+      modelUrl = URL.createObjectURL(await response.blob())
+      this.cache.set(onnxUrl, modelUrl)
+    }
+
+    return [modelJson as object, modelUrl as string]
+  }
+
+  async list() {
+    return { 'en_US-kusal-medium': { num_speakers: 1 } }
+  }
+
+  destroy() {
+    this.cache.forEach((value) => {
+      if (typeof value === 'string' && value.startsWith('blob:')) {
+        URL.revokeObjectURL(value)
+      }
+    })
+    this.cache.clear()
+  }
+}
+
+async function initPiperEngine(): Promise<PiperEngine> {
+  if (piperEngineInstance) return piperEngineInstance
+  if (piperEnginePromise) return piperEnginePromise
+
+  piperEnginePromise = (async () => {
+    const { PiperWebEngine } = await import('piper-tts-web')
+    const voiceProvider = new LocalVoiceProvider()
+    const engine = new PiperWebEngine({ voiceProvider })
+    piperEngineInstance = engine
+    return engine
+  })()
+
+  return piperEnginePromise
+}
+
+// Check if connection is fast enough for preloading
+function shouldPreload(): boolean {
+  const connection = (navigator as { connection?: { effectiveType?: string; saveData?: boolean } }).connection
+  if (!connection) return true // Default to preload if API not available
+  if (connection.saveData) return false
+  const effectiveType = connection.effectiveType
+  return effectiveType === '4g' || effectiveType === undefined
 }
 
 interface AudioPlayerProps {
@@ -55,157 +120,137 @@ interface AudioPlayerProps {
 
 function AudioPlayer({ content, onClose }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [currentSection, setCurrentSection] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [loadingProgress, setLoadingProgress] = useState('')
   const [progress, setProgress] = useState(0)
-  const selectedVoiceRef = useRef<SpeechSynthesisVoice | null>(null)
-  const sectionsRef = useRef<string[]>([])
-  const progressIntervalRef = useRef<number | null>(null)
+  const [duration, setDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
 
-  const sections = useMemo(() => splitIntoSections(content), [content])
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioUrlRef = useRef<string | null>(null)
+  const engineRef = useRef<PiperEngine | null>(null)
 
+  // Clean text for TTS
+  const cleanContent = useMemo(() => stripMarkdown(content), [content])
+
+  // Preload engine on mount if connection is fast
   useEffect(() => {
-    sectionsRef.current = sections
-  }, [sections])
-
-  // Load best available voice - prioritize neural/natural voices
-  useEffect(() => {
-    const loadVoices = () => {
-      const availableVoices = speechSynthesis.getVoices()
-      const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'))
-
-      // Prioritize neural/natural voices for best quality
-      const sortedVoices = englishVoices.sort((a, b) => {
-        const getScore = (v: SpeechSynthesisVoice) => {
-          const name = v.name.toLowerCase()
-
-          // Microsoft Edge Neural voices (best cross-platform quality)
-          if (name.includes('neural') || name.includes('online')) return 150
-
-          // Apple macOS Premium voices
-          if (name.includes('premium')) return 140
-          if (name.includes('zoe') && name.includes('premium')) return 145
-          if (name.includes('ava') && name.includes('premium')) return 144
-          if (name.includes('samantha') && name.includes('premium')) return 143
-
-          // Apple macOS Enhanced voices
-          if (name.includes('enhanced')) return 130
-
-          // Google voices (Chrome)
-          if (name.includes('google us english')) return 125
-          if (name.includes('google uk english')) return 124
-          if (name.includes('google')) return 120
-
-          // Microsoft natural voices
-          if (name.includes('natural')) return 115
-          if (name.includes('microsoft')) return 110
-
-          // Good macOS standard voices
-          if (v.name === 'Samantha') return 100
-          if (v.name === 'Ava') return 99
-          if (v.name === 'Zoe') return 98
-          if (v.name === 'Karen') return 97
-          if (v.name === 'Daniel') return 96
-
-          // Prefer US English slightly
-          if (v.lang === 'en-US') return 50
-          if (v.lang === 'en-GB') return 45
-
-          return 0
-        }
-        return getScore(b) - getScore(a)
-      })
-
-      if (sortedVoices.length > 0 && !selectedVoiceRef.current) {
-        selectedVoiceRef.current = sortedVoices[0]
-      } else if (availableVoices.length > 0 && !selectedVoiceRef.current) {
-        selectedVoiceRef.current = availableVoices[0]
-      }
+    if (shouldPreload()) {
+      setLoadingProgress('Initializing voice engine...')
+      initPiperEngine().then(engine => {
+        engineRef.current = engine
+        setLoadingProgress('')
+      }).catch(() => setLoadingProgress(''))
     }
-
-    loadVoices()
-    speechSynthesis.addEventListener('voiceschanged', loadVoices)
-    return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices)
   }, [])
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      speechSynthesis.cancel()
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current)
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current)
+        audioUrlRef.current = null
+      }
     }
   }, [])
 
-  const speakSection = useCallback((index: number) => {
-    if (index >= sectionsRef.current.length) {
-      setIsPlaying(false)
-      setProgress(100)
-      return
-    }
+  // Generate and play audio
+  const generateAndPlay = useCallback(async () => {
+    if (isLoading) return
 
-    const utterance = new SpeechSynthesisUtterance(sectionsRef.current[index])
-    if (selectedVoiceRef.current) utterance.voice = selectedVoiceRef.current
+    try {
+      setIsLoading(true)
+      setLoadingProgress('Loading voice model...')
 
-    // Natural speech settings - slightly slower, natural pitch
-    utterance.rate = 0.9
-    utterance.pitch = 1.0
-    utterance.volume = 1.0
+      // Get or initialize engine
+      if (!engineRef.current) {
+        engineRef.current = await initPiperEngine()
+      }
 
-    utterance.onend = () => {
-      const nextIndex = index + 1
-      if (nextIndex < sectionsRef.current.length) {
-        setCurrentSection(nextIndex)
-        // Small pause between sections for natural reading
-        setTimeout(() => speakSection(nextIndex), 200)
-      } else {
+      setLoadingProgress('Generating audio...')
+      const response = await engineRef.current.generate(cleanContent, 'en_US-kusal-medium', 0)
+
+      // Cleanup old audio URL
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current)
+      }
+
+      // Create new audio element
+      const url = URL.createObjectURL(response.file)
+      audioUrlRef.current = url
+
+      const audio = new Audio(url)
+      audioRef.current = audio
+
+      audio.onloadedmetadata = () => {
+        setDuration(audio.duration)
+        setIsLoading(false)
+        setLoadingProgress('')
+        audio.play()
+        setIsPlaying(true)
+      }
+
+      audio.ontimeupdate = () => {
+        setCurrentTime(audio.currentTime)
+        setProgress((audio.currentTime / audio.duration) * 100)
+      }
+
+      audio.onended = () => {
         setIsPlaying(false)
         setProgress(100)
       }
-    }
 
-    utterance.onerror = () => setIsPlaying(false)
-    speechSynthesis.speak(utterance)
-  }, [])
-
-  useEffect(() => {
-    if (isPlaying && sections.length > 0) {
-      progressIntervalRef.current = window.setInterval(() => {
-        const baseProgress = (currentSection / sections.length) * 100
-        const sectionProgress = (1 / sections.length) * 100 * 0.5
-        setProgress(Math.min(baseProgress + sectionProgress, 100))
-      }, 100)
-    } else if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current)
-    }
-    return () => {
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current)
-    }
-  }, [isPlaying, currentSection, sections.length])
-
-  const togglePlayPause = () => {
-    if (isPlaying) {
-      speechSynthesis.cancel()
-      setIsPlaying(false)
-    } else {
-      // Ensure voice is ready before playing
-      if (!selectedVoiceRef.current) {
-        // Try to load voices again if not ready
-        const voices = speechSynthesis.getVoices()
-        if (voices.length > 0) {
-          selectedVoiceRef.current = voices.find(v => v.lang.startsWith('en')) || voices[0]
-        }
+      audio.onerror = () => {
+        setIsLoading(false)
+        setLoadingProgress('Error playing audio')
+        setIsPlaying(false)
       }
-      setIsPlaying(true)
-      speakSection(currentSection)
-    }
-  }
 
-  const seekToSection = (e: React.MouseEvent<HTMLDivElement>) => {
+    } catch (error) {
+      console.error('TTS error:', error)
+      setIsLoading(false)
+      setLoadingProgress('Error generating audio')
+    }
+  }, [cleanContent, isLoading])
+
+  const togglePlayPause = useCallback(() => {
+    if (isLoading) return
+
+    if (audioRef.current && audioUrlRef.current) {
+      // Audio already generated, just play/pause
+      if (isPlaying) {
+        audioRef.current.pause()
+        setIsPlaying(false)
+      } else {
+        audioRef.current.play()
+        setIsPlaying(true)
+      }
+    } else {
+      // Generate audio first
+      generateAndPlay()
+    }
+  }, [isPlaying, isLoading, generateAndPlay])
+
+  const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || !duration) return
+
     const rect = e.currentTarget.getBoundingClientRect()
     const percentage = (e.clientX - rect.left) / rect.width
-    const sectionIndex = Math.floor(percentage * sections.length)
-    speechSynthesis.cancel()
-    setCurrentSection(sectionIndex)
+    const newTime = percentage * duration
+
+    audioRef.current.currentTime = newTime
+    setCurrentTime(newTime)
     setProgress(percentage * 100)
-    if (isPlaying) setTimeout(() => speakSection(sectionIndex), 100)
+  }, [duration])
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   return (
@@ -216,8 +261,17 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
       exit={{ y: 50, opacity: 0 }}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
     >
-      <button className="audio-player-btn" onClick={togglePlayPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
-        {isPlaying ? (
+      <button
+        className="audio-player-btn"
+        onClick={togglePlayPause}
+        aria-label={isLoading ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="loading-spinner">
+            <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeLinecap="round" />
+          </svg>
+        ) : isPlaying ? (
           <svg viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="4" width="4" height="16" />
             <rect x="14" y="4" width="4" height="16" />
@@ -229,8 +283,21 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
         )}
       </button>
 
-      <div className="audio-player-progress" onClick={seekToSection}>
-        <div className="audio-player-progress-bar" style={{ width: `${progress}%` }} />
+      <div className="audio-player-middle">
+        {loadingProgress ? (
+          <span className="audio-player-loading-text">{loadingProgress}</span>
+        ) : (
+          <>
+            <div className="audio-player-progress" onClick={handleSeek}>
+              <div className="audio-player-progress-bar" style={{ width: `${progress}%` }} />
+            </div>
+            {duration > 0 && (
+              <span className="audio-player-time">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
+            )}
+          </>
+        )}
       </div>
 
       <button className="audio-player-close" onClick={onClose} aria-label="Close">
@@ -1230,10 +1297,7 @@ export default function BlogPost() {
           <AudioPlayer
             content={cleanContent}
             title={post.title}
-            onClose={() => {
-              speechSynthesis.cancel()
-              setShowAudioPlayer(false)
-            }}
+            onClose={() => setShowAudioPlayer(false)}
           />
         )}
       </AnimatePresence>
