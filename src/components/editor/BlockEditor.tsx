@@ -13,7 +13,7 @@ import { Table } from '@tiptap/extension-table'
 import { TableRow } from '@tiptap/extension-table-row'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { JSONContent } from '@tiptap/core'
 
 import { SlashCommand } from './SlashCommand'
@@ -30,65 +30,68 @@ interface BlockEditorProps {
 }
 
 export function BlockEditor({ content, onUpdate, placeholder = "Type '/' for commands..." }: BlockEditorProps) {
+  // Memoize extensions to prevent recreation on re-renders
+  const extensions = useMemo(() => [
+    StarterKit.configure({
+      dropcursor: {
+        color: '#3b82f6',
+        width: 2,
+      },
+      bulletList: {
+        keepMarks: true,
+        keepAttributes: false,
+      },
+      orderedList: {
+        keepMarks: true,
+        keepAttributes: false,
+      },
+    }),
+    Placeholder.configure({
+      placeholder: ({ node }) => {
+        if (node.type.name === 'heading') {
+          return 'Heading'
+        }
+        return placeholder
+      },
+    }),
+    Typography,
+    Link.configure({
+      openOnClick: false,
+      HTMLAttributes: {
+        class: 'editor-link',
+      },
+    }),
+    Highlight.configure({
+      multicolor: true,
+    }),
+    TaskList.configure({
+      HTMLAttributes: {
+        class: 'task-list',
+      },
+    }),
+    TaskItem.configure({
+      nested: true,
+      HTMLAttributes: {
+        class: 'task-item',
+      },
+    }),
+    Underline,
+    TextStyle,
+    Color,
+    Table.configure({
+      resizable: true,
+    }),
+    TableRow,
+    TableCell,
+    TableHeader,
+    SlashCommand,
+    Callout,
+    Divider,
+    ImageBlock,
+  ], [placeholder])
+
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        dropcursor: {
-          color: '#3b82f6',
-          width: 2,
-        },
-        bulletList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-        orderedList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-      }),
-      Placeholder.configure({
-        placeholder: ({ node }) => {
-          if (node.type.name === 'heading') {
-            return 'Heading'
-          }
-          return placeholder
-        },
-      }),
-      Typography,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'editor-link',
-        },
-      }),
-      Highlight.configure({
-        multicolor: true,
-      }),
-      TaskList.configure({
-        HTMLAttributes: {
-          class: 'task-list',
-        },
-      }),
-      TaskItem.configure({
-        nested: true,
-        HTMLAttributes: {
-          class: 'task-item',
-        },
-      }),
-      Underline,
-      TextStyle,
-      Color,
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableCell,
-      TableHeader,
-      SlashCommand,
-      Callout,
-      Divider,
-      ImageBlock,
-    ],
+    extensions,
     content: content || {
       type: 'doc',
       content: [{ type: 'paragraph' }],

@@ -100,10 +100,14 @@ export const update = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...rest } = args;
-    await ctx.db.patch(id, {
-      ...rest,
-      updatedAt: Date.now(),
-    });
+    // Filter out undefined values to prevent Convex errors
+    const updateData: Record<string, unknown> = { updatedAt: Date.now() };
+    for (const [key, value] of Object.entries(rest)) {
+      if (value !== undefined) {
+        updateData[key] = value;
+      }
+    }
+    await ctx.db.patch(id, updateData);
   },
 });
 
