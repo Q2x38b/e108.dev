@@ -41,91 +41,88 @@ function stripMarkdown(text: string): string {
 }
 
 // Piper TTS types
-interface PiperEngine {
-  generate: (text: string, voice: string, speaker: number) => Promise<{ file: Blob }>
-}
+// Web Speech API TTS - uses browser's built-in speech synthesis
+class WebSpeechTTS {
+  private utterance: SpeechSynthesisUtterance | null = null
+  private onEndCallback: (() => void) | null = null
+  private onProgressCallback: ((progress: number) => void) | null = null
+  private startTime: number = 0
+  private estimatedDuration: number = 0
 
-// Global engine instance to persist across component mounts
-let piperEnginePromise: Promise<PiperEngine> | null = null
-let piperEngineInstance: PiperEngine | null = null
+  async generate(text: string): Promise<void> {
+    // Cancel any existing speech
+    window.speechSynthesis.cancel()
 
-// Minimal TTS engine - only uses ONNX and Phonemize runtimes
-// Avoids importing PiperWebEngine which pulls in @huggingface/transformers
-class MinimalPiperEngine implements PiperEngine {
-  private onnxRuntime: any
-  private phonemizeRuntime: any
-  private voiceProvider: any
-  private voiceCache: Map<string, any> = new Map()
+    this.utterance = new SpeechSynthesisUtterance(text)
+    this.utterance.rate = 1.0
+    this.utterance.pitch = 1.0
 
-  constructor(onnxRuntime: any, phonemizeRuntime: any, voiceProvider: any) {
-    this.onnxRuntime = onnxRuntime
-    this.phonemizeRuntime = phonemizeRuntime
-    this.voiceProvider = voiceProvider
-  }
-
-  async generate(text: string, voice: string, speaker: number = 0): Promise<{ file: Blob }> {
-    // Cache voice data to avoid re-fetching
-    let voiceData = this.voiceCache.get(voice)
-    if (!voiceData) {
-      voiceData = await this.voiceProvider.fetch(voice)
-      this.voiceCache.set(voice, voiceData)
+    // Try to find a good English voice
+    const voices = window.speechSynthesis.getVoices()
+    const englishVoice = voices.find(v => v.lang.startsWith('en') && v.localService)
+      || voices.find(v => v.lang.startsWith('en'))
+      || voices[0]
+    if (englishVoice) {
+      this.utterance.voice = englishVoice
     }
 
-    const phonemeData = await this.phonemizeRuntime.phonemize(text, voiceData)
-    const result = await this.onnxRuntime.generate(phonemeData, voiceData, speaker)
-    return result
-  }
-}
+    // Estimate duration based on word count (average 150 words per minute)
+    const wordCount = text.split(/\s+/).length
+    this.estimatedDuration = (wordCount / 150) * 60
 
-// Suppress transformers worker errors (they don't affect TTS functionality)
-let errorsSuppressed = false
-function suppressTransformersErrors() {
-  if (errorsSuppressed) return
-  errorsSuppressed = true
-
-  const originalError = console.error
-  const originalLog = console.log
-  const originalWarn = console.warn
-
-  const shouldSuppress = (args: any[]) => {
-    const msg = args[0]?.toString?.() || ''
-    return msg.includes('worker sent an error') || msg.includes('Uncaught Event')
+    return Promise.resolve()
   }
 
-  console.error = (...args) => {
-    if (shouldSuppress(args)) return
-    originalError.apply(console, args)
+  play(onEnd?: () => void, onProgress?: (progress: number) => void) {
+    if (!this.utterance) return
+
+    this.onEndCallback = onEnd || null
+    this.onProgressCallback = onProgress || null
+    this.startTime = Date.now()
+
+    this.utterance.onend = () => {
+      if (this.onEndCallback) this.onEndCallback()
+    }
+
+    // Update progress periodically
+    if (this.onProgressCallback) {
+      const interval = setInterval(() => {
+        if (!window.speechSynthesis.speaking) {
+          clearInterval(interval)
+          return
+        }
+        const elapsed = (Date.now() - this.startTime) / 1000
+        const progress = Math.min((elapsed / this.estimatedDuration) * 100, 99)
+        if (this.onProgressCallback) this.onProgressCallback(progress)
+      }, 100)
+    }
+
+    window.speechSynthesis.speak(this.utterance)
   }
-  console.log = (...args) => {
-    if (shouldSuppress(args)) return
-    originalLog.apply(console, args)
+
+  pause() {
+    window.speechSynthesis.pause()
   }
-  console.warn = (...args) => {
-    if (shouldSuppress(args)) return
-    originalWarn.apply(console, args)
+
+  resume() {
+    window.speechSynthesis.resume()
   }
-}
 
-async function initPiperEngine(): Promise<PiperEngine> {
-  if (piperEngineInstance) return piperEngineInstance
-  if (piperEnginePromise) return piperEnginePromise
+  stop() {
+    window.speechSynthesis.cancel()
+  }
 
-  piperEnginePromise = (async () => {
-    // Suppress worker errors before importing piper-tts-web
-    suppressTransformersErrors()
+  get speaking(): boolean {
+    return window.speechSynthesis.speaking
+  }
 
-    const { OnnxWebRuntime, PhonemizeWebRuntime, HuggingFaceVoiceProvider } = await import('piper-tts-web')
+  get paused(): boolean {
+    return window.speechSynthesis.paused
+  }
 
-    const onnxRuntime = new OnnxWebRuntime({ numThreads: 1 })
-    const phonemizeRuntime = new PhonemizeWebRuntime()
-    const voiceProvider = new HuggingFaceVoiceProvider()
-
-    const engine = new MinimalPiperEngine(onnxRuntime, phonemizeRuntime, voiceProvider)
-    piperEngineInstance = engine
-    return engine
-  })()
-
-  return piperEnginePromise
+  getDuration(): number {
+    return this.estimatedDuration
+  }
 }
 
 interface AudioPlayerProps {
@@ -142,124 +139,77 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
 
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const audioUrlRef = useRef<string | null>(null)
-  const engineRef = useRef<PiperEngine | null>(null)
+  const ttsRef = useRef<WebSpeechTTS | null>(null)
 
   // Clean text for TTS
   const cleanContent = useMemo(() => stripMarkdown(content), [content])
 
-  // Always preload the Piper TTS engine on mount
+  // Initialize TTS and load voices
   useEffect(() => {
-    setLoadingProgress('Initializing voice engine...')
-    initPiperEngine().then(engine => {
-      engineRef.current = engine
-      setLoadingProgress('')
-    }).catch(() => setLoadingProgress(''))
-  }, [])
+    ttsRef.current = new WebSpeechTTS()
+    // Ensure voices are loaded
+    window.speechSynthesis.getVoices()
 
-  // Cleanup on unmount
-  useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current = null
-      }
-      if (audioUrlRef.current) {
-        URL.revokeObjectURL(audioUrlRef.current)
-        audioUrlRef.current = null
+      if (ttsRef.current) {
+        ttsRef.current.stop()
       }
     }
   }, [])
 
   // Generate and play audio
   const generateAndPlay = useCallback(async () => {
-    if (isLoading) return
+    if (isLoading || !ttsRef.current) return
 
     try {
       setIsLoading(true)
-      setLoadingProgress('Loading voice model...')
+      setLoadingProgress('Preparing...')
 
-      // Get or initialize engine
-      if (!engineRef.current) {
-        engineRef.current = await initPiperEngine()
-      }
+      await ttsRef.current.generate(cleanContent)
+      const estimatedDuration = ttsRef.current.getDuration()
+      setDuration(estimatedDuration)
 
-      setLoadingProgress('Generating audio...')
-      const response = await engineRef.current.generate(cleanContent, 'en_US-kusal-medium', 0)
+      setIsLoading(false)
+      setLoadingProgress('')
 
-      // Cleanup old audio URL
-      if (audioUrlRef.current) {
-        URL.revokeObjectURL(audioUrlRef.current)
-      }
-
-      // Create new audio element
-      const url = URL.createObjectURL(response.file)
-      audioUrlRef.current = url
-
-      const audio = new Audio(url)
-      audioRef.current = audio
-
-      audio.onloadedmetadata = () => {
-        setDuration(audio.duration)
-        setIsLoading(false)
-        setLoadingProgress('')
-        audio.play()
-        setIsPlaying(true)
-      }
-
-      audio.ontimeupdate = () => {
-        setCurrentTime(audio.currentTime)
-        setProgress((audio.currentTime / audio.duration) * 100)
-      }
-
-      audio.onended = () => {
-        setIsPlaying(false)
-        setProgress(100)
-      }
-
-      audio.onerror = () => {
-        setIsLoading(false)
-        setLoadingProgress('Error playing audio')
-        setIsPlaying(false)
-      }
+      ttsRef.current.play(
+        () => {
+          setIsPlaying(false)
+          setProgress(100)
+        },
+        (prog) => {
+          setProgress(prog)
+          setCurrentTime((prog / 100) * estimatedDuration)
+        }
+      )
+      setIsPlaying(true)
 
     } catch (error) {
       console.error('TTS error:', error)
       setIsLoading(false)
-      setLoadingProgress('Error generating audio')
+      setLoadingProgress('Error')
     }
   }, [cleanContent, isLoading])
 
   const togglePlayPause = useCallback(() => {
-    if (isLoading) return
+    if (isLoading || !ttsRef.current) return
 
-    if (audioRef.current && audioUrlRef.current) {
-      // Audio already generated, just play/pause
-      if (isPlaying) {
-        audioRef.current.pause()
-        setIsPlaying(false)
-      } else {
-        audioRef.current.play()
+    if (ttsRef.current.speaking) {
+      if (ttsRef.current.paused) {
+        ttsRef.current.resume()
         setIsPlaying(true)
+      } else {
+        ttsRef.current.pause()
+        setIsPlaying(false)
       }
     } else {
-      // Generate audio first
       generateAndPlay()
     }
-  }, [isPlaying, isLoading, generateAndPlay])
+  }, [isLoading, generateAndPlay])
 
-  const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current || !duration) return
-
-    const rect = e.currentTarget.getBoundingClientRect()
-    const percentage = (e.clientX - rect.left) / rect.width
-    const newTime = percentage * duration
-
-    audioRef.current.currentTime = newTime
-    setCurrentTime(newTime)
-    setProgress(percentage * 100)
-  }, [duration])
+  const handleSeek = useCallback((_e: React.MouseEvent<HTMLDivElement>) => {
+    // Web Speech API doesn't support seeking
+  }, [])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)

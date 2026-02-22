@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/:path((?!assets|piper|onnx|worker|.*\\..*).*)",
+      "source": "/:path((?!assets|.*\\..*).*)",
       "destination": "/"
     }
   ]
