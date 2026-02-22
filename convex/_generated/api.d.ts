@@ -8,6 +8,9 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
+import type * as content from "../content.js";
+import type * as migrate from "../migrate.js";
 import type * as posts from "../posts.js";
 import type * as views from "../views.js";
 
@@ -18,6 +21,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
+  content: typeof content;
+  migrate: typeof migrate;
   posts: typeof posts;
   views: typeof views;
 }>;

@@ -1,40 +1,77 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
 
 interface AuthContextType {
   isAuthenticated: boolean
-  login: (password: string) => boolean
-  logout: () => void
+  sessionToken: string | null
+  login: (password: string) => Promise<boolean>
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [sessionToken, setSessionToken] = useState<string | null>(null)
 
+  const createSession = useMutation(api.auth.createSession)
+  const destroySession = useMutation(api.auth.destroySession)
+
+  // Check for existing session token on mount
   useEffect(() => {
-    const auth = sessionStorage.getItem('auth')
-    if (auth === 'true') {
+    const storedToken = sessionStorage.getItem('authToken')
+    if (storedToken) {
+      setSessionToken(storedToken)
       setIsAuthenticated(true)
     }
   }, [])
 
-  const login = (password: string): boolean => {
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD
-    if (password === adminPassword) {
-      setIsAuthenticated(true)
-      sessionStorage.setItem('auth', 'true')
-      return true
+  // Validate session token when it changes
+  const isValidSession = useQuery(
+    api.auth.validateSession,
+    sessionToken ? { token: sessionToken } : 'skip'
+  )
+
+  // If session is invalid, clear it
+  useEffect(() => {
+    if (sessionToken && isValidSession === false) {
+      setIsAuthenticated(false)
+      setSessionToken(null)
+      sessionStorage.removeItem('authToken')
     }
-    return false
+  }, [isValidSession, sessionToken])
+
+  const login = async (password: string): Promise<boolean> => {
+    try {
+      const result = await createSession({ password })
+      if (result.success && result.token) {
+        setIsAuthenticated(true)
+        setSessionToken(result.token)
+        sessionStorage.setItem('authToken', result.token)
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
   }
 
-  const logout = () => {
+  const logout = async (): Promise<void> => {
+    if (sessionToken) {
+      try {
+        await destroySession({ token: sessionToken })
+      } catch {
+        // Ignore errors during logout
+      }
+    }
     setIsAuthenticated(false)
-    sessionStorage.removeItem('auth')
+    setSessionToken(null)
+    sessionStorage.removeItem('authToken')
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, sessionToken, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

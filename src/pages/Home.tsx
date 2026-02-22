@@ -1,7 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
+import { useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
+import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
+import { EditableSection } from '../components/EditableSection'
+import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor } from '../components/editors'
 
 // Animation variants
 const fadeInUp = {
@@ -17,85 +22,8 @@ const stagger = {
   }
 }
 
-// Data
+// Navigation links
 const navLinks = ['About', 'Work', 'Experience']
-
-const projects = [
-  {
-    name: 'Eagle Scout Project',
-    description: 'Community service & leadership',
-    year: '2025',
-    details: 'Restored and improved a ceremonial area at Goforth Elementary. Planned, organized, and led volunteers through the entire project.',
-    tech: ['Leadership', 'Project Management', 'Community Service'],
-    url: '#'
-  },
-  {
-    name: 'American Rocketry Challenge',
-    description: 'Top 25 national finish',
-    year: '2022',
-    details: 'Led rocket club team to a top 25 national finish. Invited to the NASA Student Launch Program for exceptional performance.',
-    tech: ['Engineering', 'Team Lead', 'NASA'],
-    url: '#'
-  },
-  {
-    name: 'Portfolio Website',
-    description: 'Personal site you\'re viewing now',
-    year: '2025',
-    details: 'Built this portfolio from scratch with React, TypeScript..',
-    tech: ['React', 'TypeScript', 'Convex'],
-    url: '#'
-  },
-  {
-    name: 'Science Fair',
-    description: '1st place district • Houston qualifier',
-    year: '2022',
-    details: 'Won first place in division at district science fair and qualified for the Houston Science Fair competition.',
-    tech: ['Research', 'Presentation', 'Analysis'],
-    url: '#'
-  }
-]
-
-const experiences = [
-  {
-    company: 'Chad T Wilson Law',
-    role: 'Legal Intern',
-    date: '2025 - now'
-  },
-  {
-    company: 'Red River Cantina',
-    role: 'Server & ToGo',
-    date: '2024 - now'
-  },
-  {
-    company: 'Clear Creek High School',
-    role: 'Senior',
-    date: '2022 - 2026'
-  },
-  {
-    company: 'Future: UT Austin',
-    role: 'Aspiring Law Student',
-    date: ''
-  }
-]
-
-const skills = [
-  {
-    title: 'Leadership',
-    content: 'Eagle Scout and Senior Patrol Leader leading 50+ scouts. Water polo team captain. PALs Program mentor for 2 years. National Youth Leadership Training graduate.'
-  },
-  {
-    title: 'Athletics',
-    content: '2-time UIL Water Polo State Champion. Southwest Zone Olympic Development Team goalie. All-State tournament team. TISCA All-Region. THSCA Super Elite team.'
-  },
-  {
-    title: 'Academics',
-    content: '10 AP courses including Computer Science, Physics, Economics, and Government. 1st place district science fair. Houston Science Fair qualifier.'
-  },
-  {
-    title: 'Technical',
-    content: 'Web development with React, TypeScript, and modern frameworks. Computer programming through AP CS coursework. Microsoft Office proficiency.'
-  }
-]
 
 // Accordion component
 function Accordion({ title, content, isOpen, onToggle }: {
@@ -150,9 +78,7 @@ export function useTheme() {
 }
 
 // Components
-function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: () => void }) {
-  const { isAuthenticated, logout } = useAuth()
-
+function Header({ theme, toggleTheme, location }: { theme: 'light' | 'dark'; toggleTheme: () => void; location: string }) {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id.toLowerCase())
     element?.scrollIntoView({ behavior: 'smooth' })
@@ -183,7 +109,7 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
-          Houston, TX
+          {location}
         </div>
         <motion.button
           className="theme-toggle"
@@ -209,121 +135,152 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
             </svg>
           )}
         </motion.button>
-        <SignedIn>
-          <motion.button
-            className="logout-btn"
-            onClick={logout}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Logout"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </motion.button>
-        </SignedIn>
       </div>
     </motion.header>
   )
 }
 
-function Profile() {
+interface ProfileData {
+  name: string
+  title: string
+  imageUrl: string
+  location: string
+}
+
+function Profile({ profile, onEdit }: { profile: ProfileData; onEdit: () => void }) {
   return (
-    <motion.section
-      className="profile"
-      variants={fadeInUp}
-      initial="hidden"
-      animate="visible"
-      transition={{ duration: 0.5, delay: 0.1 }}
-    >
-      <div className="profile-image-wrapper">
-        <img
-          src="/profile.png"
-          alt="Profile"
-          className="profile-image"
-        />
-      </div>
-      <h1 className="profile-name">Ethan Jerla</h1>
-      <p className="profile-title">Student • Developer</p>
-    </motion.section>
+    <EditableSection sectionId="profile" onEdit={onEdit}>
+      <motion.section
+        className="profile"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <div className="profile-image-wrapper">
+          <img
+            src={profile.imageUrl}
+            alt="Profile"
+            className="profile-image"
+          />
+        </div>
+        <h1 className="profile-name">{profile.name}</h1>
+        <p className="profile-title">{profile.title}</p>
+      </motion.section>
+    </EditableSection>
   )
 }
 
-function About() {
+interface AboutData {
+  bio: string[]
+  socialLinks: { platform: string; url: string; label: string }[]
+}
+
+function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
+  const renderBio = (text: string) => {
+    return <span dangerouslySetInnerHTML={{ __html: text }} />
+  }
+
   return (
-    <motion.section
-      id="about"
-      className="section"
-      variants={fadeInUp}
-      initial="hidden"
-      animate="visible"
-      transition={{ duration: 0.5, delay: 0.2 }}
-    >
-      <h2 className="section-title">About</h2>
-      <div className="bio">
-        <p>
-          I'm a <kbd>student</kbd>, <kbd>athlete</kbd>, <kbd>developer</kbd>, and <kbd>leader</kbd> who thrives on <em>collaboration</em> and <em>continuous learning</em>. When I'm not busy designing or engineering, I'm playing <kbd>sports</kbd>, traveling, and exploring.
-        </p>
-        <p>
-          I'm currently working on my future and my <kbd>college goals</kbd>. Driven by a passion for <em>growth</em> and <em>learning</em>, I create <kbd>web experiences</kbd> that solve problems and create <em>delightful experiences</em>.
-        </p>
-      </div>
-      <div className="social-links">
-        <a href="https://github.com/Q2x38b" className="social-link" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-          </svg>
-          GitHub
-        </a>
-        <a href="mailto:hello@e108.dev" className="social-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <polyline points="22,6 12,13 2,6" />
-          </svg>
-          Email
-        </a>
-      </div>
-    </motion.section>
+    <EditableSection sectionId="about" onEdit={onEdit}>
+      <motion.section
+        id="about"
+        className="section"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <h2 className="section-title">About</h2>
+        <div className="bio">
+          {about.bio.map((paragraph, index) => (
+            <p key={index}>{renderBio(paragraph)}</p>
+          ))}
+        </div>
+        <div className="social-links">
+          {about.socialLinks.map((link) => (
+            <a
+              key={link.platform}
+              href={link.url}
+              className="social-link"
+              target={link.url.startsWith('mailto:') ? undefined : '_blank'}
+              rel={link.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+            >
+              {link.platform === 'github' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+              )}
+              {link.platform === 'email' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              )}
+              {link.label}
+            </a>
+          ))}
+        </div>
+      </motion.section>
+    </EditableSection>
   )
 }
 
-function Skills() {
+interface SkillData {
+  _id: string
+  title: string
+  content: string
+  order: number
+}
+
+function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <motion.section
-      id="skills"
-      className="section"
-      variants={fadeInUp}
-      initial="hidden"
-      animate="visible"
-      transition={{ duration: 0.5, delay: 0.25 }}
-    >
-      <h2 className="section-title">Skills</h2>
-      <div className="accordion-list">
-        {skills.map((skill, index) => (
-          <Accordion
-            key={skill.title}
-            title={skill.title}
-            content={skill.content}
-            isOpen={openIndex === index}
-            onToggle={() => setOpenIndex(openIndex === index ? null : index)}
-          />
-        ))}
-      </div>
-    </motion.section>
+    <EditableSection sectionId="skills" onEdit={onEdit}>
+      <motion.section
+        id="skills"
+        className="section"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, delay: 0.25 }}
+      >
+        <h2 className="section-title">Skills</h2>
+        <div className="accordion-list">
+          {skills.map((skill, index) => (
+            <Accordion
+              key={skill._id}
+              title={skill.title}
+              content={skill.content}
+              isOpen={openIndex === index}
+              onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+            />
+          ))}
+        </div>
+      </motion.section>
+    </EditableSection>
   )
 }
 
-function Work() {
+interface ProjectData {
+  _id: string
+  name: string
+  description: string
+  year: string
+  details: string
+  tech: string[]
+  url?: string
+  order: number
+}
+
+function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const selectedProject = projects.find(p => p.name === selectedId)
   const listRef = useRef<HTMLDivElement>(null)
   const hoverTimeoutRef = useRef<number | null>(null)
 
-  // Lock body scroll when modal is open
   useEffect(() => {
     if (selectedId) {
       document.body.style.overflow = 'hidden'
@@ -351,55 +308,57 @@ function Work() {
 
   return (
     <>
-      <motion.section
-        id="work"
-        className="section"
-        variants={stagger}
-        initial="hidden"
-        animate="visible"
-      >
-        <motion.h2
-          className="section-title"
-          variants={fadeInUp}
-          transition={{ duration: 0.5, delay: 0.3 }}
+      <EditableSection sectionId="work" onEdit={onEdit}>
+        <motion.section
+          id="work"
+          className="section"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
         >
-          Work
-        </motion.h2>
-        <LayoutGroup>
-          <div className="work-list" ref={listRef}>
-            {projects.map((project, index) => (
-              <motion.div
-                key={project.name}
-                className="work-item"
-                variants={fadeInUp}
-                transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
-                onClick={() => setSelectedId(project.name)}
-                onMouseEnter={() => handleMouseEnter(index)}
-                onMouseLeave={handleMouseLeave}
-              >
-                {hoveredIndex === index && (
-                  <motion.div
-                    className="work-item-bg"
-                    layoutId="work-hover-bg"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.3 }}
-                  />
-                )}
-                <div className="work-info">
-                  <div className="work-name">{project.name}</div>
-                  <div className="work-description">{project.description}</div>
-                </div>
-                <div className="work-meta">
-                  <span className="work-year">{project.year}</span>
-                  <span className="work-arrow">+</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </LayoutGroup>
-      </motion.section>
+          <motion.h2
+            className="section-title"
+            variants={fadeInUp}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            Work
+          </motion.h2>
+          <LayoutGroup>
+            <div className="work-list" ref={listRef}>
+              {projects.map((project, index) => (
+                <motion.div
+                  key={project._id}
+                  className="work-item"
+                  variants={fadeInUp}
+                  transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
+                  onClick={() => setSelectedId(project.name)}
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {hoveredIndex === index && (
+                    <motion.div
+                      className="work-item-bg"
+                      layoutId="work-hover-bg"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.3 }}
+                    />
+                  )}
+                  <div className="work-info">
+                    <div className="work-name">{project.name}</div>
+                    <div className="work-description">{project.description}</div>
+                  </div>
+                  <div className="work-meta">
+                    <span className="work-year">{project.year}</span>
+                    <span className="work-arrow">+</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </LayoutGroup>
+        </motion.section>
+      </EditableSection>
 
       <AnimatePresence>
         {selectedId && selectedProject && (
@@ -449,57 +408,71 @@ function Work() {
   )
 }
 
-function Experience() {
+interface ExperienceData {
+  _id: string
+  company: string
+  role: string
+  date: string
+  order: number
+}
+
+function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
   return (
-    <motion.section
-      id="experience"
-      className="section"
-      variants={stagger}
-      initial="hidden"
-      animate="visible"
-    >
-      <motion.h2
-        className="section-title"
-        variants={fadeInUp}
-        transition={{ duration: 0.5, delay: 0.5 }}
+    <EditableSection sectionId="experience" onEdit={onEdit}>
+      <motion.section
+        id="experience"
+        className="section"
+        variants={stagger}
+        initial="hidden"
+        animate="visible"
       >
-        Experience
-      </motion.h2>
-      <div className="experience-list">
-        {experiences.map((exp, index) => (
-          <motion.div
-            key={exp.company}
-            className="experience-row"
-            variants={fadeInUp}
-            transition={{ duration: 0.4, delay: 0.55 + index * 0.05 }}
-          >
-            <span className="experience-company">{exp.company}</span>
-            <span className="experience-line" />
-            <span className="experience-role">
-              {exp.role}
-              {!exp.date && <span className="blink-cursor">_</span>}
-            </span>
-            {exp.date && <span className="experience-date">{exp.date}</span>}
-          </motion.div>
-        ))}
-      </div>
-    </motion.section>
+        <motion.h2
+          className="section-title"
+          variants={fadeInUp}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          Experience
+        </motion.h2>
+        <div className="experience-list">
+          {experiences.map((exp, index) => (
+            <motion.div
+              key={exp._id}
+              className="experience-row"
+              variants={fadeInUp}
+              transition={{ duration: 0.4, delay: 0.55 + index * 0.05 }}
+            >
+              <span className="experience-company">{exp.company}</span>
+              <span className="experience-line" />
+              <span className="experience-role">
+                {exp.role}
+                {!exp.date && <span className="blink-cursor">_</span>}
+              </span>
+              {exp.date && <span className="experience-date">{exp.date}</span>}
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
+    </EditableSection>
   )
 }
 
 function LoginModal({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(false)
   const { login } = useAuth()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (login(password)) {
+    setLoading(true)
+    const success = await login(password)
+    if (success) {
       onClose()
     } else {
       setError(true)
       setPassword('')
     }
+    setLoading(false)
   }
 
   return (
@@ -519,8 +492,11 @@ function LoginModal({ onClose }: { onClose: () => void }) {
             onChange={(e) => { setPassword(e.target.value); setError(false) }}
             autoFocus
             className={error ? 'error' : ''}
+            disabled={loading}
           />
-          <button type="submit">Login</button>
+          <button type="submit" disabled={loading}>
+            {loading ? '...' : 'Login'}
+          </button>
         </form>
       </motion.div>
     </div>
@@ -528,7 +504,6 @@ function LoginModal({ onClose }: { onClose: () => void }) {
 }
 
 function getLastUpdated() {
-  // Use build-time environment variable, falls back to current date
   const buildDateStr = import.meta.env.VITE_BUILD_DATE || new Date().toISOString().split('T')[0]
   const deployDate = new Date(buildDateStr)
   const now = new Date()
@@ -544,11 +519,12 @@ function getLastUpdated() {
   return `Last updated ${Math.floor(diffDays / 30)} months ago`
 }
 
-function Footer() {
+function Footer({ copyrightYear }: { copyrightYear: string }) {
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, logout } = useAuth()
+  const { isEditMode, toggleEditMode } = useEditMode()
   const lastUpdated = getLastUpdated()
 
   useEffect(() => {
@@ -578,6 +554,10 @@ function Footer() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleLogout = async () => {
+    await logout()
+  }
+
   return (
     <>
       <motion.footer
@@ -593,7 +573,7 @@ function Footer() {
               className="footer-text footer-secret"
               onClick={() => setClickCount(c => c + 1)}
             >
-              © 2025
+              © {copyrightYear}
             </span>
             <span className="footer-dot">•</span>
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
@@ -602,6 +582,33 @@ function Footer() {
           </div>
           <div className="footer-right">
             <span className="footer-time">{formatTime(time)}</span>
+
+            <SignedIn>
+              <motion.button
+                className={`edit-mode-btn ${isEditMode ? 'active' : ''}`}
+                onClick={toggleEditMode}
+                whileTap={{ scale: 0.95 }}
+                title={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </motion.button>
+              <motion.button
+                className="logout-btn-small"
+                onClick={handleLogout}
+                whileTap={{ scale: 0.95 }}
+                title="Logout"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </motion.button>
+            </SignedIn>
+
             <motion.button
               className="back-to-top"
               onClick={scrollToTop}
@@ -622,18 +629,179 @@ function Footer() {
   )
 }
 
-export default function Home() {
+// Edit mode indicator
+function EditModeIndicator() {
+  const { isEditMode } = useEditMode()
+
+  if (!isEditMode) return null
+
+  return (
+    <motion.div
+      className="edit-mode-indicator"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+    >
+      Edit Mode Active
+    </motion.div>
+  )
+}
+
+// Loading skeleton
+function LoadingSkeleton() {
+  return (
+    <div className="container">
+      <div className="loading-skeleton">
+        <div className="skeleton-profile">
+          <div className="skeleton-avatar" />
+          <div className="skeleton-text skeleton-name" />
+          <div className="skeleton-text skeleton-title" />
+        </div>
+        <div className="skeleton-section">
+          <div className="skeleton-text skeleton-heading" />
+          <div className="skeleton-text skeleton-paragraph" />
+          <div className="skeleton-text skeleton-paragraph" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Main content component (wrapped with EditModeProvider)
+function HomeContent() {
   const { theme, toggle } = useTheme()
+  const { setEditingSection } = useEditMode()
+
+  // Fetch all content from Convex
+  const profile = useQuery(api.content.getProfile)
+  const about = useQuery(api.content.getAbout)
+  const skills = useQuery(api.content.getSkills)
+  const projects = useQuery(api.content.getProjects)
+  const experiences = useQuery(api.content.getExperiences)
+  const footer = useQuery(api.content.getFooter)
+
+  // Editor states
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [editingAbout, setEditingAbout] = useState(false)
+  const [editingSkills, setEditingSkills] = useState(false)
+  const [editingProjects, setEditingProjects] = useState(false)
+  const [editingExperiences, setEditingExperiences] = useState(false)
+
+  // Show loading skeleton while fetching
+  if (profile === undefined || about === undefined || skills === undefined ||
+      projects === undefined || experiences === undefined) {
+    return <LoadingSkeleton />
+  }
+
+  // Use fallback values if data not yet seeded
+  const profileData = profile || {
+    name: 'Ethan Jerla',
+    title: 'Student • Developer',
+    imageUrl: '/profile.png',
+    location: 'Houston, TX'
+  }
+
+  const aboutData = about || {
+    bio: [
+      "I'm a <kbd>student</kbd>, <kbd>athlete</kbd>, <kbd>developer</kbd>, and <kbd>leader</kbd> who thrives on <em>collaboration</em> and <em>continuous learning</em>.",
+      "I'm currently working on my future and my <kbd>college goals</kbd>."
+    ],
+    socialLinks: [
+      { platform: 'github', url: 'https://github.com/Q2x38b', label: 'GitHub' },
+      { platform: 'email', url: 'mailto:hello@e108.dev', label: 'Email' }
+    ]
+  }
+
+  const skillsData = skills.length > 0 ? skills : [
+    { _id: '1', title: 'Leadership', content: 'Eagle Scout and Senior Patrol Leader.', order: 0 },
+    { _id: '2', title: 'Athletics', content: '2-time UIL Water Polo State Champion.', order: 1 },
+    { _id: '3', title: 'Academics', content: '10 AP courses.', order: 2 },
+    { _id: '4', title: 'Technical', content: 'Web development with React, TypeScript.', order: 3 }
+  ]
+
+  const projectsData = projects.length > 0 ? projects : [
+    { _id: '1', name: 'Eagle Scout Project', description: 'Community service', year: '2025', details: 'Restored area.', tech: ['Leadership'], order: 0 }
+  ]
+
+  const experiencesData = experiences.length > 0 ? experiences : [
+    { _id: '1', company: 'Chad T Wilson Law', role: 'Legal Intern', date: '2025 - now', order: 0 }
+  ]
+
+  const footerData = footer || { copyrightYear: '2025', quote: 'The only limit is yourself' }
+
+  const handleCloseEditor = (setter: (v: boolean) => void) => {
+    setter(false)
+    setEditingSection(null)
+  }
 
   return (
     <div className="container">
-      <Header theme={theme} toggleTheme={toggle} />
-      <Profile />
-      <About />
-      <Skills />
-      <Work />
-      <Experience />
-      <Footer />
+      <Header theme={theme} toggleTheme={toggle} location={profileData.location} />
+      <EditModeIndicator />
+
+      <Profile
+        profile={profileData}
+        onEdit={() => { setEditingProfile(true); setEditingSection('profile') }}
+      />
+      <About
+        about={aboutData}
+        onEdit={() => { setEditingAbout(true); setEditingSection('about') }}
+      />
+      <Skills
+        skills={skillsData as SkillData[]}
+        onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
+      />
+      <Work
+        projects={projectsData as ProjectData[]}
+        onEdit={() => { setEditingProjects(true); setEditingSection('work') }}
+      />
+      <Experience
+        experiences={experiencesData as ExperienceData[]}
+        onEdit={() => { setEditingExperiences(true); setEditingSection('experience') }}
+      />
+      <Footer copyrightYear={footerData.copyrightYear} />
+
+      {/* Editors */}
+      <AnimatePresence>
+        {editingProfile && profile && (
+          <ProfileEditor
+            profile={profile}
+            onClose={() => handleCloseEditor(setEditingProfile)}
+          />
+        )}
+        {editingAbout && about && (
+          <AboutEditor
+            about={about}
+            onClose={() => handleCloseEditor(setEditingAbout)}
+          />
+        )}
+        {editingSkills && skills.length > 0 && (
+          <SkillEditor
+            skills={skills}
+            onClose={() => handleCloseEditor(setEditingSkills)}
+          />
+        )}
+        {editingProjects && projects.length > 0 && (
+          <ProjectEditor
+            projects={projects}
+            onClose={() => handleCloseEditor(setEditingProjects)}
+          />
+        )}
+        {editingExperiences && experiences.length > 0 && (
+          <ExperienceEditor
+            experiences={experiences}
+            onClose={() => handleCloseEditor(setEditingExperiences)}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <EditModeProvider>
+      <HomeContent />
+    </EditModeProvider>
   )
 }
