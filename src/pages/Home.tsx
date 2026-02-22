@@ -79,9 +79,12 @@ export function useTheme() {
 
 // Components
 function Header({ theme, toggleTheme, location }: { theme: 'light' | 'dark'; toggleTheme: () => void; location: string }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id.toLowerCase())
     element?.scrollIntoView({ behavior: 'smooth' })
+    setMobileMenuOpen(false)
   }
 
   return (
@@ -91,7 +94,8 @@ function Header({ theme, toggleTheme, location }: { theme: 'light' | 'dark'; tog
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <nav className="nav">
+      {/* Desktop navigation */}
+      <nav className="nav nav-desktop">
         {navLinks.map((link) => (
           <span
             key={link}
@@ -103,6 +107,29 @@ function Header({ theme, toggleTheme, location }: { theme: 'light' | 'dark'; tog
         ))}
         <Link to="/blog" className="nav-link">Writing</Link>
       </nav>
+
+      {/* Mobile menu toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          {mobileMenuOpen ? (
+            <>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </>
+          ) : (
+            <>
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </>
+          )}
+        </svg>
+      </button>
+
       <div className="header-right">
         <div className="location">
           <svg className="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -136,6 +163,30 @@ function Header({ theme, toggleTheme, location }: { theme: 'light' | 'dark'; tog
           )}
         </motion.button>
       </div>
+
+      {/* Mobile navigation dropdown */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.nav
+            className="nav-mobile"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {navLinks.map((link) => (
+              <span
+                key={link}
+                className="nav-link-mobile"
+                onClick={() => scrollToSection(link)}
+              >
+                {link}
+              </span>
+            ))}
+            <Link to="/blog" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Writing</Link>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </motion.header>
   )
 }
@@ -566,7 +617,11 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.7 }}
       >
-        <div className="footer-updated">{lastUpdated}</div>
+        {/* Desktop: quote at top, Mobile: quote in top row */}
+        <div className="footer-quote-row">
+          <span className="footer-quote-inline">The only limit is yourself</span>
+        </div>
+
         <div className="footer-bottom">
           <div className="footer-left">
             <span
@@ -577,11 +632,12 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
             </span>
             <span className="footer-dot">•</span>
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
-            <span className="footer-dot">•</span>
-            <span className="footer-quote-inline">The only limit is yourself</span>
           </div>
           <div className="footer-right">
-            <span className="footer-time">{formatTime(time)}</span>
+            <div className="footer-time-group">
+              <span className="footer-updated-inline">{lastUpdated}</span>
+              <span className="footer-time">{formatTime(time)}</span>
+            </div>
 
             <SignedIn>
               <motion.button
