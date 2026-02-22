@@ -2430,6 +2430,8 @@
   padding: 12px 8px;
   cursor: grab;
   user-select: none;
+  width: 48px;
+  contain: layout style;
 }
 
 .toc-toggle-btn-minimal:active {
@@ -2441,21 +2443,23 @@
   flex-direction: column;
   gap: 6px;
   align-items: center;
+  contain: layout style;
 }
 
 .toc-line-minimal {
   display: block;
-  width: 20px;
+  width: 24px;
   height: 2px;
   background: var(--border);
   border-radius: 1px;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  transform-origin: center;
+  will-change: transform, background;
 }
 
 .toc-line-minimal.active {
-  width: 28px;
-  height: 3px;
   background: var(--text);
+  transform: scaleX(1.2);
 }
 
 @media (hover: hover) {

@@ -49,6 +49,12 @@ interface PiperEngine {
 let piperEnginePromise: Promise<PiperEngine> | null = null
 let piperEngineInstance: PiperEngine | null = null
 
+// Dummy expression runtime - we only need TTS, not facial expressions
+class NoOpExpressionRuntime {
+  destroy() {}
+  async generate() { return { label: 'neutral', score: 1 } }
+}
+
 async function initPiperEngine(): Promise<PiperEngine> {
   if (piperEngineInstance) return piperEngineInstance
   if (piperEnginePromise) return piperEnginePromise
@@ -56,7 +62,11 @@ async function initPiperEngine(): Promise<PiperEngine> {
   piperEnginePromise = (async () => {
     const { PiperWebEngine, HuggingFaceVoiceProvider } = await import('piper-tts-web')
     const voiceProvider = new HuggingFaceVoiceProvider()
-    const engine = new PiperWebEngine({ voiceProvider })
+    // Disable expression runtime to avoid worker errors (not needed for audio-only TTS)
+    const engine = new PiperWebEngine({
+      voiceProvider,
+      expressionRuntime: new NoOpExpressionRuntime()
+    })
     piperEngineInstance = engine
     return engine
   })()
@@ -985,39 +995,50 @@ export default function BlogPost() {
     return extractHeadings(post.content)
   }, [post])
 
-  // Track active heading on scroll
+  // Track active heading on scroll with RAF throttling
   useEffect(() => {
     if (headings.length === 0) return
 
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY + 150 // Offset for header
+    let rafId: number | null = null
+    let lastActiveId: string | null = null
 
-      // Find the heading closest to (but above) the current scroll position
+    const updateActiveHeading = () => {
+      const scrollPosition = window.scrollY + 150
+
       let currentHeading: string | null = null
-
       for (const heading of headings) {
         const element = document.getElementById(heading.id)
-        if (element) {
-          const top = element.offsetTop
-          if (top <= scrollPosition) {
-            currentHeading = heading.id
-          }
+        if (element && element.offsetTop <= scrollPosition) {
+          currentHeading = heading.id
         }
       }
 
-      // If no heading found (scrolled above first heading), default to first heading
-      // This ensures there's always an active indicator
       if (!currentHeading && headings.length > 0) {
         currentHeading = headings[0].id
       }
 
-      setActiveHeadingId(currentHeading)
+      // Only update state if the active heading changed
+      if (currentHeading !== lastActiveId) {
+        lastActiveId = currentHeading
+        setActiveHeadingId(currentHeading)
+      }
+    }
+
+    const handleScroll = () => {
+      if (rafId) return
+      rafId = requestAnimationFrame(() => {
+        updateActiveHeading()
+        rafId = null
+      })
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll() // Run once on mount
+    updateActiveHeading()
 
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
   }, [headings])
 
   if (post === undefined) {
