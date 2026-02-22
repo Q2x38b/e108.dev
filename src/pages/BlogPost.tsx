@@ -48,10 +48,14 @@ class WebSpeechTTS {
   private onProgressCallback: ((progress: number) => void) | null = null
   private startTime: number = 0
   private estimatedDuration: number = 0
+  private pausedTime: number = 0
+  private totalPausedTime: number = 0
+  private progressInterval: ReturnType<typeof setInterval> | null = null
 
   async generate(text: string): Promise<void> {
     // Cancel any existing speech
     window.speechSynthesis.cancel()
+    this.cleanup()
 
     this.utterance = new SpeechSynthesisUtterance(text)
     this.utterance.rate = 1.0
@@ -73,25 +77,40 @@ class WebSpeechTTS {
     return Promise.resolve()
   }
 
+  private cleanup() {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval)
+      this.progressInterval = null
+    }
+    this.totalPausedTime = 0
+    this.pausedTime = 0
+  }
+
   play(onEnd?: () => void, onProgress?: (progress: number) => void) {
     if (!this.utterance) return
 
     this.onEndCallback = onEnd || null
     this.onProgressCallback = onProgress || null
     this.startTime = Date.now()
+    this.totalPausedTime = 0
 
     this.utterance.onend = () => {
+      this.cleanup()
       if (this.onEndCallback) this.onEndCallback()
     }
 
     // Update progress periodically
     if (this.onProgressCallback) {
-      const interval = setInterval(() => {
+      this.progressInterval = setInterval(() => {
         if (!window.speechSynthesis.speaking) {
-          clearInterval(interval)
+          this.cleanup()
           return
         }
-        const elapsed = (Date.now() - this.startTime) / 1000
+        // Don't update progress while paused
+        if (window.speechSynthesis.paused) {
+          return
+        }
+        const elapsed = (Date.now() - this.startTime - this.totalPausedTime) / 1000
         const progress = Math.min((elapsed / this.estimatedDuration) * 100, 99)
         if (this.onProgressCallback) this.onProgressCallback(progress)
       }, 100)
@@ -101,14 +120,20 @@ class WebSpeechTTS {
   }
 
   pause() {
+    this.pausedTime = Date.now()
     window.speechSynthesis.pause()
   }
 
   resume() {
+    if (this.pausedTime > 0) {
+      this.totalPausedTime += Date.now() - this.pausedTime
+      this.pausedTime = 0
+    }
     window.speechSynthesis.resume()
   }
 
   stop() {
+    this.cleanup()
     window.speechSynthesis.cancel()
   }
 
