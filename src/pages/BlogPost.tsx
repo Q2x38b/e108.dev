@@ -520,13 +520,17 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
       </div>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && linesRef.current && (
           <motion.div
             className="toc-popup"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
+            style={{
+              top: linesRef.current.getBoundingClientRect().top +
+                   linesRef.current.getBoundingClientRect().height / 2
+            }}
           >
             <div className="toc-popup-header">CONTENTS</div>
             <nav className="toc-popup-nav">
@@ -851,29 +855,28 @@ export default function BlogPost() {
               <span className="article-author-name">ETHAN JERLA</span>
               <span className="article-author-date">{formatDate(post.createdAt)}</span>
             </div>
-          </div>
-
-          <div className="article-actions-row">
-            <button className="share-btn-icon" onClick={copyLink} aria-label="Share">
-              {linkCopied ? (
-                <>
+            <div className="article-author-actions">
+              <button className="share-btn-icon" onClick={copyLink} aria-label="Share">
+                {linkCopied ? (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>Copied!</span>
+                  </>
+                ) : (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12" />
+                    <circle cx="18" cy="5" r="3" />
+                    <circle cx="6" cy="12" r="3" />
+                    <circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                   </svg>
-                  <span>Copied!</span>
-                </>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                </svg>
-              )}
-            </button>
-            <div className="article-views-pill">
-              {viewCount || 0} views
+                )}
+              </button>
+              <div className="article-views-pill">
+                {viewCount || 0} views
+              </div>
             </div>
           </div>
 

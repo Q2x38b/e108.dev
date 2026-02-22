@@ -1862,6 +1862,13 @@
   margin-bottom: 20px;
 }
 
+.article-author-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
 .article-author-image {
   width: 40px;
   height: 40px;
@@ -1970,7 +1977,7 @@
   z-index: 100;
   background: transparent;
   border: none;
-  padding: 8px;
+  padding: 12px 8px;
   cursor: grab;
   user-select: none;
 }
@@ -1982,7 +1989,7 @@
 .toc-lines-minimal {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
 
@@ -2014,13 +2021,13 @@
 .toc-popup {
   position: fixed;
   left: 60px;
-  top: 50%;
   transform: translateY(-50%);
+  transform-origin: left center;
   z-index: 99;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 16px 20px;
+  padding: 12px 20px;
   min-width: 200px;
   max-width: 280px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
@@ -2410,10 +2417,14 @@
     font-size: 1rem;
   }
 
-  .article-actions-row {
-    flex-direction: row;
-    gap: 10px;
-    align-items: center;
+  .article-author-row {
+    flex-wrap: wrap;
+  }
+
+  .article-author-actions {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 12px;
   }
 
   .share-btn-icon {
