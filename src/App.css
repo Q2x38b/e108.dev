@@ -1447,8 +1447,8 @@
 }
 
 .listen-btn-small svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   margin-left: 2px;
 }
 
@@ -2139,7 +2139,7 @@
 .article-title-main {
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
   line-height: 1.2;
   color: var(--text);
 }
@@ -2147,7 +2147,7 @@
 .article-subtitle {
   font-size: 1.1rem;
   color: var(--text-tertiary);
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   font-weight: 400;
 }
 

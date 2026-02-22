@@ -576,9 +576,9 @@ function extractCitations(content: string): { content: string; citations: { num:
   return { content: cleanContent, citations: citations.sort((a, b) => a.num - b.num) }
 }
 
-// Extract headings from markdown content (H1 only for TOC)
+// Extract headings from markdown content (H2 only for TOC - sections)
 function extractHeadings(content: string): { id: string; text: string; level: number }[] {
-  const headingRegex = /^(#)\s+(.+)$/gm
+  const headingRegex = /^(##)\s+(.+)$/gm
   const headings: { id: string; text: string; level: number }[] = []
   let match
 
