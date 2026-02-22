@@ -421,7 +421,7 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
   // Get the display headings for the lines
   const displayHeadings = headings.filter(h => h.level <= 2).slice(0, 6)
 
-  // Handle drag to scroll
+  // Handle drag to scroll with snap to headings
   const handleDragStart = useCallback((clientY: number) => {
     isDraggingRef.current = true
     hasDraggedRef.current = false
@@ -440,21 +440,50 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
       hasDraggedRef.current = true
     }
 
-    const linesHeight = linesRef.current.offsetHeight
+    const linesRect = linesRef.current.getBoundingClientRect()
+    const relativeY = clientY - linesRect.top
+    const progress = Math.max(0, Math.min(1, relativeY / linesRect.height))
 
-    // Calculate the scroll ratio - map drag distance to document scroll
-    const documentHeight = document.documentElement.scrollHeight - window.innerHeight
-    const scrollRatio = documentHeight / linesHeight
+    // Map progress to heading index
+    const headingIndex = Math.round(progress * (displayHeadings.length - 1))
+    const targetHeading = displayHeadings[headingIndex]
 
-    // Apply scroll with some smoothing factor
-    const newScroll = startScrollRef.current + (deltaY * scrollRatio * 2)
-    window.scrollTo({ top: newScroll, behavior: 'auto' })
-  }, [])
+    if (targetHeading) {
+      const element = document.getElementById(targetHeading.id)
+      if (element) {
+        const targetScroll = element.offsetTop - 100 // Offset for header
+        window.scrollTo({ top: targetScroll, behavior: 'auto' })
+      }
+    }
+  }, [displayHeadings])
 
   const handleDragEnd = useCallback(() => {
     isDraggingRef.current = false
     document.body.style.userSelect = ''
-  }, [])
+
+    // Snap to nearest heading on release
+    if (hasDraggedRef.current && displayHeadings.length > 0) {
+      const scrollPosition = window.scrollY + 150
+      let closestHeading = displayHeadings[0]
+      let closestDistance = Infinity
+
+      for (const heading of displayHeadings) {
+        const element = document.getElementById(heading.id)
+        if (element) {
+          const distance = Math.abs(element.offsetTop - scrollPosition)
+          if (distance < closestDistance) {
+            closestDistance = distance
+            closestHeading = heading
+          }
+        }
+      }
+
+      const element = document.getElementById(closestHeading.id)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
+  }, [displayHeadings])
 
   // Mouse events
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -856,6 +885,11 @@ export default function BlogPost() {
               <span className="article-author-date">{formatDate(post.createdAt)}</span>
             </div>
             <div className="article-author-actions">
+              <button className="listen-btn-small" onClick={() => setShowAudioPlayer(true)} aria-label="Listen to article">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </button>
               <button className="share-btn-icon" onClick={copyLink} aria-label="Share">
                 {linkCopied ? (
                   <>
@@ -982,14 +1016,6 @@ export default function BlogPost() {
           )}
         </div>
 
-        <div className="article-listen-section">
-          <button className="listen-btn-large" onClick={() => setShowAudioPlayer(true)}>
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-            <span>Listen to article</span>
-          </button>
-        </div>
       </motion.article>
 
       {/* More Articles Section */}

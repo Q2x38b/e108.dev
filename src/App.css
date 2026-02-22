@@ -1431,6 +1431,34 @@
   border-radius: 20px;
 }
 
+/* Listen Button Small */
+.listen-btn-small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--text);
+  border: none;
+  border-radius: 50%;
+  color: var(--bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.listen-btn-small svg {
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+}
+
+@media (hover: hover) {
+  .listen-btn-small:hover {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+}
+
 /* Share Button Icon */
 .share-btn-icon {
   display: flex;
