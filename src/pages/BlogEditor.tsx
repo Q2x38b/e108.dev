@@ -313,6 +313,7 @@ export default function BlogEditor() {
         })
         // Navigate to blog list - the new post will appear there
         navigate('/blog')
+      }
     } catch (error) {
       console.error('Error saving post:', error)
       alert('Error saving post')
