@@ -33,6 +33,9 @@ export function BlockEditor({ content, onUpdate, placeholder = "Type '/' for com
   // Memoize extensions to prevent recreation on re-renders
   const extensions = useMemo(() => [
     StarterKit.configure({
+      // Disable Link and Underline from StarterKit since we add them with custom config
+      link: false,
+      underline: false,
       dropcursor: {
         color: '#3b82f6',
         width: 2,

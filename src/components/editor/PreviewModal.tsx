@@ -25,7 +25,11 @@ interface PreviewModalProps {
 
 // Basic extensions for rendering (without interactive features)
 const extensions = [
-  StarterKit,
+  StarterKit.configure({
+    // Disable Link and Underline from StarterKit since we add them separately
+    link: false,
+    underline: false,
+  }),
   Link,
   Highlight,
   TaskList,
