@@ -4445,3 +4445,231 @@
 .tippy-content {
   padding: 0;
 }
+
+/* Image Upload Modal */
+.image-upload-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.image-upload-modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.image-upload-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.image-upload-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.image-upload-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-upload-close:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+}
+
+.image-upload-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.image-upload-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.image-upload-tab:hover {
+  background: var(--hover-bg);
+}
+
+.image-upload-tab.active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.image-upload-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.image-upload-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.image-upload-dropzone:hover,
+.image-upload-dropzone.drag-active {
+  border-color: var(--accent);
+  background: var(--hover-bg);
+}
+
+.image-upload-dropzone.uploading {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.image-upload-library {
+  min-height: 200px;
+}
+
+.image-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.image-upload-item {
+  position: relative;
+  aspect-ratio: 16/10;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.image-upload-item:hover {
+  border-color: var(--accent);
+}
+
+.image-upload-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-upload-item-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 4px;
+  padding: 4px;
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.image-upload-item:hover .image-upload-item-delete {
+  opacity: 1;
+}
+
+.image-upload-item-delete:hover {
+  background: #ef4444;
+}
+
+.image-upload-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px;
+  color: var(--text-tertiary);
+}
+
+.image-upload-url {
+  display: flex;
+  gap: 12px;
+}
+
+.image-upload-url input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.image-upload-url input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.image-upload-url button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.image-upload-url button:hover {
+  opacity: 0.9;
+}
+
+.image-upload-url button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

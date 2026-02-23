@@ -17,7 +17,9 @@ import {
   Table,
   Quote,
   CheckSquare,
+  Upload,
 } from 'lucide-react'
+import { ImageUpload } from './ImageUpload'
 
 interface EditorToolbarProps {
   editor: Editor | null
@@ -35,6 +37,7 @@ const blockStyles: { value: BlockStyle; label: string }[] = [
 export function EditorToolbar({ editor }: EditorToolbarProps) {
   const [showStyleDropdown, setShowStyleDropdown] = useState(false)
   const [showMoreDropdown, setShowMoreDropdown] = useState(false)
+  const [showImageUpload, setShowImageUpload] = useState(false)
   const styleDropdownRef = useRef<HTMLDivElement>(null)
   const moreDropdownRef = useRef<HTMLDivElement>(null)
 
@@ -92,11 +95,8 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     }
   }
 
-  const insertImage = () => {
-    const url = window.prompt('Enter image URL:')
-    if (url) {
-      editor.chain().focus().setImageBlock({ src: url }).run()
-    }
+  const handleImageSelect = (url: string) => {
+    editor.chain().focus().setImageBlock({ src: url }).run()
   }
 
   const moreItems = [
@@ -237,11 +237,11 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <Link className="w-4 h-4" />
         </button>
         <button
-          onClick={insertImage}
+          onClick={() => setShowImageUpload(true)}
           className="toolbar-btn"
-          title="Insert image"
+          title="Upload/Insert image"
         >
-          <Image className="w-4 h-4" />
+          <Upload className="w-4 h-4" />
         </button>
       </div>
 
@@ -294,6 +294,13 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </div>
         )}
       </div>
+
+      {/* Image Upload Modal */}
+      <ImageUpload
+        isOpen={showImageUpload}
+        onClose={() => setShowImageUpload(false)}
+        onSelect={handleImageSelect}
+      />
     </div>
   )
 }

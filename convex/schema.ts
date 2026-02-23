@@ -85,4 +85,13 @@ export default defineSchema({
     copyrightYear: v.string(),
     updatedAt: v.number(),
   }),
+
+  // Uploaded images for blog posts
+  images: defineTable({
+    storageId: v.id("_storage"),
+    fileName: v.string(),
+    contentType: v.string(),
+    url: v.string(),
+    uploadedAt: v.number(),
+  }).index("by_uploaded", ["uploadedAt"]),
 });

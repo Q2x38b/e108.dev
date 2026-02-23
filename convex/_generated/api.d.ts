@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as content from "../content.js";
+import type * as files from "../files.js";
 import type * as migrate from "../migrate.js";
 import type * as posts from "../posts.js";
 import type * as views from "../views.js";
@@ -23,6 +24,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   content: typeof content;
+  files: typeof files;
   migrate: typeof migrate;
   posts: typeof posts;
   views: typeof views;
