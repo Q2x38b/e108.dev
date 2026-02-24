@@ -4,6 +4,11 @@ import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion } from 'framer-motion'
 
+interface ProjectLink {
+  label: string
+  url: string
+}
+
 interface ProjectData {
   _id: string
   name: string
@@ -12,6 +17,7 @@ interface ProjectData {
   details: string
   tech: string[]
   url?: string
+  links?: ProjectLink[]
   order: number
 }
 
@@ -29,6 +35,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
   const [localProjects, setLocalProjects] = useState(projects.map(p => ({
     ...p,
     techString: p.tech.join(', '),
+    links: p.links || [],
     isNew: false
   })))
   const [saving, setSaving] = useState(false)
@@ -49,9 +56,31 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
       tech: [],
       techString: '',
       url: '#',
+      links: [],
       order: localProjects.length,
       isNew: true
     }])
+  }
+
+  const addLink = (projectIndex: number) => {
+    const updated = [...localProjects]
+    updated[projectIndex].links = [...updated[projectIndex].links, { label: '', url: '' }]
+    setLocalProjects(updated)
+  }
+
+  const updateLink = (projectIndex: number, linkIndex: number, field: 'label' | 'url', value: string) => {
+    const updated = [...localProjects]
+    updated[projectIndex].links[linkIndex] = {
+      ...updated[projectIndex].links[linkIndex],
+      [field]: value
+    }
+    setLocalProjects(updated)
+  }
+
+  const removeLink = (projectIndex: number, linkIndex: number) => {
+    const updated = [...localProjects]
+    updated[projectIndex].links = updated[projectIndex].links.filter((_, i) => i !== linkIndex)
+    setLocalProjects(updated)
   }
 
   const removeProject = (index: number) => {
@@ -73,6 +102,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
       // Update existing and create new projects
       for (const project of localProjects) {
         const tech = project.techString.split(',').map(t => t.trim()).filter(Boolean)
+        const links = project.links.filter(l => l.label.trim() && l.url.trim())
 
         if (project.isNew) {
           await createProject({
@@ -82,7 +112,8 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
             year: project.year,
             details: project.details,
             tech,
-            url: project.url || undefined
+            url: project.url || undefined,
+            links: links.length > 0 ? links : undefined
           })
         } else {
           const original = projects.find(p => p._id === project._id)
@@ -95,7 +126,8 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
               year: project.year,
               details: project.details,
               tech,
-              url: project.url || undefined
+              url: project.url || undefined,
+              links: links.length > 0 ? links : undefined
             })
           }
         }
@@ -181,6 +213,40 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
                   onChange={(e) => handleChange(index, 'techString', e.target.value)}
                   placeholder="React, TypeScript, Convex"
                 />
+              </div>
+              <div className="editor-field">
+                <div className="editor-section-header">
+                  <label>Links</label>
+                  <button type="button" onClick={() => addLink(index)} className="add-btn add-btn-small">
+                    + Add Link
+                  </button>
+                </div>
+                {project.links.map((link, linkIndex) => (
+                  <div key={linkIndex} className="editor-link-row">
+                    <input
+                      type="text"
+                      value={link.label}
+                      onChange={(e) => updateLink(index, linkIndex, 'label', e.target.value)}
+                      placeholder="Label (e.g., Live Demo)"
+                      className="editor-link-label"
+                    />
+                    <input
+                      type="text"
+                      value={link.url}
+                      onChange={(e) => updateLink(index, linkIndex, 'url', e.target.value)}
+                      placeholder="URL"
+                      className="editor-link-url"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeLink(index, linkIndex)}
+                      className="remove-link-btn"
+                      aria-label="Remove link"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
               <button
                 type="button"

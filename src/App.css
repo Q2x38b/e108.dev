@@ -356,6 +356,46 @@
   height: 16px;
 }
 
+.work-modal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.work-modal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  background: var(--hover-bg);
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.work-modal-link svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+@media (hover: hover) {
+  .work-modal-link:hover {
+    background: var(--text);
+    color: var(--bg);
+  }
+
+  .work-modal-link:hover svg {
+    opacity: 1;
+  }
+}
+
 /* Experience */
 .experience-list {
   display: flex;
@@ -3304,6 +3344,48 @@
 .add-btn:hover {
   border-color: var(--accent-color, #3b82f6);
   color: var(--accent-color, #3b82f6);
+}
+
+.add-btn-small {
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+/* Editor Link Row */
+.editor-link-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.editor-link-label {
+  flex: 0 0 140px;
+}
+
+.editor-link-url {
+  flex: 1;
+}
+
+.remove-link-btn {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-link-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 .remove-btn {

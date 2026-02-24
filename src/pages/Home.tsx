@@ -327,6 +327,11 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
   )
 }
 
+interface ProjectLink {
+  label: string
+  url: string
+}
+
 interface ProjectData {
   _id: string
   name: string
@@ -335,6 +340,7 @@ interface ProjectData {
   details: string
   tech: string[]
   url?: string
+  links?: ProjectLink[]
   order: number
 }
 
@@ -454,6 +460,24 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                   <span key={t} className="work-modal-tag">{t}</span>
                 ))}
               </div>
+              {selectedProject.links && selectedProject.links.length > 0 && (
+                <div className="work-modal-links">
+                  {selectedProject.links.map((link, index) => (
+                    <a
+                      key={index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="work-modal-link"
+                    >
+                      {link.label}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M7 17L17 7M17 7H7M17 7V17" />
+                      </svg>
+                    </a>
+                  ))}
+                </div>
+              )}
               <button
                 className="work-modal-close"
                 onClick={() => setSelectedId(null)}

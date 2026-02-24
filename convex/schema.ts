@@ -65,7 +65,11 @@ export default defineSchema({
     year: v.string(),
     details: v.string(),
     tech: v.array(v.string()),
-    url: v.optional(v.string()),
+    url: v.optional(v.string()), // deprecated, use links instead
+    links: v.optional(v.array(v.object({
+      label: v.string(),
+      url: v.string(),
+    }))),
     order: v.number(),
     updatedAt: v.number(),
   }).index("by_order", ["order"]),

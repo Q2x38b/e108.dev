@@ -166,6 +166,10 @@ export const updateProject = mutation({
     details: v.string(),
     tech: v.array(v.string()),
     url: v.optional(v.string()),
+    links: v.optional(v.array(v.object({
+      label: v.string(),
+      url: v.string(),
+    }))),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -179,6 +183,7 @@ export const updateProject = mutation({
       details: args.details,
       tech: args.tech,
       url: args.url,
+      links: args.links,
       updatedAt: Date.now(),
     });
   },
@@ -193,6 +198,10 @@ export const createProject = mutation({
     details: v.string(),
     tech: v.array(v.string()),
     url: v.optional(v.string()),
+    links: v.optional(v.array(v.object({
+      label: v.string(),
+      url: v.string(),
+    }))),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -209,6 +218,7 @@ export const createProject = mutation({
       details: args.details,
       tech: args.tech,
       url: args.url,
+      links: args.links,
       order: maxOrder + 1,
       updatedAt: Date.now(),
     });
