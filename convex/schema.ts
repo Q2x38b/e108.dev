@@ -39,14 +39,14 @@ export default defineSchema({
     updatedAt: v.number(),
   }),
 
-  // About section (singleton)
+  // About section (singleton) - socialLinks deprecated, now hardcoded in frontend
   about: defineTable({
     bio: v.array(v.string()),
-    socialLinks: v.array(v.object({
+    socialLinks: v.optional(v.array(v.object({
       platform: v.string(),
       url: v.string(),
       label: v.string(),
-    })),
+    }))),
     updatedAt: v.number(),
   }),
 

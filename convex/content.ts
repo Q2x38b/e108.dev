@@ -50,11 +50,6 @@ export const updateAbout = mutation({
   args: {
     token: v.string(),
     bio: v.array(v.string()),
-    socialLinks: v.array(v.object({
-      platform: v.string(),
-      url: v.string(),
-      label: v.string(),
-    })),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -64,7 +59,6 @@ export const updateAbout = mutation({
     const existing = await ctx.db.query("about").first();
     const data = {
       bio: args.bio,
-      socialLinks: args.socialLinks,
       updatedAt: Date.now(),
     };
 

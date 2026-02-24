@@ -28,15 +28,11 @@ export const seedInitialData = mutation({
       updatedAt: now,
     });
 
-    // Seed About
+    // Seed About (social links are hardcoded in frontend)
     await ctx.db.insert("about", {
       bio: [
         "I'm a <kbd>student</kbd>, <kbd>athlete</kbd>, <kbd>developer</kbd>, and <kbd>leader</kbd> who thrives on <em>collaboration</em> and <em>continuous learning</em>. When I'm not busy designing or engineering, I'm playing <kbd>sports</kbd>, traveling, and exploring.",
         "I'm currently working on my future and my <kbd>college goals</kbd>. Driven by a passion for <em>growth</em> and <em>learning</em>, I create <kbd>web experiences</kbd> that solve problems and create <em>delightful experiences</em>."
-      ],
-      socialLinks: [
-        { platform: "github", url: "https://github.com/Q2x38b", label: "GitHub" },
-        { platform: "email", url: "mailto:hello@e108.dev", label: "Email" }
       ],
       updatedAt: now,
     });
@@ -128,39 +124,6 @@ export const seedInitialData = mutation({
   },
 });
 
-// Add LinkedIn to existing social links
-export const addLinkedIn = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const about = await ctx.db.query("about").first();
-    if (!about) {
-      return { message: "No about record found", updated: false };
-    }
-
-    // Check if LinkedIn already exists
-    const hasLinkedIn = about.socialLinks.some(
-      (link: { platform: string }) => link.platform === "linkedin"
-    );
-    if (hasLinkedIn) {
-      return { message: "LinkedIn already exists", updated: false };
-    }
-
-    // Add LinkedIn between GitHub and Email
-    const newSocialLinks = [
-      about.socialLinks[0], // GitHub
-      { platform: "linkedin", url: "https://linkedin.com/in/ethan-jerla-1b0901364", label: "LinkedIn" },
-      ...about.socialLinks.slice(1) // Email and any others
-    ];
-
-    await ctx.db.patch(about._id, {
-      socialLinks: newSocialLinks,
-      updatedAt: Date.now(),
-    });
-
-    return { message: "LinkedIn added successfully", updated: true };
-  },
-});
-
 // Alternative: Seed without auth (for initial setup only - remove after use)
 export const seedInitialDataNoAuth = mutation({
   args: {},
@@ -182,15 +145,11 @@ export const seedInitialDataNoAuth = mutation({
       updatedAt: now,
     });
 
-    // Seed About
+    // Seed About (social links are hardcoded in frontend)
     await ctx.db.insert("about", {
       bio: [
         "I'm a <kbd>student</kbd>, <kbd>athlete</kbd>, <kbd>developer</kbd>, and <kbd>leader</kbd> who thrives on <em>collaboration</em> and <em>continuous learning</em>. When I'm not busy designing or engineering, I'm playing <kbd>sports</kbd>, traveling, and exploring.",
         "I'm currently working on my future and my <kbd>college goals</kbd>. Driven by a passion for <em>growth</em> and <em>learning</em>, I create <kbd>web experiences</kbd> that solve problems and create <em>delightful experiences</em>."
-      ],
-      socialLinks: [
-        { platform: "github", url: "https://github.com/Q2x38b", label: "GitHub" },
-        { platform: "email", url: "mailto:hello@e108.dev", label: "Email" }
       ],
       updatedAt: now,
     });

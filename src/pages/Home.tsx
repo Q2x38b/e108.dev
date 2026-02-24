@@ -224,8 +224,14 @@ function Profile({ profile, onEdit }: { profile: ProfileData; onEdit: () => void
 
 interface AboutData {
   bio: string[]
-  socialLinks: { platform: string; url: string; label: string }[]
 }
+
+// Hardcoded social links
+const socialLinks = [
+  { platform: 'github', url: 'https://github.com/Q2x38b', label: 'GitHub' },
+  { platform: 'linkedin', url: 'https://linkedin.com/in/ethan-jerla-1b0901364', label: 'LinkedIn' },
+  { platform: 'email', url: 'mailto:hello@e108.dev', label: 'Email' }
+]
 
 function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
   const renderBio = (text: string) => {
@@ -249,7 +255,7 @@ function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
           ))}
         </div>
         <div className="social-links">
-          {about.socialLinks.map((link) => (
+          {socialLinks.map((link) => (
             <a
               key={link.platform}
               href={link.url}
@@ -776,48 +782,24 @@ function HomeContent() {
   const [editingProjects, setEditingProjects] = useState(false)
   const [editingExperiences, setEditingExperiences] = useState(false)
 
-  // Show loading skeleton while fetching
+  // Show loading skeleton while fetching data from Convex
   if (profile === undefined || about === undefined || skills === undefined ||
-      projects === undefined || experiences === undefined) {
+      projects === undefined || experiences === undefined || footer === undefined) {
     return <LoadingSkeleton />
   }
 
-  // Use fallback values if data not yet seeded
-  const profileData = profile || {
-    name: 'Ethan Jerla',
-    title: 'Student • Developer',
-    imageUrl: '/profile.png',
-    location: 'Houston, TX'
+  // If no data exists in Convex, show loading (data should be seeded)
+  if (!profile || !about || !footer) {
+    return <LoadingSkeleton />
   }
 
-  const aboutData = about || {
-    bio: [
-      "I'm a <kbd>student</kbd>, <kbd>athlete</kbd>, <kbd>developer</kbd>, and <kbd>leader</kbd> who thrives on <em>collaboration</em> and <em>continuous learning</em>.",
-      "I'm currently working on my future and my <kbd>college goals</kbd>."
-    ],
-    socialLinks: [
-      { platform: 'github', url: 'https://github.com/Q2x38b', label: 'GitHub' },
-      { platform: 'linkedin', url: 'https://linkedin.com/in/ethan-jerla-1b0901364', label: 'LinkedIn' },
-      { platform: 'email', url: 'mailto:hello@e108.dev', label: 'Email' }
-    ]
-  }
-
-  const skillsData = skills.length > 0 ? skills : [
-    { _id: '1', title: 'Leadership', content: 'Eagle Scout and Senior Patrol Leader.', order: 0 },
-    { _id: '2', title: 'Athletics', content: '2-time UIL Water Polo State Champion.', order: 1 },
-    { _id: '3', title: 'Academics', content: '10 AP courses.', order: 2 },
-    { _id: '4', title: 'Technical', content: 'Web development with React, TypeScript.', order: 3 }
-  ]
-
-  const projectsData = projects.length > 0 ? projects : [
-    { _id: '1', name: 'Eagle Scout Project', description: 'Community service', year: '2025', details: 'Restored area.', tech: ['Leadership'], order: 0 }
-  ]
-
-  const experiencesData = experiences.length > 0 ? experiences : [
-    { _id: '1', company: 'Chad T Wilson Law', role: 'Legal Intern', date: '2025 - now', order: 0 }
-  ]
-
-  const footerData = footer || { copyrightYear: '2025', quote: 'The only limit is yourself' }
+  // Use data from Convex directly
+  const profileData = profile
+  const aboutData = about
+  const skillsData = skills
+  const projectsData = projects
+  const experiencesData = experiences
+  const footerData = footer
 
   const handleCloseEditor = (setter: (v: boolean) => void) => {
     setter(false)
