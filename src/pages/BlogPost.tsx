@@ -573,6 +573,7 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
   const linesRef = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
   const hasDraggedRef = useRef(false)
+  const skipNextClickRef = useRef(false)
   const startYRef = useRef(0)
   const startScrollRef = useRef(0)
 
@@ -629,11 +630,20 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
   }, [displayHeadings])
 
   const handleDragEnd = useCallback(() => {
+    const wasDragging = isDraggingRef.current
+    const hadDragged = hasDraggedRef.current
+
     isDraggingRef.current = false
+    hasDraggedRef.current = false
     document.body.style.userSelect = ''
 
-    // Snap to nearest heading on release
-    if (hasDraggedRef.current && displayHeadings.length > 0) {
+    // Skip next click if we dragged (to prevent toggle after drag)
+    if (wasDragging && hadDragged) {
+      skipNextClickRef.current = true
+    }
+
+    // Only snap to heading if we were actually dragging the TOC
+    if (wasDragging && hadDragged && displayHeadings.length > 0) {
       const scrollPosition = window.scrollY + 150
       let closestHeading = displayHeadings[0]
       let closestDistance = Infinity
@@ -700,10 +710,11 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
         onTouchStart={handleTouchStart}
         onClick={() => {
           // Only toggle if didn't drag (clicked)
-          if (!hasDraggedRef.current) {
-            onToggle()
+          if (skipNextClickRef.current) {
+            skipNextClickRef.current = false
+            return
           }
-          hasDraggedRef.current = false
+          onToggle()
         }}
         role="button"
         tabIndex={0}
