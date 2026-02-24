@@ -269,7 +269,9 @@ export default function BlogList() {
 
       <main className="blog-list-content">
         {posts === undefined ? (
-          <p className="blog-loading">Loading...</p>
+          <div className="blog-loading-spinner-container">
+            <div className="blog-loading-spinner" />
+          </div>
         ) : filteredPosts.length === 0 ? (
           <p className="blog-empty">{searchQuery ? 'No posts found.' : 'No posts yet.'}</p>
         ) : viewMode === 'card' ? (
