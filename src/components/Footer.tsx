@@ -150,6 +150,9 @@ export function Footer({ showEditControls = false }: FooterProps) {
             </button>
           </div>
         </div>
+        <div className="footer-signature">
+          <img src="/signature.png" alt="EJ" className="signature-img" />
+        </div>
       </footer>
       <AnimatePresence>
         {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}

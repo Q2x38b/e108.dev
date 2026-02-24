@@ -779,6 +779,13 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
   const [activeTab, setActiveTab] = useState<'top' | 'latest' | 'discussions'>('top')
   const navigate = useNavigate()
 
+  const handleTabClick = (tab: 'top' | 'latest' | 'discussions', e: React.MouseEvent) => {
+    e.preventDefault()
+    setActiveTab(tab)
+    // Blur to prevent focus scroll
+    ;(e.target as HTMLElement).blur()
+  }
+
   const filteredPosts = useMemo(() => {
     const otherPosts = posts.filter(p => p._id !== currentPostId)
 
@@ -810,19 +817,19 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
         <div className="more-articles-tabs">
           <button
             className={`more-articles-tab ${activeTab === 'top' ? 'active' : ''}`}
-            onClick={() => setActiveTab('top')}
+            onClick={(e) => handleTabClick('top', e)}
           >
             Top
           </button>
           <button
             className={`more-articles-tab ${activeTab === 'latest' ? 'active' : ''}`}
-            onClick={() => setActiveTab('latest')}
+            onClick={(e) => handleTabClick('latest', e)}
           >
             Latest
           </button>
           <button
             className={`more-articles-tab ${activeTab === 'discussions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('discussions')}
+            onClick={(e) => handleTabClick('discussions', e)}
           >
             Discussions
           </button>
@@ -903,9 +910,14 @@ export default function BlogPost() {
     setTimeout(() => setLinkCopied(false), 2000)
   }, [])
 
-  const copyHeaderLink = useCallback((id: string) => {
+  const copyHeaderLink = useCallback((id: string, e?: React.MouseEvent) => {
+    e?.preventDefault()
     const url = `${window.location.origin}${window.location.pathname}#${id}`
     navigator.clipboard.writeText(url)
+    // Blur to prevent focus scroll
+    if (e?.target) {
+      (e.target as HTMLElement).blur()
+    }
   }, [])
 
   const handleDelete = async () => {
@@ -1152,19 +1164,19 @@ export default function BlogPost() {
             rehypePlugins={[rehypeSlug]}
             components={{
               h1: ({ children, id }) => (
-                <h1 id={id} className="heading-with-link" onClick={() => id && copyHeaderLink(id)}>
+                <h1 id={id} className="heading-with-link" onClick={(e) => id && copyHeaderLink(id, e)}>
                   {children}
                   <span className="heading-link-icon">#</span>
                 </h1>
               ),
               h2: ({ children, id }) => (
-                <h2 id={id} className="heading-with-link" onClick={() => id && copyHeaderLink(id)}>
+                <h2 id={id} className="heading-with-link" onClick={(e) => id && copyHeaderLink(id, e)}>
                   {children}
                   <span className="heading-link-icon">#</span>
                 </h2>
               ),
               h3: ({ children, id }) => (
-                <h3 id={id} className="heading-with-link" onClick={() => id && copyHeaderLink(id)}>
+                <h3 id={id} className="heading-with-link" onClick={(e) => id && copyHeaderLink(id, e)}>
                   {children}
                   <span className="heading-link-icon">#</span>
                 </h3>

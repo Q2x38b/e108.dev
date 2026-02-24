@@ -348,6 +348,7 @@ interface ProjectData {
 function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const selectedProject = projects.find(p => p.name === selectedId)
   const listRef = useRef<HTMLDivElement>(null)
   const hoverTimeoutRef = useRef<number | null>(null)
@@ -369,6 +370,14 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
       hoverTimeoutRef.current = null
     }
     setHoveredIndex(index)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
   }
 
   const handleMouseLeave = () => {
@@ -404,16 +413,19 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                   transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
                   onClick={() => setSelectedId(project.name)}
                   onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                 >
                   {hoveredIndex === index && (
                     <motion.div
                       className="work-item-bg"
-                      layoutId="work-hover-bg"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.3 }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        background: `radial-gradient(circle 150px at ${mousePos.x}px ${mousePos.y}px, var(--hover-bg), transparent)`
+                      }}
                     />
                   )}
                   <div className="work-info">
@@ -422,7 +434,6 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                   </div>
                   <div className="work-meta">
                     <span className="work-year">{project.year}</span>
-                    <span className="work-arrow">+</span>
                   </div>
                 </motion.div>
               ))}
@@ -532,11 +543,10 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
             >
               <span className="experience-company">{exp.company}</span>
               <span className="experience-line" />
-              <span className="experience-role">
-                {exp.role}
-                {!exp.date && <span className="blink-cursor">_</span>}
+              <span className="experience-role">{exp.role}</span>
+              <span className="experience-date">
+                {exp.date || <span className="blink-cursor">_</span>}
               </span>
-              {exp.date && <span className="experience-date">{exp.date}</span>}
             </motion.div>
           ))}
         </div>
@@ -844,10 +854,6 @@ function HomeContent() {
         about={aboutData}
         onEdit={() => { setEditingAbout(true); setEditingSection('about') }}
       />
-      <Skills
-        skills={skillsData as SkillData[]}
-        onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
-      />
       <Work
         projects={projectsData as ProjectData[]}
         onEdit={() => { setEditingProjects(true); setEditingSection('work') }}
@@ -855,6 +861,10 @@ function HomeContent() {
       <Experience
         experiences={experiencesData as ExperienceData[]}
         onEdit={() => { setEditingExperiences(true); setEditingSection('experience') }}
+      />
+      <Skills
+        skills={skillsData as SkillData[]}
+        onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
       <Footer copyrightYear={footerData.copyrightYear} />
 
