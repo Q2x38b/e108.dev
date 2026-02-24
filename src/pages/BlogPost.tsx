@@ -697,7 +697,6 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
     startYRef.current = clientY
     startScrollRef.current = window.scrollY
     document.body.style.userSelect = 'none'
-    document.body.classList.add('toc-dragging')
   }, [])
 
   const handleDragMove = useCallback((clientY: number) => {
@@ -721,11 +720,8 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
     if (targetHeading) {
       const element = document.getElementById(targetHeading.id)
       if (element) {
-        const targetScroll = element.offsetTop - 100
-        // Smooth lerp for fluid drag feel
-        const currentScroll = window.scrollY
-        const newScroll = currentScroll + (targetScroll - currentScroll) * 0.25
-        window.scrollTo({ top: newScroll, behavior: 'auto' })
+        const targetScroll = element.offsetTop - 100 // Offset for header
+        window.scrollTo({ top: targetScroll, behavior: 'auto' })
       }
     }
   }, [displayHeadings])
@@ -733,7 +729,6 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
   const handleDragEnd = useCallback(() => {
     isDraggingRef.current = false
     document.body.style.userSelect = ''
-    document.body.classList.remove('toc-dragging')
 
     // Snap to nearest heading on release
     if (hasDraggedRef.current && displayHeadings.length > 0) {
@@ -792,7 +787,6 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
       document.removeEventListener('mouseup', handleMouseUp)
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleTouchEnd)
-      document.body.classList.remove('toc-dragging')
     }
   }, [handleDragMove, handleDragEnd])
 

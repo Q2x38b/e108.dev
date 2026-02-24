@@ -93,19 +93,6 @@
   stroke: var(--text-tertiary);
 }
 
-.globe-icon {
-  transition: transform 0.3s ease;
-}
-
-.location:hover .globe-icon {
-  animation: globe-spin 4s linear infinite;
-}
-
-@keyframes globe-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 /* Profile */
 .profile {
   margin-bottom: 40px;
@@ -183,14 +170,16 @@
 }
 
 .bio kbd {
-  display: inline-block;
-  padding: 0 3px;
-  font-size: 0.9em;
+  display: inline;
+  padding: 0 4px;
+  font-size: 0.85em;
   font-family: inherit;
   background: var(--hover-bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text);
+  line-height: 1;
+  vertical-align: baseline;
 }
 
 .bio em {
@@ -2516,20 +2505,10 @@
   user-select: none;
   width: 48px;
   contain: layout style;
-  border-radius: 8px;
-  transition: background 0.15s ease;
 }
 
 .toc-toggle-btn-minimal:active {
   cursor: grabbing;
-}
-
-body.toc-dragging {
-  cursor: grabbing !important;
-}
-
-body.toc-dragging .toc-toggle-btn-minimal {
-  background: var(--hover-bg);
 }
 
 .toc-lines-minimal {
@@ -2546,8 +2525,9 @@ body.toc-dragging .toc-toggle-btn-minimal {
   height: 2px;
   background: var(--border);
   border-radius: 1px;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
   transform-origin: center;
+  will-change: transform, background;
 }
 
 .toc-line-minimal.active {
@@ -2555,18 +2535,7 @@ body.toc-dragging .toc-toggle-btn-minimal {
   transform: scaleX(1.2);
 }
 
-body.toc-dragging .toc-line-minimal {
-  background: var(--text-secondary);
-}
-
-body.toc-dragging .toc-line-minimal.active {
-  background: var(--text);
-}
-
 @media (hover: hover) {
-  .toc-toggle-btn-minimal:hover {
-    background: var(--hover-bg);
-  }
   .toc-toggle-btn-minimal:hover .toc-line-minimal {
     background: var(--text-secondary);
   }
