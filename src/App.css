@@ -1608,13 +1608,16 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
+  background: var(--hover-bg);
+  padding: 4px 8px;
+  border-radius: 12px;
 }
 
 .article-views-icon {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 }
 
 /* Listen Button Small */
@@ -1622,20 +1625,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 24px;
   background: var(--text);
   border: none;
-  border-radius: 50%;
+  border-radius: 6px;
   color: var(--bg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .listen-btn-small svg {
-  width: 16px;
-  height: 16px;
-  margin-left: 2px;
+  width: 12px;
+  height: 12px;
+  margin-left: 1px;
 }
 
 @media (hover: hover) {
@@ -1650,20 +1653,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 24px;
   padding: 0;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 50%;
+  border-radius: 6px;
   color: var(--text);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .share-btn-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
 }
 
 .share-btn-icon.copied {
@@ -2370,7 +2373,7 @@
 }
 
 .article-title-main {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   margin-bottom: 16px;
   line-height: 1.2;
@@ -2414,22 +2417,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 
 .article-author-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-left: 16px;
-  padding-left: 16px;
+  gap: 6px;
+  margin-left: 12px;
+  padding-left: 12px;
   border-left: 1px solid var(--border);
 }
 
 .article-author-image {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--border);
@@ -2440,7 +2443,7 @@
 }
 
 .article-author-name {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text);
 }
@@ -2951,7 +2954,7 @@
 
 @media (max-width: 640px) {
   .article-title-main {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 
   .article-meta-line {
@@ -2978,12 +2981,13 @@
   }
 
   .share-btn-icon {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 24px;
   }
 
   .article-views-pill {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
+    padding: 3px 6px;
   }
 
   .more-articles-tabs {
