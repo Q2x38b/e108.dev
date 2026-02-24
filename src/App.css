@@ -93,32 +93,17 @@
   stroke: var(--text-tertiary);
 }
 
-.globe-meridian {
-  transition: rx 0.3s ease;
+.globe-icon {
+  transition: transform 0.3s ease;
 }
 
-@keyframes globe-meridian-spin-1 {
-  0% { rx: 4; }
-  25% { rx: 8; }
-  50% { rx: 4; }
-  75% { rx: 0; }
-  100% { rx: 4; }
+.location:hover .globe-icon {
+  animation: globe-spin 4s linear infinite;
 }
 
-@keyframes globe-meridian-spin-2 {
-  0% { rx: 7; }
-  25% { rx: 2; }
-  50% { rx: 7; }
-  75% { rx: 10; }
-  100% { rx: 7; }
-}
-
-.location:hover .globe-meridian-1 {
-  animation: globe-meridian-spin-1 2s ease-in-out infinite;
-}
-
-.location:hover .globe-meridian-2 {
-  animation: globe-meridian-spin-2 2s ease-in-out infinite;
+@keyframes globe-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Profile */
@@ -198,16 +183,14 @@
 }
 
 .bio kbd {
-  display: inline;
-  padding: 0 4px;
-  font-size: 0.85em;
+  display: inline-block;
+  padding: 0 3px;
+  font-size: 0.9em;
   font-family: inherit;
   background: var(--hover-bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text);
-  line-height: 1;
-  vertical-align: baseline;
 }
 
 .bio em {
@@ -2534,7 +2517,7 @@
   width: 48px;
   contain: layout style;
   border-radius: 8px;
-  transition: background 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .toc-toggle-btn-minimal:active {
@@ -2563,7 +2546,7 @@ body.toc-dragging .toc-toggle-btn-minimal {
   height: 2px;
   background: var(--border);
   border-radius: 1px;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.15s ease, transform 0.15s ease;
   transform-origin: center;
 }
 
@@ -2600,31 +2583,25 @@ body.toc-dragging .toc-line-minimal.active {
   z-index: 99;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px 24px;
-  min-width: 220px;
-  max-width: 300px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(8px);
-}
-
-[data-theme="dark"] .toc-popup {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 12px 20px;
+  min-width: 200px;
+  max-width: 280px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .toc-popup-header {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-tertiary);
-  letter-spacing: 0.8px;
-  margin-bottom: 14px;
-  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
 }
 
 .toc-popup-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .toc-popup-item {
@@ -2633,35 +2610,30 @@ body.toc-dragging .toc-line-minimal.active {
   text-align: left;
   background: none;
   border: none;
-  padding: 10px 12px;
-  margin: 0 -12px;
-  width: calc(100% + 24px);
-  font-size: 0.95rem;
+  padding: 8px 0;
+  font-size: 1rem;
   font-weight: 400;
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-radius: 8px;
 }
 
 .toc-popup-item.active {
   color: var(--text);
-  font-weight: 500;
-  background: var(--hover-bg);
+  font-weight: 600;
 }
 
 .toc-popup-item-sub {
-  padding-left: 24px;
+  padding-left: 12px;
   font-size: 0.9rem;
 }
 
 @media (hover: hover) {
   .toc-popup-item:hover {
     color: var(--text);
-    background: var(--hover-bg);
   }
 }
 

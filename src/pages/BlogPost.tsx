@@ -672,25 +672,30 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
   const isDraggingRef = useRef(false)
   const hasDraggedRef = useRef(false)
   const startYRef = useRef(0)
+  const startScrollRef = useRef(0)
 
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
+      // Add highlight effect
       element.classList.add('toc-highlight')
       setTimeout(() => {
         element.classList.remove('toc-highlight')
       }, 1500)
-      onToggle()
+      onToggle() // Close after clicking
     }
   }
 
+  // Get the display headings for the lines
   const displayHeadings = headings.filter(h => h.level <= 2).slice(0, 6)
 
+  // Handle drag to scroll with snap to headings
   const handleDragStart = useCallback((clientY: number) => {
     isDraggingRef.current = true
     hasDraggedRef.current = false
     startYRef.current = clientY
+    startScrollRef.current = window.scrollY
     document.body.style.userSelect = 'none'
     document.body.classList.add('toc-dragging')
   }, [])
@@ -700,6 +705,7 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
 
     const deltaY = clientY - startYRef.current
 
+    // Only consider it a drag if moved more than 5 pixels
     if (Math.abs(deltaY) > 5) {
       hasDraggedRef.current = true
     }
@@ -708,6 +714,7 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
     const relativeY = clientY - linesRect.top
     const progress = Math.max(0, Math.min(1, relativeY / linesRect.height))
 
+    // Map progress to heading index
     const headingIndex = Math.round(progress * (displayHeadings.length - 1))
     const targetHeading = displayHeadings[headingIndex]
 
@@ -715,7 +722,10 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
       const element = document.getElementById(targetHeading.id)
       if (element) {
         const targetScroll = element.offsetTop - 100
-        window.scrollTo({ top: targetScroll, behavior: 'auto' })
+        // Smooth lerp for fluid drag feel
+        const currentScroll = window.scrollY
+        const newScroll = currentScroll + (targetScroll - currentScroll) * 0.25
+        window.scrollTo({ top: newScroll, behavior: 'auto' })
       }
     }
   }, [displayHeadings])
@@ -725,6 +735,7 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
     document.body.style.userSelect = ''
     document.body.classList.remove('toc-dragging')
 
+    // Snap to nearest heading on release
     if (hasDraggedRef.current && displayHeadings.length > 0) {
       const scrollPosition = window.scrollY + 150
       let closestHeading = displayHeadings[0]
