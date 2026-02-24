@@ -429,16 +429,15 @@
   color: var(--text-tertiary);
   white-space: nowrap;
   text-align: right;
-  min-width: 90px;
   font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .blink-cursor {
   animation: blink 1s step-end infinite;
-  margin-left: 0;
 }
 
 @keyframes blink {
@@ -662,13 +661,18 @@
 
 .accordion-content ul {
   margin: 8px 0;
-  padding-left: 24px;
-  list-style: disc;
+  padding-left: 0;
+  list-style: none;
 }
 
 .accordion-content li {
-  margin-bottom: 2px;
-  padding-left: 4px;
+  margin-bottom: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.accordion-content li:last-child {
+  border-bottom: none;
 }
 
 .accordion-content strong {
@@ -1631,14 +1635,14 @@
 .footer-signature {
   display: flex;
   justify-content: center;
-  margin-top: 24px;
-  padding-bottom: 8px;
+  margin-top: 16px;
+  margin-bottom: -8px;
 }
 
 .signature-img {
-  height: 40px;
+  height: 60px;
   width: auto;
-  opacity: 0.5;
+  opacity: 0.4;
   transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
