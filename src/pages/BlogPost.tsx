@@ -672,10 +672,6 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
   const isDraggingRef = useRef(false)
   const hasDraggedRef = useRef(false)
   const startYRef = useRef(0)
-  const lastYRef = useRef(0)
-  const velocityRef = useRef(0)
-  const lastTimeRef = useRef(0)
-  const animationFrameRef = useRef<number | null>(null)
 
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id)
@@ -691,43 +687,10 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
 
   const displayHeadings = headings.filter(h => h.level <= 2).slice(0, 6)
 
-  // Smooth scroll with easing
-  const smoothScrollTo = useCallback((targetScroll: number, duration: number = 400) => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current)
-    }
-
-    const startScroll = window.scrollY
-    const distance = targetScroll - startScroll
-    const startTime = performance.now()
-
-    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
-
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      const eased = easeOutCubic(progress)
-
-      window.scrollTo(0, startScroll + distance * eased)
-
-      if (progress < 1) {
-        animationFrameRef.current = requestAnimationFrame(animate)
-      }
-    }
-
-    animationFrameRef.current = requestAnimationFrame(animate)
-  }, [])
-
   const handleDragStart = useCallback((clientY: number) => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current)
-    }
     isDraggingRef.current = true
     hasDraggedRef.current = false
     startYRef.current = clientY
-    lastYRef.current = clientY
-    velocityRef.current = 0
-    lastTimeRef.current = performance.now()
     document.body.style.userSelect = 'none'
     document.body.classList.add('toc-dragging')
   }, [])
@@ -736,19 +699,10 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
     if (!isDraggingRef.current || !linesRef.current) return
 
     const deltaY = clientY - startYRef.current
-    const now = performance.now()
-    const timeDelta = now - lastTimeRef.current
 
-    if (Math.abs(deltaY) > 3) {
+    if (Math.abs(deltaY) > 5) {
       hasDraggedRef.current = true
     }
-
-    // Calculate velocity for momentum
-    if (timeDelta > 0) {
-      velocityRef.current = (clientY - lastYRef.current) / timeDelta
-    }
-    lastYRef.current = clientY
-    lastTimeRef.current = now
 
     const linesRect = linesRef.current.getBoundingClientRect()
     const relativeY = clientY - linesRect.top
@@ -761,10 +715,7 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
       const element = document.getElementById(targetHeading.id)
       if (element) {
         const targetScroll = element.offsetTop - 100
-        // Use smooth interpolation during drag
-        const currentScroll = window.scrollY
-        const newScroll = currentScroll + (targetScroll - currentScroll) * 0.15
-        window.scrollTo(0, newScroll)
+        window.scrollTo({ top: targetScroll, behavior: 'auto' })
       }
     }
   }, [displayHeadings])
@@ -792,11 +743,10 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
 
       const element = document.getElementById(closestHeading.id)
       if (element) {
-        const targetScroll = element.offsetTop - 80
-        smoothScrollTo(targetScroll, 350)
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }
-  }, [displayHeadings, smoothScrollTo])
+  }, [displayHeadings])
 
   // Mouse events
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -831,9 +781,6 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
       document.removeEventListener('mouseup', handleMouseUp)
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleTouchEnd)
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
       document.body.classList.remove('toc-dragging')
     }
   }, [handleDragMove, handleDragEnd])

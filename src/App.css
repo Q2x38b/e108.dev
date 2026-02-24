@@ -91,24 +91,34 @@
   width: 14px;
   height: 14px;
   stroke: var(--text-tertiary);
-  transition: transform 0.3s ease;
 }
 
-.globe-icon {
-  animation: none;
+.globe-meridian {
+  transition: rx 0.3s ease;
 }
 
-@keyframes globe-spin {
-  from {
-    transform: rotateY(0deg);
-  }
-  to {
-    transform: rotateY(360deg);
-  }
+@keyframes globe-meridian-spin-1 {
+  0% { rx: 4; }
+  25% { rx: 8; }
+  50% { rx: 4; }
+  75% { rx: 0; }
+  100% { rx: 4; }
 }
 
-.location:hover .globe-icon {
-  animation: globe-spin 3s linear infinite;
+@keyframes globe-meridian-spin-2 {
+  0% { rx: 7; }
+  25% { rx: 2; }
+  50% { rx: 7; }
+  75% { rx: 10; }
+  100% { rx: 7; }
+}
+
+.location:hover .globe-meridian-1 {
+  animation: globe-meridian-spin-1 2s ease-in-out infinite;
+}
+
+.location:hover .globe-meridian-2 {
+  animation: globe-meridian-spin-2 2s ease-in-out infinite;
 }
 
 /* Profile */
@@ -2518,18 +2528,17 @@
   z-index: 100;
   background: transparent;
   border: none;
-  padding: 16px 12px;
+  padding: 12px 8px;
   cursor: grab;
   user-select: none;
-  width: 52px;
+  width: 48px;
   contain: layout style;
-  border-radius: 12px;
-  transition: background 0.2s ease, transform 0.15s ease;
+  border-radius: 8px;
+  transition: background 0.2s ease;
 }
 
 .toc-toggle-btn-minimal:active {
   cursor: grabbing;
-  transform: translateY(-50%) scale(1.05);
 }
 
 body.toc-dragging {
@@ -2538,13 +2547,12 @@ body.toc-dragging {
 
 body.toc-dragging .toc-toggle-btn-minimal {
   background: var(--hover-bg);
-  transform: translateY(-50%) scale(1.08);
 }
 
 .toc-lines-minimal {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
   contain: layout style;
 }
@@ -2552,18 +2560,16 @@ body.toc-dragging .toc-toggle-btn-minimal {
 .toc-line-minimal {
   display: block;
   width: 24px;
-  height: 3px;
+  height: 2px;
   background: var(--border);
-  border-radius: 2px;
-  transition: background 0.2s ease, opacity 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s ease;
+  border-radius: 1px;
+  transition: background 0.2s ease, transform 0.2s ease;
   transform-origin: center;
-  will-change: transform, background, width;
 }
 
 .toc-line-minimal.active {
   background: var(--text);
-  transform: scaleX(1.15);
-  width: 28px;
+  transform: scaleX(1.2);
 }
 
 body.toc-dragging .toc-line-minimal {
@@ -2572,7 +2578,6 @@ body.toc-dragging .toc-line-minimal {
 
 body.toc-dragging .toc-line-minimal.active {
   background: var(--text);
-  transform: scaleX(1.25);
 }
 
 @media (hover: hover) {
@@ -2590,7 +2595,7 @@ body.toc-dragging .toc-line-minimal.active {
 /* TOC Popup - Clean Style */
 .toc-popup {
   position: fixed;
-  left: 84px;
+  left: 80px;
   transform-origin: left center;
   z-index: 99;
   background: var(--bg);

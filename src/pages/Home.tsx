@@ -134,9 +134,9 @@ function Header({ theme, toggleTheme, location }: { theme: 'light' | 'dark'; tog
         <div className="location">
           <svg className="location-icon globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="12" cy="12" r="10" />
-            <ellipse cx="12" cy="12" rx="10" ry="4" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            <line x1="2" y1="12" x2="22" y2="12" />
+            <ellipse cx="12" cy="12" rx="10" ry="4" className="globe-equator" />
+            <ellipse cx="12" cy="12" rx="4" ry="10" className="globe-meridian globe-meridian-1" />
+            <ellipse cx="12" cy="12" rx="7" ry="10" className="globe-meridian globe-meridian-2" />
           </svg>
           {location}
         </div>
