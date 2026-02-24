@@ -302,28 +302,18 @@ export default function BlogList() {
                 transition={{ duration: 0.4, delay: 0.25 + index * 0.05 }}
               >
                 <Link to={`/blog/${post.shortId}`} className="blog-card">
-                  <div className="blog-card-image">
-                    {post.titleImage ? (
-                      <img src={post.titleImage} alt="" />
-                    ) : (
-                      <svg className="blog-card-image-placeholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <polyline points="21 15 16 10 5 21" />
-                      </svg>
-                    )}
-                  </div>
                   <div className="blog-card-content">
                     <h2 className="blog-card-title">{post.title}</h2>
                     {post.subtitle && (
                       <p className="blog-card-subtitle">{post.subtitle}</p>
                     )}
-                    <div className="blog-card-meta">
-                      <span className="blog-card-author">Ethan Jerla</span>
-                      <span className="blog-card-dot">·</span>
-                      <span>{formatDate(post.createdAt)}</span>
-                    </div>
+                    <span className="blog-card-meta">{formatDate(post.createdAt)}</span>
                   </div>
+                  {post.titleImage && (
+                    <div className="blog-card-image">
+                      <img src={post.titleImage} alt="" />
+                    </div>
+                  )}
                 </Link>
               </motion.div>
             ))}

@@ -128,6 +128,39 @@ export const seedInitialData = mutation({
   },
 });
 
+// Add LinkedIn to existing social links
+export const addLinkedIn = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const about = await ctx.db.query("about").first();
+    if (!about) {
+      return { message: "No about record found", updated: false };
+    }
+
+    // Check if LinkedIn already exists
+    const hasLinkedIn = about.socialLinks.some(
+      (link: { platform: string }) => link.platform === "linkedin"
+    );
+    if (hasLinkedIn) {
+      return { message: "LinkedIn already exists", updated: false };
+    }
+
+    // Add LinkedIn between GitHub and Email
+    const newSocialLinks = [
+      about.socialLinks[0], // GitHub
+      { platform: "linkedin", url: "https://linkedin.com/in/ethan-jerla-1b0901364", label: "LinkedIn" },
+      ...about.socialLinks.slice(1) // Email and any others
+    ];
+
+    await ctx.db.patch(about._id, {
+      socialLinks: newSocialLinks,
+      updatedAt: Date.now(),
+    });
+
+    return { message: "LinkedIn added successfully", updated: true };
+  },
+});
+
 // Alternative: Seed without auth (for initial setup only - remove after use)
 export const seedInitialDataNoAuth = mutation({
   args: {},

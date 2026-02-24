@@ -694,16 +694,62 @@ function EditModeIndicator() {
 function LoadingSkeleton() {
   return (
     <div className="container">
+      {/* Skeleton Header */}
+      <div className="skeleton-header">
+        <div className="skeleton-nav">
+          <div className="skeleton-nav-item" />
+          <div className="skeleton-nav-item" />
+          <div className="skeleton-nav-item" />
+          <div className="skeleton-nav-item" />
+        </div>
+        <div className="skeleton-header-right">
+          <div className="skeleton-location" />
+          <div className="skeleton-theme-btn" />
+        </div>
+      </div>
+
       <div className="loading-skeleton">
+        {/* Profile Section */}
         <div className="skeleton-profile">
           <div className="skeleton-avatar" />
           <div className="skeleton-text skeleton-name" />
           <div className="skeleton-text skeleton-title" />
         </div>
+
+        {/* About Section */}
         <div className="skeleton-section">
           <div className="skeleton-text skeleton-heading" />
           <div className="skeleton-text skeleton-paragraph" />
-          <div className="skeleton-text skeleton-paragraph" />
+          <div className="skeleton-text skeleton-paragraph skeleton-paragraph-short" />
+          <div className="skeleton-social-links">
+            <div className="skeleton-social-link" />
+            <div className="skeleton-social-link" />
+            <div className="skeleton-social-link" />
+          </div>
+        </div>
+
+        {/* Skills Section */}
+        <div className="skeleton-section">
+          <div className="skeleton-text skeleton-heading" />
+          <div className="skeleton-accordion" />
+          <div className="skeleton-accordion" />
+          <div className="skeleton-accordion" />
+          <div className="skeleton-accordion" />
+        </div>
+
+        {/* Work Section */}
+        <div className="skeleton-section">
+          <div className="skeleton-text skeleton-heading" />
+          <div className="skeleton-work-item" />
+          <div className="skeleton-work-item" />
+          <div className="skeleton-work-item" />
+        </div>
+
+        {/* Experience Section */}
+        <div className="skeleton-section">
+          <div className="skeleton-text skeleton-heading" />
+          <div className="skeleton-experience-row" />
+          <div className="skeleton-experience-row" />
         </div>
       </div>
     </div>
