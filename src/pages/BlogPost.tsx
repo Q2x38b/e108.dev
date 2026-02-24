@@ -304,7 +304,18 @@ function formatDate(timestamp: number) {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
-  }).toUpperCase()
+  })
+}
+
+function getWordCount(content: string): number {
+  const text = stripMarkdown(content)
+  return text.split(/\s+/).filter(word => word.length > 0).length
+}
+
+function getReadingTime(wordCount: number): string {
+  const wordsPerMinute = 200
+  const minutes = Math.ceil(wordCount / wordsPerMinute)
+  return `${minutes} min`
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -1148,6 +1159,23 @@ export default function BlogPost() {
       >
         <header className="article-header-new">
           <h1 className="article-title-main">{post.title}</h1>
+
+          <div className="article-meta-line">
+            <span>{formatDate(post.createdAt)}</span>
+            <span className="article-meta-dot">·</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="article-meta-icon">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <span>{getWordCount(post.content).toLocaleString()} words</span>
+            <span className="article-meta-dot">·</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="article-meta-icon">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>{getReadingTime(getWordCount(post.content))}</span>
+          </div>
+
           {post.subtitle && (
             <p className="article-subtitle">{post.subtitle}</p>
           )}
@@ -1158,10 +1186,7 @@ export default function BlogPost() {
               alt="Ethan Jerla"
               className="article-author-image article-author-image-bg"
             />
-            <div className="article-author-info">
-              <span className="article-author-name">Ethan Jerla</span>
-              <span className="article-author-date">{formatDate(post.createdAt)}</span>
-            </div>
+            <span className="article-author-name">Ethan Jerla</span>
             <div className="article-author-actions">
               <button className="listen-btn-small" onClick={() => setShowAudioPlayer(true)} aria-label="Listen to article">
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -1178,7 +1203,11 @@ export default function BlogPost() {
                 </svg>
               </button>
               <div className="article-views-pill">
-                {viewCount || 0} views
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="article-views-icon">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                {viewCount || 0}
               </div>
             </div>
           </div>
