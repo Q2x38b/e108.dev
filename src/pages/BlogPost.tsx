@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { SignedIn, useAuth } from '../contexts/AuthContext'
+import { SignedIn } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Footer } from '../components/Footer'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -343,46 +344,6 @@ function CopyButton({ text }: { text: string }) {
   )
 }
 
-function LoginModal({ onClose }: { onClose: () => void }) {
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState(false)
-  const { login } = useAuth()
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (login(password)) {
-      onClose()
-    } else {
-      setError(true)
-      setPassword('')
-    }
-  }
-
-  return (
-    <div className="login-modal-overlay" onClick={onClose}>
-      <motion.div
-        className="login-modal"
-        onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-      >
-        <form onSubmit={handleSubmit}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); setError(false) }}
-            autoFocus
-            className={error ? 'error' : ''}
-          />
-          <button type="submit">Login</button>
-        </form>
-      </motion.div>
-    </div>
-  )
-}
-
 interface ShareModalProps {
   title: string
   subtitle?: string
@@ -562,76 +523,6 @@ function ShareModal({ title, subtitle, titleImage, onClose, onCopy }: ShareModal
   )
 }
 
-function Footer() {
-  const [time, setTime] = useState(new Date())
-  const [clickCount, setClickCount] = useState(0)
-  const [showLogin, setShowLogin] = useState(false)
-  const { isAuthenticated } = useAuth()
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    if (clickCount >= 5 && !isAuthenticated) {
-      setShowLogin(true)
-      setClickCount(0)
-    }
-    const resetTimer = setTimeout(() => setClickCount(0), 2000)
-    return () => clearTimeout(resetTimer)
-  }, [clickCount, isAuthenticated])
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    })
-  }
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  return (
-    <>
-      <footer className="footer">
-        <div className="footer-bottom">
-          <div className="footer-left">
-            <span
-              className="footer-text footer-secret"
-              onClick={() => setClickCount(c => c + 1)}
-            >
-              © 2025
-            </span>
-            <span className="footer-dot">•</span>
-            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
-            <span className="footer-dot">•</span>
-            <span className="footer-quote-inline">The only limit is yourself.</span>
-          </div>
-          <div className="footer-right">
-            <span className="footer-time">{formatTime(time)}</span>
-            <button
-              className="back-to-top"
-              onClick={scrollToTop}
-              aria-label="Back to top"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 19V5M5 12l7-7 7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </footer>
-      <AnimatePresence>
-        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
-      </AnimatePresence>
-    </>
-  )
-}
-
 // Extract citations from content
 function extractCitations(content: string): { content: string; citations: { num: number; text: string }[] } {
   const citations: { num: number; text: string }[] = []
@@ -689,11 +580,11 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
-      // Add highlight effect
+      // Add highlight effect for 2 seconds
       element.classList.add('toc-highlight')
       setTimeout(() => {
         element.classList.remove('toc-highlight')
-      }, 1500)
+      }, 2000)
       onToggle() // Close after clicking
     }
   }
@@ -841,7 +732,14 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
                    linesRef.current.getBoundingClientRect().height / 2
             }}
           >
-            <div className="toc-popup-header">CONTENTS</div>
+            <div className="toc-popup-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="toc-header-icon">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="15" y2="12" />
+                <line x1="3" y1="18" x2="18" y2="18" />
+              </svg>
+              CONTENTS
+            </div>
             <nav className="toc-popup-nav">
               {headings.map((heading, index) => (
                 <button
@@ -1088,8 +986,34 @@ export default function BlogPost() {
 
   if (post === undefined) {
     return (
-      <div className="blog-container">
-        <p className="blog-loading">Loading...</p>
+      <div className="blog-container blog-post-layout">
+        <header className="blog-header">
+          <nav className="breadcrumb">
+            <div className="skeleton-breadcrumb" />
+          </nav>
+          <div className="header-right">
+            <div className="skeleton-theme-toggle" />
+          </div>
+        </header>
+        <article className="blog-article">
+          <header className="article-header-new">
+            <div className="skeleton-article-title" />
+            <div className="skeleton-article-meta" />
+            <div className="skeleton-article-subtitle" />
+            <div className="skeleton-article-author">
+              <div className="skeleton-author-image" />
+              <div className="skeleton-author-name" />
+            </div>
+          </header>
+          <div className="article-divider" />
+          <div className="skeleton-article-content">
+            <div className="skeleton-paragraph" />
+            <div className="skeleton-paragraph skeleton-short" />
+            <div className="skeleton-paragraph" />
+            <div className="skeleton-paragraph skeleton-medium" />
+            <div className="skeleton-paragraph" />
+          </div>
+        </article>
       </div>
     )
   }

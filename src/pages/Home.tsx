@@ -47,9 +47,10 @@ function Accordion({ title, content, isOpen, onToggle }: {
         }}
       >
         <div style={{ overflow: 'hidden' }}>
-          <div className="accordion-content">
-            <p>{content}</p>
-          </div>
+          <div
+            className="accordion-content"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
         </div>
       </div>
     </div>

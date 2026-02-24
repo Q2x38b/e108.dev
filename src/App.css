@@ -171,15 +171,18 @@
 
 .bio kbd {
   display: inline;
-  padding: 0 4px;
+  padding: 2px 6px;
   font-size: 0.85em;
   font-family: inherit;
   background: var(--hover-bg);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text);
-  line-height: 1;
+  line-height: 1.6;
   vertical-align: baseline;
+  /* Handle text wrapping - clone decoration on each line */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .bio em {
@@ -651,14 +654,39 @@
 
 .accordion-content {
   padding: 8px 0 16px;
-}
-
-.accordion-content p {
   font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.7;
+}
+
+.accordion-content p {
+  margin-bottom: 12px;
+}
+
+.accordion-content p:first-child {
   padding-left: 16px;
   border-left: 2px solid var(--border);
+}
+
+.accordion-content ul {
+  margin: 12px 0;
+  padding-left: 24px;
+  list-style: disc;
+}
+
+.accordion-content li {
+  margin-bottom: 6px;
+  padding-left: 4px;
+}
+
+.accordion-content strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.accordion-content em {
+  font-style: italic;
+  color: var(--text-tertiary);
 }
 
 /* Blog Container */
@@ -932,6 +960,41 @@
   margin: 16px 0;
   font-style: italic;
   color: var(--text-tertiary);
+}
+
+.article-content kbd {
+  display: inline;
+  padding: 2px 6px;
+  font-size: 0.85em;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  background: var(--hover-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  line-height: 1.6;
+  vertical-align: baseline;
+  /* Handle text wrapping - clone decoration on each line */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Blog Post Divider - Short Dashed Style */
+.article-content hr {
+  border: none;
+  margin: 32px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2px;
+  background: transparent;
+}
+
+.article-content hr::before {
+  content: '— — — — — —';
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  letter-spacing: 0.5em;
+  opacity: 0.5;
 }
 
 .heading-with-link {
@@ -2585,11 +2648,20 @@
 }
 
 .toc-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-tertiary);
   letter-spacing: 0.5px;
   margin-bottom: 16px;
+}
+
+.toc-header-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .toc-popup-nav {
@@ -2604,7 +2676,9 @@
   text-align: left;
   background: none;
   border: none;
-  padding: 8px 0;
+  padding: 8px 12px;
+  margin: 0 -12px;
+  width: calc(100% + 24px);
   font-size: 1rem;
   font-weight: 400;
   color: var(--text-tertiary);
@@ -2613,6 +2687,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  border-radius: 8px;
 }
 
 .toc-popup-item.active {
@@ -2621,13 +2696,14 @@
 }
 
 .toc-popup-item-sub {
-  padding-left: 12px;
+  padding-left: 24px;
   font-size: 0.9rem;
 }
 
 @media (hover: hover) {
   .toc-popup-item:hover {
     color: var(--text);
+    background: var(--hover-bg);
   }
 }
 
@@ -3264,6 +3340,41 @@
   min-height: 60px;
 }
 
+/* Formatting Toolbar */
+.editor-formatting-toolbar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.formatting-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.formatting-btn:hover {
+  background: var(--hover-bg);
+  border-color: var(--text-tertiary);
+}
+
+.formatting-btn strong {
+  font-weight: 700;
+}
+
+.formatting-btn em {
+  font-style: italic;
+}
+
 .editor-field-small {
   flex: 0 0 100px;
 }
@@ -3643,6 +3754,92 @@
   flex: 1;
   height: 1px;
   background: var(--border);
+}
+
+/* Blog Post Skeleton */
+.skeleton-breadcrumb {
+  width: 150px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--hover-bg);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-theme-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--hover-bg);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-article-title {
+  width: 80%;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--hover-bg);
+  margin-bottom: 16px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-article-meta {
+  width: 200px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--hover-bg);
+  margin-bottom: 12px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-article-subtitle {
+  width: 60%;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--hover-bg);
+  margin-bottom: 24px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-article-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeleton-author-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--hover-bg);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-author-name {
+  width: 100px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--hover-bg);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-article-content {
+  padding-top: 24px;
+}
+
+.skeleton-article-content .skeleton-paragraph {
+  height: 16px;
+  border-radius: 4px;
+  background: var(--hover-bg);
+  margin-bottom: 16px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-article-content .skeleton-short {
+  width: 45%;
+}
+
+.skeleton-article-content .skeleton-medium {
+  width: 70%;
 }
 
 @keyframes skeleton-pulse {
@@ -5196,16 +5393,20 @@
    ===================================================== */
 
 .toc-highlight {
-  background: rgba(128, 128, 128, 0.15);
+  background: rgba(128, 128, 128, 0.2);
   border-radius: 8px;
-  padding: 4px 8px;
-  margin: -4px -8px;
-  animation: toc-highlight-fade 1.5s ease-out forwards;
+  padding: 8px 12px;
+  margin: -8px -12px;
+  display: inline-block;
+  animation: toc-highlight-fade 2s ease-out forwards;
 }
 
 @keyframes toc-highlight-fade {
   0% {
     background: rgba(128, 128, 128, 0.25);
+  }
+  70% {
+    background: rgba(128, 128, 128, 0.2);
   }
   100% {
     background: transparent;

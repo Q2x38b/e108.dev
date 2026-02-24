@@ -12,6 +12,9 @@ import { Table } from '@tiptap/extension-table'
 import { TableRow } from '@tiptap/extension-table-row'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
+import { Callout } from './extensions/Callout'
+import { Divider } from './extensions/Divider'
+import { ImageBlock } from './extensions/ImageBlock'
 
 interface PreviewModalProps {
   isOpen: boolean
@@ -23,7 +26,7 @@ interface PreviewModalProps {
   publishDate?: Date
 }
 
-// Basic extensions for rendering (without interactive features)
+// Extensions for rendering (including custom extensions)
 const extensions = [
   StarterKit.configure({
     // Disable Link and Underline from StarterKit since we add them separately
@@ -39,6 +42,9 @@ const extensions = [
   TableRow,
   TableCell,
   TableHeader,
+  Callout,
+  Divider,
+  ImageBlock,
 ]
 
 export function PreviewModal({

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../../contexts/AuthContext'
@@ -24,11 +24,49 @@ export function SkillEditor({ skills, onClose }: SkillEditorProps) {
 
   const [localSkills, setLocalSkills] = useState(skills.map(s => ({ ...s, isNew: false })))
   const [saving, setSaving] = useState(false)
+  const textareaRefs = useRef<{ [key: string]: HTMLTextAreaElement | null }>({})
 
   const handleChange = (index: number, field: 'title' | 'content', value: string) => {
     const updated = [...localSkills]
     updated[index] = { ...updated[index], [field]: value }
     setLocalSkills(updated)
+  }
+
+  const insertFormatting = (skillId: string, index: number, type: 'bold' | 'italic' | 'bullet') => {
+    const textarea = textareaRefs.current[skillId]
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const text = textarea.value
+    const selectedText = text.substring(start, end)
+
+    let newText = ''
+    let cursorOffset = 0
+
+    switch (type) {
+      case 'bold':
+        newText = text.substring(0, start) + `<strong>${selectedText || 'text'}</strong>` + text.substring(end)
+        cursorOffset = selectedText ? end + 17 : start + 8
+        break
+      case 'italic':
+        newText = text.substring(0, start) + `<em>${selectedText || 'text'}</em>` + text.substring(end)
+        cursorOffset = selectedText ? end + 9 : start + 4
+        break
+      case 'bullet':
+        const bulletTemplate = selectedText
+          ? `<ul>\n  <li>${selectedText}</li>\n</ul>`
+          : '<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>'
+        newText = text.substring(0, start) + bulletTemplate + text.substring(end)
+        cursorOffset = start + bulletTemplate.length
+        break
+    }
+
+    handleChange(index, 'content', newText)
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(cursorOffset, cursorOffset)
+    }, 0)
   }
 
   const addSkill = () => {
@@ -123,11 +161,38 @@ export function SkillEditor({ skills, onClose }: SkillEditorProps) {
               </div>
               <div className="editor-field">
                 <label>Content</label>
+                <div className="editor-formatting-toolbar">
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting(skill._id, index, 'bold')}
+                    className="formatting-btn"
+                    title="Bold"
+                  >
+                    <strong>B</strong>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting(skill._id, index, 'italic')}
+                    className="formatting-btn"
+                    title="Italic"
+                  >
+                    <em>I</em>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting(skill._id, index, 'bullet')}
+                    className="formatting-btn"
+                    title="Bullet List"
+                  >
+                    •
+                  </button>
+                </div>
                 <textarea
+                  ref={(el) => { textareaRefs.current[skill._id] = el }}
                   value={skill.content}
                   onChange={(e) => handleChange(index, 'content', e.target.value)}
-                  placeholder="Skill description"
-                  rows={2}
+                  placeholder="Skill description (supports HTML: <strong>, <em>, <ul><li>)"
+                  rows={4}
                 />
               </div>
               <button
