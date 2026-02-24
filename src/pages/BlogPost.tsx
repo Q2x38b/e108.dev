@@ -678,6 +678,11 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
+      // Add highlight effect
+      element.classList.add('toc-highlight')
+      setTimeout(() => {
+        element.classList.remove('toc-highlight')
+      }, 1500)
       onToggle() // Close after clicking
     }
   }

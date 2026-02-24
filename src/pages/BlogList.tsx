@@ -3,7 +3,7 @@ import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const fadeInUp = {
@@ -25,12 +25,25 @@ interface Post {
   updatedAt: number
 }
 
+type ViewMode = 'card' | 'list'
+
 function formatDate(timestamp: number) {
   return new Date(timestamp).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
   })
+}
+
+function formatDateCompact(timestamp: number) {
+  const date = new Date(timestamp)
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${month}/${day}`
+}
+
+function getYear(timestamp: number) {
+  return new Date(timestamp).getFullYear().toString()
 }
 
 function LoginModal({ onClose }: { onClose: () => void }) {
@@ -146,6 +159,20 @@ function Footer() {
 export default function BlogList() {
   const { theme, toggle } = useTheme()
   const posts = useQuery(api.posts.list)
+  const [viewMode, setViewMode] = useState<ViewMode>('card')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter posts based on search query
+  const filteredPosts = useMemo(() => {
+    if (!posts) return []
+    if (!searchQuery.trim()) return posts as Post[]
+
+    const query = searchQuery.toLowerCase()
+    return (posts as Post[]).filter(post =>
+      post.title.toLowerCase().includes(query) ||
+      (post.subtitle && post.subtitle.toLowerCase().includes(query))
+    )
+  }, [posts, searchQuery])
 
   return (
     <div className="blog-list-layout">
@@ -205,6 +232,53 @@ export default function BlogList() {
         <h1 className="blog-title">Writing</h1>
       </motion.div>
 
+      {/* Search Bar and View Toggle */}
+      <motion.div
+        className="blog-search-bar"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, delay: 0.15 }}
+      >
+        <div className="blog-search-input">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="blog-view-toggle">
+          <button
+            className={`view-toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
+            onClick={() => setViewMode('card')}
+            aria-label="Card view"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+            </svg>
+          </button>
+          <button
+            className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+            aria-label="List view"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+        </div>
+      </motion.div>
+
       <motion.main
         className="blog-list-content"
         variants={fadeInUp}
@@ -214,35 +288,65 @@ export default function BlogList() {
       >
         {posts === undefined ? (
           <p className="blog-loading">Loading...</p>
-        ) : posts.length === 0 ? (
-          <p className="blog-empty">No posts yet.</p>
-        ) : (
-          <ul className="post-list-simple">
-            {(posts as Post[]).map((post: Post, index: number) => (
-              <motion.li
+        ) : filteredPosts.length === 0 ? (
+          <p className="blog-empty">{searchQuery ? 'No posts found.' : 'No posts yet.'}</p>
+        ) : viewMode === 'card' ? (
+          /* Card View */
+          <div className="blog-card-list">
+            {filteredPosts.map((post: Post, index: number) => (
+              <motion.div
                 key={post._id}
                 variants={fadeInUp}
                 initial="hidden"
                 animate="visible"
                 transition={{ duration: 0.4, delay: 0.25 + index * 0.05 }}
               >
-                <Link to={`/blog/${post.shortId}`} className="post-row-enhanced">
-                  <div className="post-row-content">
-                    <span className="post-row-title">{post.title}</span>
-                    {post.subtitle && (
-                      <span className="post-row-subtitle">{post.subtitle}</span>
-                    )}
-                    <span className="post-row-date">{formatDate(post.createdAt)}</span>
-                  </div>
-                  {post.titleImage && (
-                    <div className="post-row-image">
+                <Link to={`/blog/${post.shortId}`} className="blog-card">
+                  <div className="blog-card-image">
+                    {post.titleImage ? (
                       <img src={post.titleImage} alt="" />
+                    ) : (
+                      <svg className="blog-card-image-placeholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="blog-card-content">
+                    <h2 className="blog-card-title">{post.title}</h2>
+                    {post.subtitle && (
+                      <p className="blog-card-subtitle">{post.subtitle}</p>
+                    )}
+                    <div className="blog-card-meta">
+                      <span className="blog-card-author">Ethan Jerla</span>
+                      <span className="blog-card-dot">·</span>
+                      <span>{formatDate(post.createdAt)}</span>
                     </div>
-                  )}
+                  </div>
                 </Link>
-              </motion.li>
+              </motion.div>
             ))}
-          </ul>
+          </div>
+        ) : (
+          /* List/Table View */
+          <div className="blog-table-list">
+            {filteredPosts.map((post: Post, index: number) => (
+              <motion.div
+                key={post._id}
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+                transition={{ duration: 0.4, delay: 0.25 + index * 0.05 }}
+              >
+                <Link to={`/blog/${post.shortId}`} className="blog-table-row">
+                  <span className="blog-table-year">{getYear(post.createdAt)}</span>
+                  <span className="blog-table-title">{post.title}</span>
+                  <span className="blog-table-date">{formatDateCompact(post.createdAt)}</span>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         )}
       </motion.main>
 
