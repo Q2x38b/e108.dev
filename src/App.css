@@ -603,11 +603,15 @@
   flex-direction: column;
 }
 
-.accordion {
+.accordion-list > div {
   border-bottom: 1px solid var(--text-tertiary);
 }
 
-.accordion:last-child {
+.accordion-list > div:last-child {
+  border-bottom: none;
+}
+
+.accordion {
   border-bottom: none;
 }
 
@@ -1641,8 +1645,8 @@
 .footer-signature {
   display: flex;
   justify-content: center;
-  margin-top: -40px;
-  margin-bottom: -30px;
+  margin-top: -70px;
+  margin-bottom: -40px;
 }
 
 .signature-img {
