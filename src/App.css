@@ -399,7 +399,7 @@
 .experience-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .experience-company {
@@ -607,8 +607,8 @@
   border-bottom: 1px solid var(--border);
 }
 
-.accordion:first-child {
-  border-top: 1px solid var(--border);
+.accordion:last-child {
+  border-bottom: none;
 }
 
 .accordion-header {
@@ -669,10 +669,13 @@
   margin-bottom: 0;
   padding: 12px 0;
   border-bottom: 1px solid var(--border);
+  margin-left: 16px;
+  margin-right: 16px;
 }
 
 .accordion-content li:first-child {
   padding-top: 4px;
+  border-top: none;
 }
 
 .accordion-content li:last-child {
@@ -1639,12 +1642,12 @@
 .footer-signature {
   display: flex;
   justify-content: center;
-  margin-top: 8px;
-  margin-bottom: -12px;
+  margin-top: 4px;
+  margin-bottom: -16px;
 }
 
 .signature-img {
-  height: 80px;
+  height: 100px;
   width: auto;
   opacity: 0.4;
   transition: opacity 0.2s ease, filter 0.2s ease;
