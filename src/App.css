@@ -607,8 +607,8 @@
   border-bottom: 1px solid var(--border);
 }
 
-.accordion:last-child {
-  border-bottom: none;
+.accordion:first-child {
+  border-top: 1px solid var(--border);
 }
 
 .accordion-header {
@@ -667,8 +667,12 @@
 
 .accordion-content li {
   margin-bottom: 0;
-  padding: 8px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border);
+}
+
+.accordion-content li:first-child {
+  padding-top: 4px;
 }
 
 .accordion-content li:last-child {
@@ -1635,12 +1639,12 @@
 .footer-signature {
   display: flex;
   justify-content: center;
-  margin-top: 16px;
-  margin-bottom: -8px;
+  margin-top: 8px;
+  margin-bottom: -12px;
 }
 
 .signature-img {
-  height: 60px;
+  height: 80px;
   width: auto;
   opacity: 0.4;
   transition: opacity 0.2s ease, filter 0.2s ease;
