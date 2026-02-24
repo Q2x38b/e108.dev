@@ -4840,9 +4840,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   max-width: 800px;
   margin: 0 auto 32px;
   padding: 0 20px;
+  box-sizing: border-box;
 }
 
 .blog-search-input {
