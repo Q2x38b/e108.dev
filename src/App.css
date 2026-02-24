@@ -1625,11 +1625,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   background: var(--text);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--bg);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1653,12 +1653,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--text);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2431,8 +2431,8 @@
 }
 
 .article-author-image {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--border);
@@ -2443,7 +2443,7 @@
 }
 
 .article-author-name {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text);
 }
@@ -2981,8 +2981,8 @@
   }
 
   .share-btn-icon {
-    width: 28px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
   }
 
   .article-views-pill {
