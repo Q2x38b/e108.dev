@@ -52,9 +52,10 @@ function LoginModal({ onClose }: { onClose: () => void }) {
 
 interface FooterProps {
   showEditControls?: boolean
+  showSignature?: boolean
 }
 
-export function Footer({ showEditControls = false }: FooterProps) {
+export function Footer({ showEditControls = false, showSignature = true }: FooterProps) {
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
@@ -150,9 +151,11 @@ export function Footer({ showEditControls = false }: FooterProps) {
             </button>
           </div>
         </div>
-        <div className="footer-signature">
-          <img src="/signature.png" alt="EJ" className="signature-img" />
-        </div>
+        {showSignature && (
+          <div className="footer-signature">
+            <img src="/signature.png" alt="EJ" className="signature-img" />
+          </div>
+        )}
       </footer>
       <AnimatePresence>
         {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}

@@ -1271,7 +1271,7 @@ export default function BlogPost() {
         />
       )}
 
-      <Footer />
+      <Footer showSignature={false} />
 
       <AnimatePresence>
         {showAudioPlayer && (

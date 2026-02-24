@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { useQuery } from 'convex/react'
@@ -306,21 +306,31 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
       <motion.section
         id="skills"
         className="section"
-        variants={fadeInUp}
+        variants={stagger}
         initial="hidden"
         animate="visible"
-        transition={{ duration: 0.5, delay: 0.25 }}
       >
-        <h2 className="section-title">Skills</h2>
+        <motion.h2
+          className="section-title"
+          variants={fadeInUp}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          Skills
+        </motion.h2>
         <div className="accordion-list">
           {skills.map((skill, index) => (
-            <Accordion
+            <motion.div
               key={skill._id}
-              title={skill.title}
-              content={skill.content}
-              isOpen={openIndex === index}
-              onToggle={() => setOpenIndex(openIndex === index ? null : index)}
-            />
+              variants={fadeInUp}
+              transition={{ duration: 0.4, delay: 0.65 + index * 0.05 }}
+            >
+              <Accordion
+                title={skill.title}
+                content={skill.content}
+                isOpen={openIndex === index}
+                onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+              />
+            </motion.div>
           ))}
         </div>
       </motion.section>
@@ -347,11 +357,7 @@ interface ProjectData {
 
 function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const selectedProject = projects.find(p => p.name === selectedId)
-  const listRef = useRef<HTMLDivElement>(null)
-  const hoverTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (selectedId) {
@@ -363,28 +369,6 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
       document.body.style.overflow = ''
     }
   }, [selectedId])
-
-  const handleMouseEnter = (index: number) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-      hoverTimeoutRef.current = null
-    }
-    setHoveredIndex(index)
-  }
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    })
-  }
-
-  const handleMouseLeave = () => {
-    hoverTimeoutRef.current = window.setTimeout(() => {
-      setHoveredIndex(null)
-    }, 50)
-  }
 
   return (
     <>
@@ -404,7 +388,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             Work
           </motion.h2>
           <LayoutGroup>
-            <div className="work-list" ref={listRef}>
+            <div className="work-list">
               {projects.map((project, index) => (
                 <motion.div
                   key={project._id}
@@ -412,22 +396,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                   variants={fadeInUp}
                   transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
                   onClick={() => setSelectedId(project.name)}
-                  onMouseEnter={() => handleMouseEnter(index)}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
                 >
-                  {hoveredIndex === index && (
-                    <motion.div
-                      className="work-item-bg"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                      style={{
-                        background: `radial-gradient(circle 150px at ${mousePos.x}px ${mousePos.y}px, var(--hover-bg), transparent)`
-                      }}
-                    />
-                  )}
                   <div className="work-info">
                     <div className="work-name">{project.name}</div>
                     <div className="work-description">{project.description}</div>
@@ -704,6 +673,9 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
               </svg>
             </motion.button>
           </div>
+        </div>
+        <div className="footer-signature">
+          <img src="/signature.png" alt="EJ" className="signature-img" />
         </div>
       </motion.footer>
       <AnimatePresence>

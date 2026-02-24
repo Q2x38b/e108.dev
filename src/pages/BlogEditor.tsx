@@ -432,7 +432,7 @@ export default function BlogEditor() {
           </div>
         </main>
 
-      <Footer />
+      <Footer showSignature={false} />
 
       {/* Preview Modal */}
       <PreviewModal
