@@ -669,13 +669,13 @@
 }
 
 .accordion-content ul {
-  margin: 12px 0;
+  margin: 8px 0;
   padding-left: 24px;
   list-style: disc;
 }
 
 .accordion-content li {
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   padding-left: 4px;
 }
 
