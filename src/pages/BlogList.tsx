@@ -222,24 +222,12 @@ export default function BlogList() {
         </div>
       </motion.header>
 
-      <motion.div
-        className="blog-list-title"
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
+      <div className="blog-list-title">
         <h1 className="blog-title">Writing</h1>
-      </motion.div>
+      </div>
 
       {/* Search Bar and View Toggle */}
-      <motion.div
-        className="blog-search-bar"
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, delay: 0.15 }}
-      >
+      <div className="blog-search-bar">
         <div className="blog-search-input">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8" />
@@ -277,15 +265,9 @@ export default function BlogList() {
             </svg>
           </button>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.main
-        className="blog-list-content"
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
+      <main className="blog-list-content">
         {posts === undefined ? (
           <p className="blog-loading">Loading...</p>
         ) : filteredPosts.length === 0 ? (
@@ -295,11 +277,11 @@ export default function BlogList() {
           <div className="blog-card-list">
             {filteredPosts.map((post: Post, index: number) => (
               <motion.div
-                key={post._id}
+                key={`${viewMode}-${post._id}`}
                 variants={fadeInUp}
                 initial="hidden"
                 animate="visible"
-                transition={{ duration: 0.4, delay: 0.25 + index * 0.05 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
               >
                 <Link to={`/blog/${post.shortId}`} className="blog-card">
                   <div className="blog-card-content">
@@ -323,11 +305,11 @@ export default function BlogList() {
           <div className="blog-table-list">
             {filteredPosts.map((post: Post, index: number) => (
               <motion.div
-                key={post._id}
+                key={`${viewMode}-${post._id}`}
                 variants={fadeInUp}
                 initial="hidden"
                 animate="visible"
-                transition={{ duration: 0.4, delay: 0.25 + index * 0.05 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
               >
                 <Link to={`/blog/${post.shortId}`} className="blog-table-row">
                   <span className="blog-table-year">{getYear(post.createdAt)}</span>
@@ -338,7 +320,7 @@ export default function BlogList() {
             ))}
           </div>
         )}
-      </motion.main>
+      </main>
 
       <Footer />
       <div className="blog-blur-bottom" />
