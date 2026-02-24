@@ -665,24 +665,13 @@
 
 .accordion-content ul {
   margin: 8px 0;
-  padding-left: 0;
-  list-style: none;
+  padding-left: 20px;
+  list-style: disc;
 }
 
 .accordion-content li {
-  margin-bottom: 0;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--text-tertiary);
-  margin-left: 16px;
-  margin-right: 16px;
-}
-
-.accordion-content li:first-child {
-  padding-top: 4px;
-}
-
-.accordion-content li:last-child {
-  border-bottom: none;
+  margin-bottom: 6px;
+  padding: 0;
 }
 
 .accordion-content strong {
