@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { JSONContent } from '@tiptap/core'
 import { BlockEditor } from '../components/editor/BlockEditor'
 import { PreviewModal } from '../components/editor/PreviewModal'
+import { ImageCropModal } from '../components/editor/ImageCropModal'
 import { ArrowLeft, Eye, Check, Calendar, X, Upload } from 'lucide-react'
 import { jsonToMarkdown } from '../lib/jsonToMarkdown'
 import { markdownToJson } from '../lib/markdownToJson'
@@ -165,6 +166,7 @@ export default function BlogEditor() {
   const [showPreview, setShowPreview] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [fileToCrop, setFileToCrop] = useState<File | null>(null)
 
   // Load existing post data
   useEffect(() => {
@@ -405,7 +407,11 @@ export default function BlogEditor() {
                   onChange={(e) => {
                     const file = e.target.files?.[0]
                     if (file) {
-                      handleImageUpload(file)
+                      if (!file.type.startsWith('image/')) {
+                        alert('Please select an image file')
+                        return
+                      }
+                      setFileToCrop(file)
                     }
                     e.target.value = ''
                   }}
@@ -545,6 +551,18 @@ export default function BlogEditor() {
         titleImage={titleImage}
         publishDate={publishDate}
       />
+
+      {/* Image Crop Modal */}
+      {fileToCrop && (
+        <ImageCropModal
+          file={fileToCrop}
+          onCropComplete={(croppedFile) => {
+            setFileToCrop(null)
+            handleImageUpload(croppedFile)
+          }}
+          onCancel={() => setFileToCrop(null)}
+        />
+      )}
     </div>
   )
 }

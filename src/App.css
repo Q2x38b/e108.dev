@@ -111,7 +111,7 @@
   border-radius: 10px;
   object-fit: cover;
   object-position: center 15%;
-  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  background: linear-gradient(145deg, #e8e8e8 0%, #d0d0d0 50%, #c8c8c8 100%);
   border: 1px solid var(--border);
 }
 
@@ -2322,7 +2322,7 @@
 }
 
 .article-title-main {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 16px;
   line-height: 1.2;
@@ -2359,7 +2359,7 @@
 }
 
 .article-author-image-bg {
-  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  background: linear-gradient(145deg, #e8e8e8 0%, #d0d0d0 50%, #c8c8c8 100%);
 }
 
 .article-author-info {
@@ -3776,6 +3776,191 @@
 
 .editor-image-remove:hover {
   background: rgba(0, 0, 0, 0.7);
+}
+
+/* Image Crop Modal */
+.image-crop-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.image-crop-modal {
+  background: var(--bg);
+  border-radius: 16px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.image-crop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.image-crop-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.image-crop-close {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.image-crop-close:hover {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+
+.image-crop-aspect-options {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.aspect-option {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.aspect-option:hover {
+  border-color: var(--text-tertiary);
+  color: var(--text);
+}
+
+.aspect-option.active {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.image-crop-container {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  min-height: 300px;
+}
+
+.image-crop-area {
+  max-width: 100%;
+  max-height: 60vh;
+}
+
+.image-crop-preview {
+  max-width: 100%;
+  max-height: 60vh;
+  display: block;
+}
+
+.image-crop-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  gap: 12px;
+}
+
+.image-crop-actions-right {
+  display: flex;
+  gap: 12px;
+}
+
+.image-crop-reset {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.image-crop-reset:hover {
+  border-color: var(--text-tertiary);
+  color: var(--text);
+}
+
+.image-crop-cancel {
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.image-crop-cancel:hover {
+  border-color: var(--text-tertiary);
+  color: var(--text);
+}
+
+.image-crop-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.image-crop-confirm:hover {
+  opacity: 0.9;
+}
+
+/* React Image Crop overrides */
+.ReactCrop {
+  max-width: 100%;
+}
+
+.ReactCrop__crop-selection {
+  border: 2px solid white;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
 }
 
 .editor-title-input {
