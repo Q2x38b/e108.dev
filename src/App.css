@@ -604,7 +604,7 @@
 }
 
 .accordion-list > div {
-  border-bottom: 1px solid var(--text-tertiary);
+  border-bottom: 1px solid var(--border);
 }
 
 .accordion-list > div:last-child {
