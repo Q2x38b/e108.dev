@@ -668,14 +668,13 @@
 .accordion-content li {
   margin-bottom: 0;
   padding: 12px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--text-tertiary);
   margin-left: 16px;
   margin-right: 16px;
 }
 
 .accordion-content li:first-child {
   padding-top: 4px;
-  border-top: none;
 }
 
 .accordion-content li:last-child {
@@ -1642,8 +1641,8 @@
 .footer-signature {
   display: flex;
   justify-content: center;
-  margin-top: 4px;
-  margin-bottom: -16px;
+  margin-top: -4px;
+  margin-bottom: -20px;
 }
 
 .signature-img {
