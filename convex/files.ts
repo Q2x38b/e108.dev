@@ -26,13 +26,14 @@ export const saveImage = mutation({
   },
   handler: async (ctx, args) => {
     const url = await ctx.storage.getUrl(args.storageId);
-    return await ctx.db.insert("images", {
+    const imageId = await ctx.db.insert("images", {
       storageId: args.storageId,
       fileName: args.fileName,
       contentType: args.contentType,
       url: url || "",
       uploadedAt: Date.now(),
     });
+    return { imageId, url: url || "" };
   },
 });
 

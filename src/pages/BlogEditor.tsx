@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { JSONContent } from '@tiptap/core'
 import { BlockEditor } from '../components/editor/BlockEditor'
 import { PreviewModal } from '../components/editor/PreviewModal'
-import { ArrowLeft, Eye, Check, Calendar, X } from 'lucide-react'
+import { ArrowLeft, Eye, Check, Calendar, X, Upload } from 'lucide-react'
 import { jsonToMarkdown } from '../lib/jsonToMarkdown'
 import { markdownToJson } from '../lib/markdownToJson'
 
@@ -149,7 +149,10 @@ export default function BlogEditor() {
 
   const createPost = useMutation(api.posts.create)
   const updatePost = useMutation(api.posts.update)
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
+  const saveImage = useMutation(api.files.saveImage)
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [content, setContent] = useState<JSONContent | null>(null)
@@ -161,6 +164,7 @@ export default function BlogEditor() {
   const [saved, setSaved] = useState(true)
   const [showPreview, setShowPreview] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   // Load existing post data
   useEffect(() => {
@@ -192,6 +196,50 @@ export default function BlogEditor() {
     setContent(newContent)
     setSaved(false)
   }, [])
+
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+
+    setUploading(true)
+    try {
+      // Get upload URL from Convex
+      const uploadUrl = await generateUploadUrl()
+
+      // Upload the file
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const { storageId } = await response.json()
+
+      // Save image metadata and get URL
+      const result = await saveImage({
+        storageId,
+        fileName: file.name,
+        contentType: file.type,
+      })
+
+      // Use the URL returned from Convex
+      if (result.url) {
+        setTitleImage(result.url)
+        setSaved(false)
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      alert('Failed to upload image')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSave = async (shouldPublish = false) => {
     if (!title.trim()) {
@@ -338,16 +386,44 @@ export default function BlogEditor() {
           <div className="editor-metadata">
             {/* Title image */}
             <div className="editor-image-field">
-              <input
-                type="text"
-                className="editor-image-input"
-                placeholder="Title image URL (optional)"
-                value={titleImage}
-                onChange={(e) => {
-                  setTitleImage(e.target.value)
-                  setSaved(false)
-                }}
-              />
+              <div className="editor-image-input-row">
+                <input
+                  type="text"
+                  className="editor-image-input"
+                  placeholder="Title image URL (optional)"
+                  value={titleImage}
+                  onChange={(e) => {
+                    setTitleImage(e.target.value)
+                    setSaved(false)
+                  }}
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="editor-image-file-input"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      handleImageUpload(file)
+                    }
+                    e.target.value = ''
+                  }}
+                />
+                <button
+                  type="button"
+                  className="editor-image-upload-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <span className="upload-spinner" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  {uploading ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
               {titleImage && (
                 <div className="editor-image-preview">
                   <img src={titleImage} alt="Title preview" />
