@@ -182,9 +182,9 @@ export const updateProject = mutation({
       year: args.year,
       details: args.details,
       tech: args.tech,
-      url: args.url,
-      links: args.links,
       updatedAt: Date.now(),
+      ...(args.url !== undefined && { url: args.url }),
+      ...(args.links !== undefined && { links: args.links }),
     });
   },
 });
@@ -217,10 +217,10 @@ export const createProject = mutation({
       year: args.year,
       details: args.details,
       tech: args.tech,
-      url: args.url,
-      links: args.links,
       order: maxOrder + 1,
       updatedAt: Date.now(),
+      ...(args.url !== undefined && { url: args.url }),
+      ...(args.links !== undefined && { links: args.links }),
     });
   },
 });
