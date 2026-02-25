@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { useQuery } from 'convex/react'
@@ -23,7 +23,7 @@ const stagger = {
 }
 
 // Navigation links
-const navLinks = ['About', 'Work', 'Experience']
+const navLinks = ['Work', 'Experience', 'Skills']
 
 // Accordion component
 function Accordion({ title, content, isOpen, onToggle }: {
@@ -34,9 +34,12 @@ function Accordion({ title, content, isOpen, onToggle }: {
 }) {
   return (
     <div className="accordion">
-      <button className="accordion-header" onClick={onToggle}>
+      <button className={`accordion-header ${isOpen ? 'open' : ''}`} onClick={onToggle}>
         <span className={`accordion-title ${isOpen ? 'active' : ''}`}>{title}</span>
-        <span className="accordion-icon">{isOpen ? '−' : '+'}</span>
+        <span className={`accordion-icon ${isOpen ? 'open' : ''}`}>
+          <span className="accordion-icon-bar accordion-icon-horizontal" />
+          <span className="accordion-icon-bar accordion-icon-vertical" />
+        </span>
       </button>
       <div
         className="accordion-content-wrapper"
@@ -57,29 +60,182 @@ function Accordion({ title, content, isOpen, onToggle }: {
   )
 }
 
+// Theme types
+type ThemePreference = 'light' | 'dark' | 'system'
+type ResolvedTheme = 'light' | 'dark'
+
 // Theme hook
 export function useTheme() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const [preference, setPreference] = useState<ThemePreference>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme')
-      if (saved === 'dark' || saved === 'light') return saved
+      const saved = localStorage.getItem('theme-preference')
+      if (saved === 'dark' || saved === 'light' || saved === 'system') return saved
+      return 'system'
+    }
+    return 'system'
+  })
+
+  const getSystemTheme = (): ResolvedTheme => {
+    if (typeof window !== 'undefined') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
     return 'light'
-  })
+  }
+
+  const resolvedTheme: ResolvedTheme = preference === 'system' ? getSystemTheme() : preference
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('theme', theme)
-  }, [theme])
+    document.documentElement.setAttribute('data-theme', resolvedTheme)
+    localStorage.setItem('theme-preference', preference)
+  }, [preference, resolvedTheme])
 
-  const toggle = () => setTheme(t => t === 'light' ? 'dark' : 'light')
+  useEffect(() => {
+    if (preference !== 'system') return
 
-  return { theme, toggle }
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = () => {
+      document.documentElement.setAttribute('data-theme', getSystemTheme())
+    }
+
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [preference])
+
+  return { theme: resolvedTheme, preference, setPreference }
+}
+
+// Theme dropdown component
+function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
+  preference: ThemePreference
+  setPreference: (theme: ThemePreference) => void
+  resolvedTheme: ResolvedTheme
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = React.useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const options: { value: ThemePreference; label: string; icon: React.ReactNode }[] = [
+    {
+      value: 'light',
+      label: 'Light',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      )
+    },
+    {
+      value: 'dark',
+      label: 'Dark',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      )
+    },
+    {
+      value: 'system',
+      label: 'System',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
+      )
+    }
+  ]
+
+  const currentIcon = resolvedTheme === 'dark' ? (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  )
+
+  return (
+    <div className="theme-dropdown" ref={dropdownRef}>
+      <motion.button
+        className="theme-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        whileTap={{ scale: 0.95 }}
+        aria-label="Change theme"
+        aria-expanded={isOpen}
+      >
+        {currentIcon}
+        <svg className="theme-toggle-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </motion.button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="theme-dropdown-menu"
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+          >
+            {options.map((option) => (
+              <button
+                key={option.value}
+                className={`theme-dropdown-item ${preference === option.value ? 'active' : ''}`}
+                onClick={() => {
+                  setPreference(option.value)
+                  setIsOpen(false)
+                }}
+              >
+                <span className="theme-dropdown-icon">{option.icon}</span>
+                <span className="theme-dropdown-label">{option.label}</span>
+                {preference === option.value && (
+                  <svg className="theme-dropdown-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
 
 // Components
-function Header({ theme, toggleTheme, location }: { theme: 'light' | 'dark'; toggleTheme: () => void; location: string }) {
+function Header({ theme, preference, setPreference, location }: {
+  theme: ResolvedTheme
+  preference: ThemePreference
+  setPreference: (theme: ThemePreference) => void
+  location: string
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const scrollToSection = (id: string) => {
@@ -139,30 +295,11 @@ function Header({ theme, toggleTheme, location }: { theme: 'light' | 'dark'; tog
           </svg>
           {location}
         </div>
-        <motion.button
-          className="theme-toggle"
-          onClick={toggleTheme}
-          whileTap={{ scale: 0.95 }}
-          aria-label="Toggle theme"
-        >
-          {theme === 'light' ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
-          )}
-        </motion.button>
+        <ThemeDropdown
+          preference={preference}
+          setPreference={setPreference}
+          resolvedTheme={theme}
+        />
       </div>
 
       {/* Mobile navigation dropdown */}
@@ -352,7 +489,98 @@ interface ProjectData {
   tech: string[]
   url?: string
   links?: ProjectLink[]
+  images?: string[]
   order: number
+}
+
+// Image Carousel Component
+function ImageCarousel({ images }: { images: string[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [direction, setDirection] = useState(0)
+
+  if (!images || images.length === 0) return null
+
+  const goToNext = () => {
+    setDirection(1)
+    setCurrentIndex((prev) => (prev + 1) % images.length)
+  }
+
+  const goToPrev = () => {
+    setDirection(-1)
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
+  }
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 100 : -100,
+      opacity: 0
+    }),
+    center: {
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 100 : -100,
+      opacity: 0
+    })
+  }
+
+  return (
+    <div className="image-carousel">
+      <div className="image-carousel-container">
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.img
+            key={currentIndex}
+            src={images[currentIndex]}
+            alt={`Project image ${currentIndex + 1}`}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="image-carousel-image"
+          />
+        </AnimatePresence>
+      </div>
+
+      {images.length > 1 && (
+        <>
+          <button
+            className="image-carousel-btn image-carousel-btn-prev"
+            onClick={goToPrev}
+            aria-label="Previous image"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button
+            className="image-carousel-btn image-carousel-btn-next"
+            onClick={goToNext}
+            aria-label="Next image"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+          <div className="image-carousel-dots">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                className={`image-carousel-dot ${idx === currentIndex ? 'active' : ''}`}
+                onClick={() => {
+                  setDirection(idx > currentIndex ? 1 : -1)
+                  setCurrentIndex(idx)
+                }}
+                aria-label={`Go to image ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => void }) {
@@ -422,43 +650,13 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             onClick={() => setSelectedId(null)}
           >
             <motion.div
-              className="work-modal"
+              className={`work-modal ${selectedProject.images && selectedProject.images.length > 0 ? 'work-modal-with-images' : ''}`}
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="work-modal-header">
-                <h3 className="work-modal-title">{selectedProject.name}</h3>
-                <span className="work-modal-year">{selectedProject.year}</span>
-              </div>
-              <p className="work-modal-details">
-                {selectedProject.details}
-              </p>
-              <div className="work-modal-tech">
-                {selectedProject.tech.map((t) => (
-                  <span key={t} className="work-modal-tag">{t}</span>
-                ))}
-              </div>
-              {selectedProject.links && selectedProject.links.length > 0 && (
-                <div className="work-modal-links">
-                  {selectedProject.links.map((link, index) => (
-                    <a
-                      key={index}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="work-modal-link"
-                    >
-                      {link.label}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M7 17L17 7M17 7H7M17 7V17" />
-                      </svg>
-                    </a>
-                  ))}
-                </div>
-              )}
               <button
                 className="work-modal-close"
                 onClick={() => setSelectedId(null)}
@@ -469,6 +667,43 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
+
+              {selectedProject.images && selectedProject.images.length > 0 && (
+                <ImageCarousel images={selectedProject.images} />
+              )}
+
+              <div className="work-modal-content">
+                <div className="work-modal-header">
+                  <h3 className="work-modal-title">{selectedProject.name}</h3>
+                  <span className="work-modal-year">{selectedProject.year}</span>
+                </div>
+                <p className="work-modal-details">
+                  {selectedProject.details}
+                </p>
+                <div className="work-modal-tech">
+                  {selectedProject.tech.map((t) => (
+                    <span key={t} className="work-modal-tag">{t}</span>
+                  ))}
+                </div>
+                {selectedProject.links && selectedProject.links.length > 0 && (
+                  <div className="work-modal-links">
+                    {selectedProject.links.map((link, index) => (
+                      <a
+                        key={index}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="work-modal-link"
+                      >
+                        {link.label}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M7 17L17 7M17 7H7M17 7V17" />
+                        </svg>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -771,7 +1006,7 @@ function LoadingSkeleton() {
 
 // Main content component (wrapped with EditModeProvider)
 function HomeContent() {
-  const { theme, toggle } = useTheme()
+  const { theme, preference, setPreference } = useTheme()
   const { setEditingSection } = useEditMode()
 
   // Fetch all content from Convex
@@ -815,7 +1050,7 @@ function HomeContent() {
 
   return (
     <div className="container">
-      <Header theme={theme} toggleTheme={toggle} location={profileData.location} />
+      <Header theme={theme} preference={preference} setPreference={setPreference} location={profileData.location} />
       <EditModeIndicator />
 
       <Profile

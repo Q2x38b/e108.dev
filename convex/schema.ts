@@ -70,6 +70,7 @@ export default defineSchema({
       label: v.string(),
       url: v.string(),
     }))),
+    images: v.optional(v.array(v.string())), // Array of image URLs
     order: v.number(),
     updatedAt: v.number(),
   }).index("by_order", ["order"]),

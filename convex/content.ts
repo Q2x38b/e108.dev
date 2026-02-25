@@ -170,6 +170,7 @@ export const updateProject = mutation({
       label: v.string(),
       url: v.string(),
     }))),
+    images: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -185,6 +186,7 @@ export const updateProject = mutation({
       updatedAt: Date.now(),
       ...(args.url !== undefined && { url: args.url }),
       ...(args.links !== undefined && { links: args.links }),
+      ...(args.images !== undefined && { images: args.images }),
     });
   },
 });
@@ -202,6 +204,7 @@ export const createProject = mutation({
       label: v.string(),
       url: v.string(),
     }))),
+    images: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -221,6 +224,7 @@ export const createProject = mutation({
       updatedAt: Date.now(),
       ...(args.url !== undefined && { url: args.url }),
       ...(args.links !== undefined && { links: args.links }),
+      ...(args.images !== undefined && { images: args.images }),
     });
   },
 });
