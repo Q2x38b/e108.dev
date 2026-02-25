@@ -364,6 +364,7 @@
   align-items: baseline;
   margin-bottom: 16px;
   gap: 16px;
+  padding-right: 36px;
 }
 
 .work-modal-title {
@@ -403,10 +404,10 @@
 
 .work-modal-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -414,7 +415,7 @@
   border: 1px solid var(--border);
   cursor: pointer;
   color: var(--text-secondary);
-  border-radius: 10px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   z-index: 10;
 }
@@ -428,8 +429,8 @@
 }
 
 .work-modal-close svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 .work-modal-links {
@@ -834,8 +835,8 @@
 
 .accordion-icon {
   position: relative;
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   color: var(--text-tertiary);
   transition: color 0.2s ease;
 }
@@ -843,21 +844,21 @@
 .accordion-icon-bar {
   position: absolute;
   background: currentColor;
-  border-radius: 1px;
+  border-radius: 0.5px;
   transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
 .accordion-icon-horizontal {
-  width: 14px;
-  height: 2px;
+  width: 10px;
+  height: 1.5px;
   top: 50%;
   left: 0;
   transform: translateY(-50%);
 }
 
 .accordion-icon-vertical {
-  width: 2px;
-  height: 14px;
+  width: 1.5px;
+  height: 10px;
   top: 0;
   left: 50%;
   transform: translateX(-50%);

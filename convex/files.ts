@@ -20,14 +20,16 @@ export const getUrl = query({
 // Store image metadata after upload
 export const saveImage = mutation({
   args: {
-    storageId: v.id("_storage"),
+    storageId: v.string(),
     fileName: v.string(),
     contentType: v.string(),
   },
   handler: async (ctx, args) => {
-    const url = await ctx.storage.getUrl(args.storageId);
+    // Cast the string storageId to the proper ID type
+    const storageId = args.storageId as any;
+    const url = await ctx.storage.getUrl(storageId);
     const imageId = await ctx.db.insert("images", {
-      storageId: args.storageId,
+      storageId: storageId,
       fileName: args.fileName,
       contentType: args.contentType,
       url: url || "",
