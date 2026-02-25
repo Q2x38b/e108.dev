@@ -3,6 +3,7 @@ import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ImageCropModal } from '../editor/ImageCropModal'
 
 interface ProjectLink {
   label: string
@@ -46,21 +47,30 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
   const [saving, setSaving] = useState(false)
   const [uploadingFor, setUploadingFor] = useState<number | null>(null)
   const [showImagePicker, setShowImagePicker] = useState<number | null>(null)
+  const [cropData, setCropData] = useState<{ file: File; projectIndex: number } | null>(null)
   const fileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({})
 
-  const handleImageUpload = useCallback(async (projectIndex: number, file: File) => {
+  const handleFileSelect = useCallback((projectIndex: number, file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Please upload an image file')
       return
     }
+    setCropData({ file, projectIndex })
+  }, [])
 
+  const handleCropComplete = useCallback(async (croppedFile: File) => {
+    if (!cropData) return
+
+    const { projectIndex } = cropData
+    setCropData(null)
     setUploadingFor(projectIndex)
+
     try {
       const uploadUrl = await generateUploadUrl()
       const result = await fetch(uploadUrl, {
         method: 'POST',
-        headers: { 'Content-Type': file.type },
-        body: file,
+        headers: { 'Content-Type': croppedFile.type },
+        body: croppedFile,
       })
 
       if (!result.ok) throw new Error('Upload failed')
@@ -68,8 +78,8 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
       const { storageId } = await result.json()
       const savedImage = await saveImage({
         storageId,
-        fileName: file.name,
-        contentType: file.type,
+        fileName: croppedFile.name,
+        contentType: croppedFile.type,
       })
 
       if (savedImage?.url) {
@@ -83,7 +93,11 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
     } finally {
       setUploadingFor(null)
     }
-  }, [generateUploadUrl, saveImage, localProjects])
+  }, [cropData, generateUploadUrl, saveImage, localProjects])
+
+  const handleCropCancel = useCallback(() => {
+    setCropData(null)
+  }, [])
 
   const addImageFromLibrary = (projectIndex: number, url: string) => {
     const updated = [...localProjects]
@@ -341,7 +355,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
                       accept="image/*"
                       onChange={(e) => {
                         const file = e.target.files?.[0]
-                        if (file) handleImageUpload(index, file)
+                        if (file) handleFileSelect(index, file)
                         e.target.value = ''
                       }}
                       style={{ display: 'none' }}
@@ -446,6 +460,17 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
           </button>
         </div>
       </motion.div>
+
+      {/* Image Crop Modal */}
+      <AnimatePresence>
+        {cropData && (
+          <ImageCropModal
+            file={cropData.file}
+            onCropComplete={handleCropComplete}
+            onCancel={handleCropCancel}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

@@ -191,9 +191,6 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
         aria-expanded={isOpen}
       >
         {currentIcon}
-        <svg className="theme-toggle-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
       </motion.button>
       <AnimatePresence>
         {isOpen && (
@@ -212,14 +209,9 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
                   setPreference(option.value)
                   setIsOpen(false)
                 }}
+                title={option.label}
               >
                 <span className="theme-dropdown-icon">{option.icon}</span>
-                <span className="theme-dropdown-label">{option.label}</span>
-                {preference === option.value && (
-                  <svg className="theme-dropdown-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
               </button>
             ))}
           </motion.div>
@@ -497,6 +489,19 @@ interface ProjectData {
 function ImageCarousel({ images }: { images: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+
+  // Autoplay every 5 seconds
+  useEffect(() => {
+    if (!images || images.length <= 1 || isPaused) return
+
+    const interval = setInterval(() => {
+      setDirection(1)
+      setCurrentIndex((prev) => (prev + 1) % images.length)
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [images, isPaused])
 
   if (!images || images.length === 0) return null
 
@@ -526,7 +531,11 @@ function ImageCarousel({ images }: { images: string[] }) {
   }
 
   return (
-    <div className="image-carousel">
+    <div
+      className="image-carousel"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div className="image-carousel-container">
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.img

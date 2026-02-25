@@ -33,7 +33,7 @@ export function ImageCropModal({ file, onCropComplete, onCancel }: ImageCropModa
   const [crop, setCrop] = useState<Crop>()
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
   const [imageUrl, setImageUrl] = useState<string>('')
-  const [aspect, setAspect] = useState<number | undefined>(16 / 9)
+  const [aspect, setAspect] = useState<number | undefined>(16 / 10)
   const imgRef = useRef<HTMLImageElement>(null)
 
   // Load the image when component mounts
@@ -117,6 +117,7 @@ export function ImageCropModal({ file, onCropComplete, onCancel }: ImageCropModa
   }
 
   const aspectOptions = [
+    { label: '16:10', value: 16 / 10 },
     { label: '16:9', value: 16 / 9 },
     { label: '4:3', value: 4 / 3 },
     { label: '1:1', value: 1 },
