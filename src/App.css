@@ -488,9 +488,9 @@
 }
 
 .image-carousel-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: var(--bg);
   border: 1px solid var(--border);
   cursor: pointer;
@@ -502,13 +502,13 @@
 }
 
 .image-carousel-btn:hover {
-  background: var(--bg-secondary);
+  background: rgba(128, 128, 128, 0.1);
   color: var(--text);
 }
 
 .image-carousel-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
 }
 
 .image-carousel-dots {
