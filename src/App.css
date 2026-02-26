@@ -478,13 +478,19 @@
   display: block;
 }
 
-.image-carousel-btn {
+.image-carousel-nav {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+
+.image-carousel-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   background: var(--bg);
   border: 1px solid var(--border);
   cursor: pointer;
@@ -493,31 +499,16 @@
   justify-content: center;
   color: var(--text-secondary);
   transition: all 0.2s ease;
-  z-index: 5;
-  opacity: 0;
-}
-
-.image-carousel:hover .image-carousel-btn {
-  opacity: 1;
 }
 
 .image-carousel-btn:hover {
-  background: var(--text);
-  color: var(--bg);
-  border-color: transparent;
+  background: var(--bg-secondary);
+  color: var(--text);
 }
 
 .image-carousel-btn svg {
   width: 18px;
   height: 18px;
-}
-
-.image-carousel-btn-prev {
-  left: 12px;
-}
-
-.image-carousel-btn-next {
-  right: 12px;
 }
 
 .image-carousel-dots {

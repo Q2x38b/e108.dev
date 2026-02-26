@@ -555,24 +555,26 @@ function ImageCarousel({ images }: { images: string[] }) {
 
       {images.length > 1 && (
         <>
-          <button
-            className="image-carousel-btn image-carousel-btn-prev"
-            onClick={goToPrev}
-            aria-label="Previous image"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <button
-            className="image-carousel-btn image-carousel-btn-next"
-            onClick={goToNext}
-            aria-label="Next image"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
+          <div className="image-carousel-nav">
+            <button
+              className="image-carousel-btn"
+              onClick={goToPrev}
+              aria-label="Previous image"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              className="image-carousel-btn"
+              onClick={goToNext}
+              aria-label="Next image"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
           <div className="image-carousel-dots">
             {images.map((_, idx) => (
               <button
