@@ -6,7 +6,6 @@ import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Footer } from '../components/Footer'
-import { Id } from '../../convex/_generated/dataModel'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -17,7 +16,7 @@ type ItemType = 'image' | 'quote' | 'text'
 type ItemSize = 'small' | 'medium' | 'large'
 
 interface ShelfItem {
-  _id: Id<"shelfItems">
+  _id: string
   type: ItemType
   // Image fields
   storageId?: string
@@ -284,12 +283,12 @@ export default function Shelf() {
     }
   }
 
-  const handleDelete = async (id: Id<"shelfItems">) => {
+  const handleDelete = async (id: string) => {
     if (!sessionToken) return
     if (!confirm('Are you sure you want to delete this item?')) return
 
     try {
-      await removeItem({ token: sessionToken, id })
+      await removeItem({ token: sessionToken, id: id as any })
       setSelectedItem(null)
     } catch (error) {
       console.error('Delete error:', error)
