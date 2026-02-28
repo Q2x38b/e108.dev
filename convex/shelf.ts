@@ -6,15 +6,26 @@ import { requireAuth } from "./auth";
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const items = await ctx.db
-      .query("shelfItems")
-      .withIndex("by_uploaded")
-      .order("desc")
-      .collect();
+    // Get all items
+    const allItems = await ctx.db.query("shelfItems").collect();
+
+    // Sort: items with order field first (by order asc), then items without order (by uploadedAt desc)
+    const sortedItems = allItems.sort((a, b) => {
+      // Both have order - sort by order ascending
+      if (a.order !== undefined && b.order !== undefined) {
+        return a.order - b.order;
+      }
+      // Only a has order - a comes first
+      if (a.order !== undefined) return -1;
+      // Only b has order - b comes first
+      if (b.order !== undefined) return 1;
+      // Neither has order - sort by uploadedAt descending
+      return b.uploadedAt - a.uploadedAt;
+    });
 
     // Get fresh URLs for image items
     const itemsWithUrls = await Promise.all(
-      items.map(async (item) => {
+      sortedItems.map(async (item) => {
         if (item.type === "image" && item.storageId) {
           return {
             ...item,
@@ -170,5 +181,29 @@ export const remove = mutation({
       }
       await ctx.db.delete(args.id);
     }
+  },
+});
+
+// Reorder items (batch update order field)
+export const reorder = mutation({
+  args: {
+    token: v.string(),
+    items: v.array(v.object({
+      id: v.id("shelfItems"),
+      order: v.number(),
+    })),
+  },
+  handler: async (ctx, args) => {
+    const isAuthed = await requireAuth(ctx, args.token);
+    if (!isAuthed) {
+      throw new Error("Unauthorized");
+    }
+
+    // Update order for each item
+    await Promise.all(
+      args.items.map(({ id, order }) =>
+        ctx.db.patch(id, { order })
+      )
+    );
   },
 });

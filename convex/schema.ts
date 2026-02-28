@@ -120,6 +120,7 @@ export default defineSchema({
     aspectRatio: v.optional(v.number()), // width / height for layout calculations
     size: v.optional(v.union(v.literal("small"), v.literal("medium"), v.literal("large"))),
     backgroundColor: v.optional(v.string()),
+    order: v.optional(v.number()), // For drag-and-drop ordering
     uploadedAt: v.number(),
-  }).index("by_uploaded", ["uploadedAt"]),
+  }).index("by_uploaded", ["uploadedAt"]).index("by_order", ["order"]),
 });
