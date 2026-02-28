@@ -23,7 +23,7 @@ const stagger = {
 }
 
 // Navigation links
-const navLinks = ['Work', 'Experience', 'Skills']
+const navLinks: string[] = []
 
 // Accordion component
 function Accordion({ title, content, isOpen, onToggle }: {
@@ -249,15 +249,6 @@ function Header({ theme, preference, setPreference, location }: {
     >
       {/* Desktop navigation */}
       <nav className="nav nav-desktop">
-        {navLinks.map((link) => (
-          <span
-            key={link}
-            className="nav-link"
-            onClick={() => scrollToSection(link)}
-          >
-            {link}
-          </span>
-        ))}
         <Link to="/blog" className="nav-link">Writing</Link>
         <Link to="/shelf" className="nav-link">Shelf</Link>
       </nav>
@@ -309,15 +300,6 @@ function Header({ theme, preference, setPreference, location }: {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {navLinks.map((link) => (
-              <span
-                key={link}
-                className="nav-link-mobile"
-                onClick={() => scrollToSection(link)}
-              >
-                {link}
-              </span>
-            ))}
             <Link to="/blog" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Writing</Link>
             <Link to="/shelf" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Shelf</Link>
           </motion.nav>

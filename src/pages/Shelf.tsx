@@ -38,61 +38,6 @@ interface ShelfItem {
   uploadedAt: number
 }
 
-interface MasonryItem extends ShelfItem {
-  columnSpan: number
-  rowSpan: number
-}
-
-function calculateMasonryLayout(items: ShelfItem[]): MasonryItem[] {
-  return items.map((item) => {
-    let columnSpan = 1
-    let rowSpan = 1
-
-    if (item.type === 'image' && item.aspectRatio) {
-      if (item.aspectRatio > 1.5) {
-        columnSpan = 2
-        rowSpan = 1
-      } else if (item.aspectRatio < 0.7) {
-        columnSpan = 1
-        rowSpan = 2
-      } else if (item.aspectRatio < 0.85) {
-        columnSpan = 1
-        rowSpan = 2
-      }
-    } else if (item.type === 'quote') {
-      // Size-based spans for quotes
-      const size = item.size || 'medium'
-      if (size === 'large') {
-        columnSpan = 2
-        rowSpan = 2
-      } else if (size === 'medium') {
-        columnSpan = 1
-        rowSpan = 2
-      } else {
-        columnSpan = 1
-        rowSpan = 1
-      }
-    } else if (item.type === 'text') {
-      const size = item.size || 'small'
-      if (size === 'large') {
-        columnSpan = 2
-        rowSpan = 1
-      } else if (size === 'medium') {
-        columnSpan = 1
-        rowSpan = 1
-      } else {
-        columnSpan = 1
-        rowSpan = 1
-      }
-    }
-
-    return {
-      ...item,
-      columnSpan,
-      rowSpan,
-    }
-  })
-}
 
 const BACKGROUND_COLORS = [
   { name: 'Default', value: '' },
@@ -135,9 +80,9 @@ export default function Shelf() {
   const [itemSize, setItemSize] = useState<ItemSize>('medium')
   const [backgroundColor, setBackgroundColor] = useState('')
 
-  const masonryItems = useMemo(() => {
+  const shelfItems = useMemo(() => {
     if (!items) return []
-    return calculateMasonryLayout(items as ShelfItem[])
+    return items as ShelfItem[]
   }, [items])
 
   const resetForm = () => {
@@ -324,18 +269,12 @@ export default function Shelf() {
     return ['#2d3748', '#1a1a2e'].includes(color)
   }
 
-  const renderItem = (item: MasonryItem, index: number) => {
-    const itemStyle: React.CSSProperties = {
-      gridColumn: `span ${item.columnSpan}`,
-      gridRow: `span ${item.rowSpan}`,
-    }
-
+  const renderItem = (item: ShelfItem, index: number) => {
     if (item.type === 'image') {
       return (
         <motion.div
           key={item._id}
           className="shelf-item shelf-item-image"
-          style={itemStyle}
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
@@ -364,8 +303,8 @@ export default function Shelf() {
       return (
         <motion.div
           key={item._id}
-          className={`shelf-item shelf-item-quote ${isDark ? 'dark-bg' : ''}`}
-          style={{ ...itemStyle, ...bgStyle }}
+          className={`shelf-item shelf-item-quote shelf-item-${item.size || 'medium'} ${isDark ? 'dark-bg' : ''}`}
+          style={bgStyle}
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
@@ -394,8 +333,8 @@ export default function Shelf() {
       return (
         <motion.div
           key={item._id}
-          className={`shelf-item shelf-item-text ${isDark ? 'dark-bg' : ''}`}
-          style={{ ...itemStyle, ...bgStyle }}
+          className={`shelf-item shelf-item-text shelf-item-${item.size || 'small'} ${isDark ? 'dark-bg' : ''}`}
+          style={bgStyle}
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
@@ -474,11 +413,11 @@ export default function Shelf() {
           <div className="blog-loading-spinner-container">
             <div className="blog-loading-spinner" />
           </div>
-        ) : masonryItems.length === 0 ? (
+        ) : shelfItems.length === 0 ? (
           <p className="shelf-empty">No items yet.</p>
         ) : (
           <div className="shelf-masonry">
-            {masonryItems.map((item, index) => renderItem(item, index))}
+            {shelfItems.map((item, index) => renderItem(item, index))}
           </div>
         )}
       </main>

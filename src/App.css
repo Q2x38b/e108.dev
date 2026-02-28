@@ -1845,6 +1845,18 @@
   filter: invert(1);
 }
 
+/* Mobile footer signature fix */
+@media (max-width: 520px) {
+  .footer-signature {
+    margin-top: 16px;
+    margin-bottom: 0;
+  }
+
+  .signature-img {
+    height: 80px;
+  }
+}
+
 /* Simple Post List (like "thoughts" screenshot) */
 .post-list-simple {
   list-style: none;
@@ -5986,7 +5998,7 @@
 
 /* Artistic title for shelf page */
 .shelf-artistic-title {
-  font-family: 'Times New Roman', 'Georgia', 'Palatino Linotype', serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-size: 3.5rem;
   font-weight: 400;
   font-style: italic;
@@ -6005,44 +6017,28 @@
   padding: 60px 0;
 }
 
-/* Masonry Grid */
+/* Masonry Grid using CSS Columns */
 .shelf-masonry {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 180px;
-  gap: 12px;
+  column-count: 4;
+  column-gap: 16px;
 }
 
 @media (max-width: 1024px) {
   .shelf-masonry {
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 160px;
+    column-count: 3;
   }
 }
 
 @media (max-width: 768px) {
   .shelf-masonry {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 140px;
+    column-count: 2;
+    column-gap: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .shelf-masonry {
-    grid-template-columns: 1fr;
-    grid-auto-rows: auto;
-  }
-
-  .shelf-item {
-    grid-column: span 1 !important;
-    grid-row: span 1 !important;
-    aspect-ratio: auto;
-    height: auto;
-  }
-
-  .shelf-item img {
-    position: relative;
-    height: auto;
+    column-count: 1;
   }
 }
 
@@ -6053,6 +6049,14 @@
   cursor: pointer;
   background: var(--bg-secondary);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  break-inside: avoid;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .shelf-item {
+    margin-bottom: 12px;
+  }
 }
 
 .shelf-item:hover {
@@ -6066,8 +6070,7 @@
 
 .shelf-item img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
 }
 
@@ -6318,10 +6321,22 @@
 /* Quote Item Styles */
 .shelf-item-quote {
   background: var(--bg-secondary);
-  padding: 20px;
+  padding: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.shelf-item-quote.shelf-item-small {
+  padding: 16px;
+}
+
+.shelf-item-quote.shelf-item-medium {
+  padding: 24px;
+}
+
+.shelf-item-quote.shelf-item-large {
+  padding: 32px;
 }
 
 .shelf-item-quote.dark-bg {
@@ -6353,6 +6368,14 @@
   line-height: 1.6;
   color: var(--text);
   margin: 0;
+}
+
+.shelf-item-small .shelf-quote-content blockquote {
+  font-size: 0.9rem;
+}
+
+.shelf-item-large .shelf-quote-content blockquote {
+  font-size: 1.15rem;
 }
 
 .shelf-item-quote.dark-bg blockquote {
@@ -6392,6 +6415,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.shelf-item-text.shelf-item-small {
+  padding: 12px;
+}
+
+.shelf-item-text.shelf-item-medium {
+  padding: 20px;
+}
+
+.shelf-item-text.shelf-item-large {
+  padding: 28px;
 }
 
 .shelf-item-text.dark-bg {
