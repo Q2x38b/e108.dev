@@ -405,7 +405,7 @@ export default function Shelf() {
       </motion.header>
 
       <div className="blog-list-title">
-        <h1 className="shelf-artistic-title">shelf.</h1>
+        <h1 className="shelf-artistic-title">shelf</h1>
       </div>
 
       <main className="blog-list-content shelf-content">

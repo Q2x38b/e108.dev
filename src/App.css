@@ -5999,11 +5999,23 @@
 /* Artistic title for shelf page */
 .shelf-artistic-title {
   font-family: 'Geist Mono', monospace;
-  font-size: 4rem;
+  font-size: 2rem;
   font-weight: 700;
   font-style: normal;
   color: var(--text);
   letter-spacing: -0.02em;
+}
+
+/* Round period after shelf */
+.shelf-artistic-title::after {
+  content: '';
+  display: inline-block;
+  width: 0.35em;
+  height: 0.35em;
+  background: currentColor;
+  border-radius: 50%;
+  margin-left: 0.1em;
+  vertical-align: 0.15em;
 }
 
 .shelf-content {
@@ -6019,26 +6031,20 @@
 
 /* Masonry Grid using CSS Columns */
 .shelf-masonry {
-  column-count: 4;
-  column-gap: 16px;
+  column-count: 3;
+  column-gap: 20px;
 }
 
 @media (max-width: 1024px) {
   .shelf-masonry {
-    column-count: 3;
-  }
-}
-
-@media (max-width: 768px) {
-  .shelf-masonry {
     column-count: 2;
-    column-gap: 12px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .shelf-masonry {
     column-count: 1;
+    column-gap: 16px;
   }
 }
 
