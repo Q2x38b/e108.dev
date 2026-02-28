@@ -5984,24 +5984,14 @@
 /* Shelf Page Styles    */
 /* ==================== */
 
-.shelf-layout {
-  min-height: 100vh;
-  background: var(--bg);
-  padding: 0 24px;
-  padding-bottom: 120px;
-}
-
-.shelf-title {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 0 32px;
-}
-
-.shelf-title h1 {
-  font-size: 2.5rem;
-  font-weight: 600;
+/* Artistic title for shelf page */
+.shelf-artistic-title {
+  font-family: 'Times New Roman', 'Georgia', 'Palatino Linotype', serif;
+  font-size: 3.5rem;
+  font-weight: 400;
+  font-style: italic;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
 }
 
 .shelf-content {

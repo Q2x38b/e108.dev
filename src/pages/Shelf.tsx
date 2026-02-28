@@ -105,7 +105,7 @@ const BACKGROUND_COLORS = [
 ]
 
 export default function Shelf() {
-  const { theme, setPreference } = useTheme()
+  const { theme, toggle } = useTheme()
   const { sessionToken } = useAuth()
   const items = useQuery(api.shelf.list)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
@@ -391,7 +391,7 @@ export default function Shelf() {
   }
 
   return (
-    <div className="shelf-layout">
+    <div className="blog-list-layout">
       <motion.header
         className="blog-header blog-list-header"
         initial={{ opacity: 0 }}
@@ -406,7 +406,7 @@ export default function Shelf() {
         <div className="header-right">
           <button
             className="theme-toggle"
-            onClick={() => setPreference(theme === 'light' ? 'dark' : 'light')}
+            onClick={toggle}
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (
@@ -442,11 +442,11 @@ export default function Shelf() {
         </div>
       </motion.header>
 
-      <div className="shelf-title">
-        <h1>Shelf</h1>
+      <div className="blog-list-title">
+        <h1 className="shelf-artistic-title">shelf.</h1>
       </div>
 
-      <main className="shelf-content">
+      <main className="blog-list-content shelf-content">
         {items === undefined ? (
           <div className="blog-loading-spinner-container">
             <div className="blog-loading-spinner" />

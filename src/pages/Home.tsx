@@ -101,7 +101,11 @@ export function useTheme() {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [preference])
 
-  return { theme: resolvedTheme, preference, setPreference }
+  const toggle = () => {
+    setPreference(resolvedTheme === 'light' ? 'dark' : 'light')
+  }
+
+  return { theme: resolvedTheme, preference, setPreference, toggle }
 }
 
 // Theme dropdown component
