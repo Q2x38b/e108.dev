@@ -989,27 +989,29 @@
 
 /* Add Post Button */
 .add-post-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--hover-bg);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   transition: background 0.2s ease, color 0.2s ease;
 }
 
 @media (hover: hover) {
   .add-post-btn:hover {
-    background: var(--border);
+    background: var(--hover-bg);
     color: var(--text);
   }
 }
 
 .add-post-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 /* Blog Article */
@@ -6015,8 +6017,8 @@
   height: 0.18em;
   background: currentColor;
   border-radius: 50%;
-  margin-left: 0.15em;
-  vertical-align: 0.25em;
+  margin-left: 0.12em;
+  vertical-align: baseline;
 }
 
 .shelf-content {
