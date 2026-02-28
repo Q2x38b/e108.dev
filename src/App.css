@@ -153,20 +153,58 @@
 }
 
 .profile-image-wrapper {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   margin-bottom: 20px;
   position: relative;
+  border-radius: 12px;
+  padding: 2px;
+  overflow: hidden;
+}
+
+.profile-image-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background:
+    radial-gradient(circle at 30% 20%, #1a3a5c 0%, transparent 40%),
+    radial-gradient(circle at 70% 80%, #2a8a7a 0%, transparent 40%),
+    radial-gradient(circle at 20% 70%, #3a9a6a 0%, transparent 40%),
+    radial-gradient(circle at 80% 30%, #1e4a6e 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, #1f5a5a 0%, transparent 60%),
+    linear-gradient(145deg, #152535 0%, #1a4a5a 35%, #2a7a6a 70%, #3a8a5a 100%);
+  background-size: 100% 100%;
+  animation: gradientMorph 6s ease-in-out infinite;
+  z-index: 0;
 }
 
 .profile-image {
-  width: 100%;
-  height: 100%;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   object-fit: cover;
   object-position: center 15%;
-  background: linear-gradient(145deg, #e8e8e8 0%, #d0d0d0 50%, #c8c8c8 100%);
-  border: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+@keyframes gradientMorph {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(90deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1);
+  }
+  75% {
+    transform: rotate(270deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
 }
 
 .profile-name {
@@ -3980,9 +4018,9 @@
 }
 
 .skeleton-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   background: var(--hover-bg);
   margin-bottom: 20px;
   animation: skeleton-pulse 1.5s ease-in-out infinite;
