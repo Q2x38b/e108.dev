@@ -6000,9 +6000,9 @@
 
 /* Artistic title for shelf page */
 .shelf-artistic-title {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Syne', sans-serif;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 800;
   font-style: normal;
   color: var(--text);
   letter-spacing: -0.02em;
