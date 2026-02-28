@@ -6062,12 +6062,13 @@
   }
 }
 
-.shelf-item:hover {
+.shelf-item-image:hover {
   transform: scale(1.02);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
 }
 
-[data-theme="dark"] .shelf-item:hover {
+[data-theme="dark"] .shelf-item-image:hover {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
@@ -6708,29 +6709,64 @@
   height: 15px;
 }
 
-/* Edit Mode Grid */
-.shelf-edit-grid {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  column-count: unset !important;
+/* Reorder List (vertical list for drag-and-drop) */
+.shelf-reorder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-@media (max-width: 900px) {
-  .shelf-edit-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .shelf-edit-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.shelf-edit-grid .shelf-item {
+.shelf-reorder-list .shelf-item {
   break-inside: unset;
   margin-bottom: 0;
+  max-height: 200px;
+  overflow: hidden;
+}
+
+.shelf-reorder-list .shelf-item-image {
+  height: auto;
+}
+
+.shelf-reorder-list .shelf-item-image img {
+  max-height: 180px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* Shelf Item Edit Button (for quotes/text) */
+.shelf-item-edit-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+.shelf-item:hover .shelf-item-edit-btn {
+  opacity: 1;
+}
+
+.shelf-item-edit-btn svg {
+  width: 14px;
+  height: 14px;
+  color: white;
+}
+
+.shelf-item-edit-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
 }
 
 /* Shelf Item Edit Mode */
