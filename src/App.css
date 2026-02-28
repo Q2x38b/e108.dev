@@ -5998,12 +5998,12 @@
 
 /* Artistic title for shelf page */
 .shelf-artistic-title {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 3.5rem;
-  font-weight: 400;
-  font-style: italic;
+  font-family: 'Geist Mono', monospace;
+  font-size: 4rem;
+  font-weight: 700;
+  font-style: normal;
   color: var(--text);
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
 }
 
 .shelf-content {
