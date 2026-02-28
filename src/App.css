@@ -6000,12 +6000,12 @@
 
 /* Artistic title for shelf page */
 .shelf-artistic-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  font-style: normal;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.5rem;
+  font-weight: 500;
+  font-style: italic;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
   margin-bottom: 32px;
 }
 
