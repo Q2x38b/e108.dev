@@ -6153,6 +6153,39 @@
   font-size: 0.95rem;
 }
 
+/* Image Preview */
+.shelf-image-preview {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.shelf-image-preview img {
+  width: 100%;
+  max-height: 250px;
+  object-fit: contain;
+  display: block;
+}
+
+.shelf-preview-change {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.shelf-preview-change:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
 .shelf-upload-caption {
   margin-top: 16px;
 }

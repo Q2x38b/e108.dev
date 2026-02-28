@@ -121,6 +121,10 @@ export default function Shelf() {
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Image preview states
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
   // Form states
   const [uploadCaption, setUploadCaption] = useState('')
   const [quoteText, setQuoteText] = useState('')
@@ -146,6 +150,12 @@ export default function Shelf() {
     setItemSize('medium')
     setBackgroundColor('')
     setAddType('image')
+    // Clear file preview
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+    setPendingFile(null)
+    setPreviewUrl(null)
   }
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -158,40 +168,53 @@ export default function Shelf() {
     }
   }, [])
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
 
     const files = e.dataTransfer.files
     if (files && files[0]) {
-      await handleFileUpload(files[0])
+      handleFileSelect(files[0])
     }
-  }, [sessionToken, uploadCaption])
+  }, [])
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      await handleFileUpload(file)
+      handleFileSelect(file)
     }
   }
 
-  const handleFileUpload = async (file: File) => {
-    if (!sessionToken) return
+  const handleFileSelect = (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file')
       return
     }
 
+    // Clear previous preview
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+
+    // Create preview URL and store the file
+    const url = URL.createObjectURL(file)
+    setPreviewUrl(url)
+    setPendingFile(file)
+  }
+
+  const handleAddImage = async () => {
+    if (!sessionToken || !pendingFile) return
+
     setIsUploading(true)
     try {
-      const aspectRatio = await getImageAspectRatio(file)
+      const aspectRatio = await getImageAspectRatio(pendingFile)
       const uploadUrl = await generateUploadUrl()
 
       const result = await fetch(uploadUrl, {
         method: 'POST',
-        headers: { 'Content-Type': file.type },
-        body: file,
+        headers: { 'Content-Type': pendingFile.type },
+        body: pendingFile,
       })
 
       if (!result.ok) {
@@ -203,8 +226,8 @@ export default function Shelf() {
       await addImage({
         token: sessionToken,
         storageId,
-        fileName: file.name,
-        contentType: file.type,
+        fileName: pendingFile.name,
+        contentType: pendingFile.type,
         caption: uploadCaption || undefined,
         aspectRatio,
       })
@@ -519,28 +542,40 @@ export default function Shelf() {
               {/* Image Upload */}
               {addType === 'image' && (
                 <>
-                  <div
-                    className={`shelf-upload-zone ${dragActive ? 'active' : ''}`}
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      style={{ display: 'none' }}
-                    />
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <p>Drag & drop or click to upload</p>
-                  </div>
+                  {previewUrl ? (
+                    <div className="shelf-image-preview">
+                      <img src={previewUrl} alt="Preview" />
+                      <button
+                        className="shelf-preview-change"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Change image
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className={`shelf-upload-zone ${dragActive ? 'active' : ''}`}
+                      onDragEnter={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDragOver={handleDrag}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      <p>Drag & drop or click to upload</p>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileInputChange}
+                    style={{ display: 'none' }}
+                  />
                   <div className="shelf-upload-caption">
                     <input
                       type="text"
@@ -657,11 +692,29 @@ export default function Shelf() {
                 >
                   Cancel
                 </button>
-                {addType !== 'image' && (
+                {addType === 'image' && pendingFile && (
                   <button
                     className="shelf-modal-submit"
-                    onClick={addType === 'quote' ? handleAddQuote : handleAddText}
-                    disabled={addType === 'quote' ? !quoteText.trim() : !textContent.trim()}
+                    onClick={handleAddImage}
+                    disabled={isUploading}
+                  >
+                    Add
+                  </button>
+                )}
+                {addType === 'quote' && (
+                  <button
+                    className="shelf-modal-submit"
+                    onClick={handleAddQuote}
+                    disabled={!quoteText.trim() || isUploading}
+                  >
+                    Add
+                  </button>
+                )}
+                {addType === 'text' && (
+                  <button
+                    className="shelf-modal-submit"
+                    onClick={handleAddText}
+                    disabled={!textContent.trim() || isUploading}
                   >
                     Add
                   </button>
