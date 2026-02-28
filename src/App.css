@@ -6004,18 +6004,19 @@
   font-style: normal;
   color: var(--text);
   letter-spacing: -0.02em;
+  margin-bottom: 32px;
 }
 
 /* Round period after shelf */
 .shelf-artistic-title::after {
   content: '';
   display: inline-block;
-  width: 0.35em;
-  height: 0.35em;
+  width: 0.18em;
+  height: 0.18em;
   background: currentColor;
   border-radius: 50%;
-  margin-left: 0.1em;
-  vertical-align: 0.15em;
+  margin-left: 0.15em;
+  vertical-align: 0.25em;
 }
 
 .shelf-content {
@@ -6031,17 +6032,11 @@
 
 /* Masonry Grid using CSS Columns */
 .shelf-masonry {
-  column-count: 3;
-  column-gap: 20px;
+  column-count: 2;
+  column-gap: 24px;
 }
 
-@media (max-width: 1024px) {
-  .shelf-masonry {
-    column-count: 2;
-  }
-}
-
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .shelf-masonry {
     column-count: 1;
     column-gap: 16px;
