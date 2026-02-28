@@ -99,4 +99,27 @@ export default defineSchema({
     url: v.string(),
     uploadedAt: v.number(),
   }).index("by_uploaded", ["uploadedAt"]),
+
+  // Shelf items for picture collage page (images, quotes, text)
+  shelfItems: defineTable({
+    type: v.union(v.literal("image"), v.literal("quote"), v.literal("text")),
+    // Image fields
+    storageId: v.optional(v.id("_storage")),
+    fileName: v.optional(v.string()),
+    contentType: v.optional(v.string()),
+    url: v.optional(v.string()),
+    // Quote fields
+    quoteText: v.optional(v.string()),
+    quoteAuthor: v.optional(v.string()),
+    quoteSource: v.optional(v.string()),
+    // Text fields
+    textContent: v.optional(v.string()),
+    textLabel: v.optional(v.string()),
+    // Common fields
+    caption: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()), // width / height for layout calculations
+    size: v.optional(v.union(v.literal("small"), v.literal("medium"), v.literal("large"))),
+    backgroundColor: v.optional(v.string()),
+    uploadedAt: v.number(),
+  }).index("by_uploaded", ["uploadedAt"]),
 });

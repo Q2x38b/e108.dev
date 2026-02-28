@@ -255,6 +255,7 @@ function Header({ theme, preference, setPreference, location }: {
           </span>
         ))}
         <Link to="/blog" className="nav-link">Writing</Link>
+        <Link to="/shelf" className="nav-link">Shelf</Link>
       </nav>
 
       {/* Mobile menu toggle */}
@@ -314,6 +315,7 @@ function Header({ theme, preference, setPreference, location }: {
               </span>
             ))}
             <Link to="/blog" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Writing</Link>
+            <Link to="/shelf" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Shelf</Link>
           </motion.nav>
         )}
       </AnimatePresence>

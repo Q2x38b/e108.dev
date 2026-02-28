@@ -13,6 +13,7 @@ import type * as content from "../content.js";
 import type * as files from "../files.js";
 import type * as migrate from "../migrate.js";
 import type * as posts from "../posts.js";
+import type * as shelf from "../shelf.js";
 import type * as views from "../views.js";
 
 import type {
@@ -27,6 +28,7 @@ declare const fullApi: ApiFromModules<{
   files: typeof files;
   migrate: typeof migrate;
   posts: typeof posts;
+  shelf: typeof shelf;
   views: typeof views;
 }>;
 
