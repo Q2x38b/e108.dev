@@ -867,8 +867,9 @@
 /* Concise View Button and Tooltip */
 .concise-btn-wrapper {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
 }
 
 .concise-view-btn {
@@ -911,6 +912,8 @@
   white-space: nowrap;
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  /* Ensure tooltip doesn't affect wrapper width */
+  width: max-content;
 }
 
 .concise-tooltip::after {
@@ -921,6 +924,13 @@
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-top-color: #1a1a1a;
+}
+
+/* Shelf page full-width blur */
+.shelf-page .blog-blur-bottom {
+  max-width: none;
+  left: 0;
+  transform: none;
 }
 
 /* Status badge */
