@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { useQuery, useConvex } from 'convex/react'
 import { api } from '../../convex/_generated/api'
@@ -816,8 +816,10 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
+  const [showTooltip, setShowTooltip] = useState(false)
   const { isAuthenticated, logout } = useAuth()
   const { isEditMode, toggleEditMode } = useEditMode()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -875,6 +877,36 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
           </div>
           <div className="footer-right">
+            <div
+              className="concise-btn-wrapper"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <motion.button
+                className="concise-view-btn"
+                onClick={() => navigate('/?concise=t')}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Quick View"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              </motion.button>
+              <AnimatePresence>
+                {showTooltip && (
+                  <motion.div
+                    className="concise-tooltip"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    Quick View
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <span className="footer-time">{formatTime(time)}</span>
 
             <SignedIn>
@@ -1048,9 +1080,10 @@ function ConciseView({ profile, about, theme, preference, setPreference }: {
             <a
               key={link.platform}
               href={link.url}
-              className="concise-link"
+              className="concise-link-icon"
               target={link.url.startsWith('mailto:') ? undefined : '_blank'}
               rel={link.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+              title={link.label}
             >
               {link.platform === 'github' && (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1070,7 +1103,6 @@ function ConciseView({ profile, about, theme, preference, setPreference }: {
                   <polyline points="22,6 12,13 2,6" />
                 </svg>
               )}
-              {link.label}
             </a>
           ))}
         </div>
