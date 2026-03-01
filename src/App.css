@@ -674,7 +674,11 @@
   right: 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 .concise-back-btn {
@@ -760,8 +764,8 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: 50%;
   color: var(--text-secondary);
   text-decoration: none;
@@ -775,8 +779,7 @@
 
 @media (hover: hover) {
   .concise-link-icon:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--text-tertiary);
+    background: var(--hover-bg);
     color: var(--text);
   }
 }
