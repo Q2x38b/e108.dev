@@ -5927,18 +5927,45 @@
   display: none;
 }
 
-/* Table/List View */
+/* Table/List View - Grouped by Year */
 .blog-table-list {
   max-width: 800px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
+/* Year Group Container */
+.blog-year-group {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.blog-year-group:last-child {
+  margin-bottom: 0;
+}
+
+.blog-year-header {
+  padding-top: 12px;
+}
+
+.blog-year-label {
+  font-size: 0.95rem;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+.blog-year-entries {
+  border-top: 1px solid var(--border);
+}
+
 .blog-table-row {
   display: grid;
-  grid-template-columns: 60px 1fr auto;
+  grid-template-columns: 1fr auto;
   gap: 24px;
-  padding: 16px 0;
+  padding: 12px 0;
   align-items: center;
   border-bottom: 1px solid var(--border);
   transition: opacity 0.2s ease;
@@ -5952,12 +5979,6 @@
   .blog-table-row:hover {
     opacity: 0.7;
   }
-}
-
-.blog-table-year {
-  font-size: 0.95rem;
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
 }
 
 .blog-table-title {
@@ -5979,12 +6000,21 @@
     height: 50px;
   }
 
-  .blog-table-row {
-    grid-template-columns: 50px 1fr auto;
-    gap: 12px;
+  .blog-year-group {
+    grid-template-columns: 60px 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
   }
 
-  .blog-table-year,
+  .blog-year-label {
+    font-size: 0.85rem;
+  }
+
+  .blog-table-row {
+    gap: 12px;
+    padding: 10px 0;
+  }
+
   .blog-table-date {
     font-size: 0.85rem;
   }
@@ -6021,9 +6051,27 @@
   vertical-align: baseline;
 }
 
-.shelf-content {
-  max-width: 1200px;
+/* Shelf page uses a wider layout than blog list */
+.shelf-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .shelf-layout {
+    padding: 0 20px;
+  }
+}
+
+.shelf-content {
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .shelf-empty {

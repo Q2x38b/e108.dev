@@ -65,6 +65,24 @@ export default function BlogList() {
     )
   }, [posts, searchQuery])
 
+  // Group posts by year for list view
+  const groupedPosts = useMemo(() => {
+    const groups: { year: string; posts: Post[] }[] = []
+    let currentYear = ''
+
+    filteredPosts.forEach(post => {
+      const year = getYear(post.createdAt)
+      if (year !== currentYear) {
+        currentYear = year
+        groups.push({ year, posts: [post] })
+      } else {
+        groups[groups.length - 1].posts.push(post)
+      }
+    })
+
+    return groups
+  }, [filteredPosts])
+
   return (
     <div className="blog-list-layout">
       <motion.header
@@ -194,22 +212,35 @@ export default function BlogList() {
             ))}
           </div>
         ) : (
-          /* List/Table View */
+          /* List/Table View - Grouped by Year */
           <div className="blog-table-list">
-            {filteredPosts.map((post: Post, index: number) => (
-              <motion.div
-                key={`${viewMode}-${post._id}`}
-                variants={fadeInUp}
-                initial="hidden"
-                animate="visible"
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-              >
-                <Link to={`/blog/${post.shortId}`} className="blog-table-row">
-                  <span className="blog-table-year">{getYear(post.createdAt)}</span>
-                  <span className="blog-table-title">{post.title}</span>
-                  <span className="blog-table-date">{formatDateCompact(post.createdAt)}</span>
-                </Link>
-              </motion.div>
+            {groupedPosts.map((group, groupIndex) => (
+              <div key={group.year} className="blog-year-group">
+                <motion.div
+                  className="blog-year-header"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: groupIndex * 0.1 }}
+                >
+                  <span className="blog-year-label">{group.year}</span>
+                </motion.div>
+                <div className="blog-year-entries">
+                  {group.posts.map((post: Post, index: number) => (
+                    <motion.div
+                      key={`${viewMode}-${post._id}`}
+                      variants={fadeInUp}
+                      initial="hidden"
+                      animate="visible"
+                      transition={{ duration: 0.4, delay: groupIndex * 0.1 + index * 0.03 }}
+                    >
+                      <Link to={`/blog/${post.shortId}`} className="blog-table-row">
+                        <span className="blog-table-title">{post.title}</span>
+                        <span className="blog-table-date">{formatDateCompact(post.createdAt)}</span>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}

@@ -548,7 +548,7 @@ export default function Shelf() {
   }
 
   return (
-    <div className="blog-list-layout">
+    <div className="shelf-layout">
       <motion.header
         className="blog-header blog-list-header"
         initial={{ opacity: 0 }}
