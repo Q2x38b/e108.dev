@@ -226,11 +226,12 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
 }
 
 // Components
-function Header({ theme, preference, setPreference, location }: {
+function Header({ theme, preference, setPreference, location, profileImageUrl }: {
   theme: ResolvedTheme
   preference: ThemePreference
   setPreference: (theme: ThemePreference) => void
   location: string
+  profileImageUrl: string
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const convex = useConvex()
@@ -253,11 +254,18 @@ function Header({ theme, preference, setPreference, location }: {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Desktop navigation */}
-      <nav className="nav nav-desktop">
-        <Link to="/blog" className="nav-link">Writing</Link>
-        <Link to="/shelf" className="nav-link" onMouseEnter={prefetchShelf}>Shelf</Link>
-      </nav>
+      <div className="header-left">
+        <img
+          src={profileImageUrl}
+          alt="Profile"
+          className="header-profile-image"
+        />
+        {/* Desktop navigation */}
+        <nav className="nav nav-desktop">
+          <Link to="/blog" className="nav-link">Writing</Link>
+          <Link to="/shelf" className="nav-link" onMouseEnter={prefetchShelf}>Shelf</Link>
+        </nav>
+      </div>
 
       {/* Mobile menu toggle */}
       <button
@@ -332,16 +340,7 @@ function Profile({ profile, onEdit }: { profile: ProfileData; onEdit: () => void
         animate="visible"
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <div className="profile-image-wrapper">
-          <img
-            src={profile.imageUrl}
-            alt="Profile"
-            className="profile-image"
-          />
-        </div>
-        <p className="profile-archive-label">
-          <span className="archive-text">Archive of</span> <span className="archive-name">{profile.name}</span>
-        </p>
+        <h1 className="profile-name">{profile.name}</h1>
         <p className="profile-title">{profile.title}</p>
       </motion.section>
     </EditableSection>
@@ -1011,32 +1010,45 @@ function LoadingSkeleton() {
   )
 }
 
-// LinkTree view - minimal condensed view with profile, bio, and links
-function LinkTreeView({ profile, about }: { profile: ProfileData; about: AboutData }) {
+// Concise view - minimal condensed view with profile, bio, and links
+function ConciseView({ profile, about, theme, preference, setPreference }: {
+  profile: ProfileData
+  about: AboutData
+  theme: ResolvedTheme
+  preference: ThemePreference
+  setPreference: (theme: ThemePreference) => void
+}) {
   return (
-    <div className="linktree-container">
+    <div className="concise-container">
+      <div className="concise-header">
+        <ThemeDropdown
+          preference={preference}
+          setPreference={setPreference}
+          resolvedTheme={theme}
+        />
+      </div>
       <motion.div
-        className="linktree-content"
+        className="concise-content"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="linktree-profile">
-          <img src={profile.imageUrl} alt={profile.name} className="linktree-avatar" />
-          <h1 className="linktree-name">{profile.name}</h1>
-          <p className="linktree-title">{profile.title}</p>
+        <div className="concise-profile">
+          <img src={profile.imageUrl} alt={profile.name} className="concise-avatar" />
+          <h1 className="concise-name">{profile.name}</h1>
+          <p className="concise-title">{profile.title}</p>
         </div>
 
         {about.bio.length > 0 && (
-          <p className="linktree-bio" dangerouslySetInnerHTML={{ __html: about.bio[0] }} />
+          <div className="concise-bio bio" dangerouslySetInnerHTML={{ __html: about.bio[0] }} />
         )}
 
-        <div className="linktree-links">
+        <div className="concise-links">
           {socialLinks.map((link) => (
             <a
               key={link.platform}
               href={link.url}
-              className="linktree-link"
+              className="concise-link"
               target={link.url.startsWith('mailto:') ? undefined : '_blank'}
               rel={link.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
             >
@@ -1072,7 +1084,7 @@ function HomeContent() {
   const { theme, preference, setPreference } = useTheme()
   const { setEditingSection } = useEditMode()
   const [searchParams] = useSearchParams()
-  const isLinkTreeView = searchParams.get('links') === 'true'
+  const isConciseView = searchParams.get('concise') === 't'
 
   // Fetch all content from Convex
   const profile = useQuery(api.content.getProfile)
@@ -1100,9 +1112,9 @@ function HomeContent() {
     return <LoadingSkeleton />
   }
 
-  // Show LinkTree view if URL param is set
-  if (isLinkTreeView) {
-    return <LinkTreeView profile={profile} about={about} />
+  // Show concise view if URL param is set
+  if (isConciseView) {
+    return <ConciseView profile={profile} about={about} theme={theme} preference={preference} setPreference={setPreference} />
   }
 
   // Use data from Convex directly
@@ -1120,7 +1132,7 @@ function HomeContent() {
 
   return (
     <div className="container">
-      <Header theme={theme} preference={preference} setPreference={setPreference} location={profileData.location} />
+      <Header theme={theme} preference={preference} setPreference={setPreference} location={profileData.location} profileImageUrl={profileData.imageUrl} />
       <EditModeIndicator />
 
       <Profile

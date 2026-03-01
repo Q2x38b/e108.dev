@@ -63,8 +63,8 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
   const { isAuthenticated, logout } = useAuth()
   const editModeContext = useEditMode()
 
-  const copyLinkTreeUrl = async () => {
-    const url = `${window.location.origin}?links=true`
+  const copyConciseUrl = async () => {
+    const url = `${window.location.origin}?concise=t`
     try {
       await navigator.clipboard.writeText(url)
       setLinkCopied(true)
@@ -123,10 +123,10 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
           </div>
           <div className="footer-right">
             <button
-              className={`linktree-copy-btn ${linkCopied ? 'copied' : ''}`}
-              onClick={copyLinkTreeUrl}
-              aria-label="Copy links page URL"
-              title="Copy links page URL"
+              className={`concise-copy-btn ${linkCopied ? 'copied' : ''}`}
+              onClick={copyConciseUrl}
+              aria-label="Copy concise page URL"
+              title="Copy concise page URL"
             >
               {linkCopied ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

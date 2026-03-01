@@ -13,6 +13,26 @@
   margin-bottom: 56px;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-profile-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  object-position: center 15%;
+  transition: filter 0.3s ease;
+}
+
+/* Theme-based filter for header profile image */
+[data-theme="dark"] .header-profile-image {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 .nav {
   display: flex;
   gap: 24px;
@@ -152,42 +172,17 @@
   margin-bottom: 40px;
 }
 
-.profile-image-wrapper {
-  width: 40px;
-  height: 40px;
-  margin-bottom: 20px;
-  position: relative;
-}
-
-.profile-image {
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-  object-fit: cover;
-  object-position: center 15%;
-  background: linear-gradient(145deg, #e8e8e8 0%, #d0d0d0 50%, #c8c8c8 100%);
-  border: 1px solid var(--border);
-}
-
-.profile-archive-label {
-  font-size: 0.95rem;
-  margin: 0 0 2px 0;
-}
-
-.profile-archive-label .archive-text {
-  color: var(--text-tertiary);
-  font-weight: 400;
-  font-style: italic;
-}
-
-.profile-archive-label .archive-name {
-  color: var(--text);
+.profile-name {
+  font-size: 1.5rem;
   font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px 0;
 }
 
 .profile-title {
   font-size: 0.95rem;
   color: var(--text-secondary);
+  margin: 0;
 }
 
 /* Section */
@@ -660,60 +655,75 @@
 }
 
 /* LinkTree View */
-.linktree-container {
+/* Concise View */
+.concise-container {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
   background: var(--bg);
+  position: relative;
 }
 
-.linktree-content {
+.concise-header {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.concise-content {
   max-width: 400px;
   width: 100%;
   text-align: center;
 }
 
-.linktree-profile {
+.concise-profile {
   margin-bottom: 24px;
 }
 
-.linktree-avatar {
+.concise-avatar {
   width: 80px;
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 16px;
+  transition: filter 0.3s ease;
 }
 
-.linktree-name {
+/* Theme-based filter for concise avatar */
+[data-theme="dark"] .concise-avatar {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.concise-name {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text);
   margin: 0 0 4px 0;
 }
 
-.linktree-title {
+.concise-title {
   font-size: 0.9rem;
   color: var(--text-secondary);
   margin: 0;
 }
 
-.linktree-bio {
+.concise-bio {
   font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 0 0 28px 0;
 }
 
-.linktree-links {
+.concise-links {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.linktree-link {
+.concise-link {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -729,13 +739,13 @@
   transition: all 0.2s ease;
 }
 
-.linktree-link svg {
+.concise-link svg {
   width: 18px;
   height: 18px;
 }
 
 @media (hover: hover) {
-  .linktree-link:hover {
+  .concise-link:hover {
     background: var(--bg-tertiary);
     border-color: var(--text-tertiary);
     transform: translateY(-2px);
@@ -825,7 +835,7 @@
   height: 14px;
 }
 
-.linktree-copy-btn {
+.concise-copy-btn {
   width: 28px;
   height: 28px;
   border-radius: 6px;
@@ -839,19 +849,19 @@
   color: var(--text-tertiary);
 }
 
-.linktree-copy-btn svg {
+.concise-copy-btn svg {
   width: 14px;
   height: 14px;
 }
 
 @media (hover: hover) {
-  .linktree-copy-btn:hover {
+  .concise-copy-btn:hover {
     background: var(--hover-bg);
     color: var(--text);
   }
 }
 
-.linktree-copy-btn.copied {
+.concise-copy-btn.copied {
   color: #22c55e;
 }
 
@@ -1795,6 +1805,16 @@
     position: relative;
     gap: 12px;
     margin-bottom: 40px;
+  }
+
+  .header-left {
+    gap: 12px;
+  }
+
+  .header-profile-image {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
   }
 
   /* Hide desktop nav, show mobile toggle */
