@@ -870,6 +870,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
 }
 
 .concise-view-btn {
@@ -901,7 +903,7 @@
 .concise-tooltip {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 50%;
+  left: 14px;
   transform: translateX(-50%);
   padding: 6px 10px;
   background: #1a1a1a;
@@ -912,8 +914,6 @@
   white-space: nowrap;
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  /* Ensure tooltip doesn't affect wrapper width */
-  width: max-content;
 }
 
 .concise-tooltip::after {
@@ -924,6 +924,7 @@
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-top-color: #1a1a1a;
+  margin-top: -1px;
 }
 
 /* Shelf page full-width blur */
