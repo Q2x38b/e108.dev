@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
-import { useQuery } from 'convex/react'
+import { useQuery, useConvex } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
@@ -233,11 +233,17 @@ function Header({ theme, preference, setPreference, location }: {
   location: string
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const convex = useConvex()
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id.toLowerCase())
     element?.scrollIntoView({ behavior: 'smooth' })
     setMobileMenuOpen(false)
+  }
+
+  const prefetchShelf = () => {
+    // Prefetch shelf data on hover - result is cached by Convex
+    convex.query(api.shelf.list, {})
   }
 
   return (
@@ -250,7 +256,7 @@ function Header({ theme, preference, setPreference, location }: {
       {/* Desktop navigation */}
       <nav className="nav nav-desktop">
         <Link to="/blog" className="nav-link">Writing</Link>
-        <Link to="/shelf" className="nav-link">Shelf</Link>
+        <Link to="/shelf" className="nav-link" onMouseEnter={prefetchShelf}>Shelf</Link>
       </nav>
 
       {/* Mobile menu toggle */}
@@ -301,7 +307,7 @@ function Header({ theme, preference, setPreference, location }: {
             transition={{ duration: 0.2 }}
           >
             <Link to="/blog" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Writing</Link>
-            <Link to="/shelf" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Shelf</Link>
+            <Link to="/shelf" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)} onMouseEnter={prefetchShelf}>Shelf</Link>
           </motion.nav>
         )}
       </AnimatePresence>
