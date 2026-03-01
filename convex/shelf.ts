@@ -82,6 +82,7 @@ export const addQuote = mutation({
     quoteSource: v.optional(v.string()),
     size: v.optional(v.union(v.literal("small"), v.literal("medium"), v.literal("large"))),
     backgroundColor: v.optional(v.string()),
+    quoteStyle: v.optional(v.union(v.literal("default"), v.literal("bar"))),
   },
   handler: async (ctx, args) => {
     const isAuthed = await requireAuth(ctx, args.token);
@@ -96,6 +97,7 @@ export const addQuote = mutation({
       quoteSource: args.quoteSource,
       size: args.size || "medium",
       backgroundColor: args.backgroundColor,
+      quoteStyle: args.quoteStyle || "default",
       uploadedAt: Date.now(),
     });
 
@@ -140,6 +142,7 @@ export const update = mutation({
     quoteText: v.optional(v.string()),
     quoteAuthor: v.optional(v.string()),
     quoteSource: v.optional(v.string()),
+    quoteStyle: v.optional(v.union(v.literal("default"), v.literal("bar"))),
     textContent: v.optional(v.string()),
     textLabel: v.optional(v.string()),
     size: v.optional(v.union(v.literal("small"), v.literal("medium"), v.literal("large"))),

@@ -31,6 +31,7 @@ const fadeInUp = {
 
 type ItemType = 'image' | 'quote' | 'text'
 type ItemSize = 'small' | 'medium' | 'large'
+type QuoteStyle = 'default' | 'bar'
 
 interface ShelfItem {
   _id: string
@@ -44,6 +45,7 @@ interface ShelfItem {
   quoteText?: string
   quoteAuthor?: string
   quoteSource?: string
+  quoteStyle?: QuoteStyle
   // Text fields
   textContent?: string
   textLabel?: string
@@ -65,6 +67,11 @@ const BACKGROUND_COLORS = [
   { name: 'Blush', value: '#f7e4e4' },
   { name: 'Slate', value: '#2d3748' },
   { name: 'Charcoal', value: '#1a1a2e' },
+  { name: 'Graphite', value: '#374151' },
+  { name: 'Onyx', value: '#18181b' },
+  { name: 'Midnight', value: '#0f172a' },
+  { name: 'Stone', value: '#292524' },
+  { name: 'Zinc', value: '#27272a' },
 ]
 
 // Sortable Item Component
@@ -137,11 +144,12 @@ function SortableItem({ item, index, isEditMode, onSelect, onEdit, isDarkBg, isA
   if (item.type === 'quote') {
     const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
     const isDark = isDarkBg(item.backgroundColor || '')
+    const isBarStyle = item.quoteStyle === 'bar'
     return (
       <motion.div
         ref={setNodeRef}
         style={{ ...style, ...bgStyle }}
-        className={`shelf-item shelf-item-quote shelf-item-${item.size || 'medium'} ${isDark ? 'dark-bg' : ''} ${isEditMode ? 'edit-mode' : ''}`}
+        className={`shelf-item shelf-item-quote shelf-item-${item.size || 'medium'} ${isDark ? 'dark-bg' : ''} ${isBarStyle ? 'bar-style' : ''} ${isEditMode ? 'edit-mode' : ''}`}
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
@@ -173,9 +181,12 @@ function SortableItem({ item, index, isEditMode, onSelect, onEdit, isDarkBg, isA
           </button>
         )}
         <div className="shelf-quote-content">
-          <svg className="shelf-quote-mark" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M6.5 10c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 6.5 10zm11 0c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 17.5 10z"/>
-          </svg>
+          {!isBarStyle && (
+            <svg className="shelf-quote-mark" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6.5 10c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 6.5 10zm11 0c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 17.5 10z"/>
+            </svg>
+          )}
+          {isBarStyle && <div className="shelf-quote-bar" />}
           <blockquote>{item.quoteText}</blockquote>
           {(item.quoteAuthor || item.quoteSource) && (
             <cite>
@@ -267,6 +278,7 @@ export default function Shelf() {
   const [quoteText, setQuoteText] = useState('')
   const [quoteAuthor, setQuoteAuthor] = useState('')
   const [quoteSource, setQuoteSource] = useState('')
+  const [quoteStyle, setQuoteStyle] = useState<QuoteStyle>('default')
   const [textContent, setTextContent] = useState('')
   const [textLabel, setTextLabel] = useState('')
   const [itemSize, setItemSize] = useState<ItemSize>('medium')
@@ -277,6 +289,7 @@ export default function Shelf() {
   const [editQuoteText, setEditQuoteText] = useState('')
   const [editQuoteAuthor, setEditQuoteAuthor] = useState('')
   const [editQuoteSource, setEditQuoteSource] = useState('')
+  const [editQuoteStyle, setEditQuoteStyle] = useState<QuoteStyle>('default')
   const [editTextContent, setEditTextContent] = useState('')
   const [editTextLabel, setEditTextLabel] = useState('')
   const [editItemSize, setEditItemSize] = useState<ItemSize>('medium')
@@ -327,6 +340,7 @@ export default function Shelf() {
     setQuoteText('')
     setQuoteAuthor('')
     setQuoteSource('')
+    setQuoteStyle('default')
     setTextContent('')
     setTextLabel('')
     setItemSize('medium')
@@ -346,6 +360,7 @@ export default function Shelf() {
     setEditQuoteText(item.quoteText || '')
     setEditQuoteAuthor(item.quoteAuthor || '')
     setEditQuoteSource(item.quoteSource || '')
+    setEditQuoteStyle(item.quoteStyle || 'default')
     setEditTextContent(item.textContent || '')
     setEditTextLabel(item.textLabel || '')
     setEditItemSize(item.size || 'medium')
@@ -466,6 +481,7 @@ export default function Shelf() {
         quoteSource: quoteSource.trim() || undefined,
         size: itemSize,
         backgroundColor: backgroundColor || undefined,
+        quoteStyle: quoteStyle,
       })
 
       resetForm()
@@ -513,6 +529,7 @@ export default function Shelf() {
         quoteText: editQuoteText || undefined,
         quoteAuthor: editQuoteAuthor || undefined,
         quoteSource: editQuoteSource || undefined,
+        quoteStyle: editQuoteStyle,
         textContent: editTextContent || undefined,
         textLabel: editTextLabel || undefined,
         size: editItemSize,
@@ -544,7 +561,7 @@ export default function Shelf() {
 
   const isDarkBg = (color: string) => {
     if (!color) return false
-    return ['#2d3748', '#1a1a2e'].includes(color)
+    return ['#2d3748', '#1a1a2e', '#374151', '#18181b', '#0f172a', '#292524', '#27272a'].includes(color)
   }
 
   return (
@@ -612,7 +629,7 @@ export default function Shelf() {
       </motion.header>
 
       <div className="blog-list-title">
-        <h1 className="shelf-artistic-title">shelf</h1>
+        <h1 className="shelf-artistic-title">my shelf</h1>
         {isEditMode && (
           <p className="shelf-edit-hint">Drag items to reorder</p>
         )}
@@ -795,6 +812,23 @@ export default function Shelf() {
                     onChange={(e) => setQuoteSource(e.target.value)}
                   />
                   <div className="shelf-form-row">
+                    <label>Style</label>
+                    <div className="style-selector">
+                      <button
+                        className={`style-btn ${quoteStyle === 'default' ? 'active' : ''}`}
+                        onClick={() => setQuoteStyle('default')}
+                      >
+                        Classic
+                      </button>
+                      <button
+                        className={`style-btn ${quoteStyle === 'bar' ? 'active' : ''}`}
+                        onClick={() => setQuoteStyle('bar')}
+                      >
+                        Bar
+                      </button>
+                    </div>
+                  </div>
+                  <div className="shelf-form-row">
                     <label>Size</label>
                     <div className="size-selector">
                       {(['small', 'medium', 'large'] as ItemSize[]).map((size) => (
@@ -975,6 +1009,23 @@ export default function Shelf() {
                     value={editQuoteSource}
                     onChange={(e) => setEditQuoteSource(e.target.value)}
                   />
+                  <div className="shelf-form-row">
+                    <label>Style</label>
+                    <div className="style-selector">
+                      <button
+                        className={`style-btn ${editQuoteStyle === 'default' ? 'active' : ''}`}
+                        onClick={() => setEditQuoteStyle('default')}
+                      >
+                        Classic
+                      </button>
+                      <button
+                        className={`style-btn ${editQuoteStyle === 'bar' ? 'active' : ''}`}
+                        onClick={() => setEditQuoteStyle('bar')}
+                      >
+                        Bar
+                      </button>
+                    </div>
+                  </div>
                   <div className="shelf-form-row">
                     <label>Size</label>
                     <div className="size-selector">

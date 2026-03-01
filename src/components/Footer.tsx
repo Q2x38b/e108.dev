@@ -59,8 +59,20 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const { isAuthenticated, logout } = useAuth()
   const editModeContext = useEditMode()
+
+  const copyLinkTreeUrl = async () => {
+    const url = `${window.location.origin}?links=true`
+    try {
+      await navigator.clipboard.writeText(url)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -110,6 +122,23 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
             <span className="footer-quote-inline">The only limit is yourself.</span>
           </div>
           <div className="footer-right">
+            <button
+              className={`linktree-copy-btn ${linkCopied ? 'copied' : ''}`}
+              onClick={copyLinkTreeUrl}
+              aria-label="Copy links page URL"
+              title="Copy links page URL"
+            >
+              {linkCopied ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              )}
+            </button>
             <span className="footer-time">{formatTime(time)}</span>
 
             {showEditControls && editModeContext && (

@@ -22,8 +22,14 @@ interface Post {
   excerpt?: string
   titleImage?: string
   published: boolean
+  publishedAt?: number
   createdAt: number
   updatedAt: number
+}
+
+// Helper to get the display date (prefer publishedAt over createdAt)
+function getDisplayDate(post: Post): number {
+  return post.publishedAt || post.createdAt
 }
 
 type ViewMode = 'card' | 'list'
@@ -53,16 +59,22 @@ export default function BlogList() {
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Filter posts based on search query
+  // Filter and sort posts based on search query (sorted by publishedAt desc)
   const filteredPosts = useMemo(() => {
     if (!posts) return []
-    if (!searchQuery.trim()) return posts as Post[]
 
-    const query = searchQuery.toLowerCase()
-    return (posts as Post[]).filter(post =>
-      post.title.toLowerCase().includes(query) ||
-      (post.subtitle && post.subtitle.toLowerCase().includes(query))
-    )
+    let result = posts as Post[]
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(post =>
+        post.title.toLowerCase().includes(query) ||
+        (post.subtitle && post.subtitle.toLowerCase().includes(query))
+      )
+    }
+
+    // Sort by publishedAt (or createdAt as fallback) descending
+    return result.sort((a, b) => getDisplayDate(b) - getDisplayDate(a))
   }, [posts, searchQuery])
 
   // Group posts by year for list view
@@ -71,7 +83,7 @@ export default function BlogList() {
     let currentYear = ''
 
     filteredPosts.forEach(post => {
-      const year = getYear(post.createdAt)
+      const year = getYear(getDisplayDate(post))
       if (year !== currentYear) {
         currentYear = year
         groups.push({ year, posts: [post] })
@@ -200,7 +212,7 @@ export default function BlogList() {
                     {post.subtitle && (
                       <p className="blog-card-subtitle">{post.subtitle}</p>
                     )}
-                    <span className="blog-card-meta">{formatDate(post.createdAt)}</span>
+                    <span className="blog-card-meta">{formatDate(getDisplayDate(post))}</span>
                   </div>
                   {post.titleImage && (
                     <div className="blog-card-image">
@@ -235,7 +247,7 @@ export default function BlogList() {
                     >
                       <Link to={`/blog/${post.shortId}`} className="blog-table-row">
                         <span className="blog-table-title">{post.title}</span>
-                        <span className="blog-table-date">{formatDateCompact(post.createdAt)}</span>
+                        <span className="blog-table-date">{formatDateCompact(getDisplayDate(post))}</span>
                       </Link>
                     </motion.div>
                   ))}

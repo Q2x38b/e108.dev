@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { useQuery, useConvex } from 'convex/react'
 import { api } from '../../convex/_generated/api'
@@ -339,7 +339,9 @@ function Profile({ profile, onEdit }: { profile: ProfileData; onEdit: () => void
             className="profile-image"
           />
         </div>
-        <h1 className="profile-name">{profile.name}</h1>
+        <p className="profile-archive-label">
+          <span className="archive-text">Archive of</span> <span className="archive-name">{profile.name}</span>
+        </p>
         <p className="profile-title">{profile.title}</p>
       </motion.section>
     </EditableSection>
@@ -1009,10 +1011,68 @@ function LoadingSkeleton() {
   )
 }
 
+// LinkTree view - minimal condensed view with profile, bio, and links
+function LinkTreeView({ profile, about }: { profile: ProfileData; about: AboutData }) {
+  return (
+    <div className="linktree-container">
+      <motion.div
+        className="linktree-content"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="linktree-profile">
+          <img src={profile.imageUrl} alt={profile.name} className="linktree-avatar" />
+          <h1 className="linktree-name">{profile.name}</h1>
+          <p className="linktree-title">{profile.title}</p>
+        </div>
+
+        {about.bio.length > 0 && (
+          <p className="linktree-bio" dangerouslySetInnerHTML={{ __html: about.bio[0] }} />
+        )}
+
+        <div className="linktree-links">
+          {socialLinks.map((link) => (
+            <a
+              key={link.platform}
+              href={link.url}
+              className="linktree-link"
+              target={link.url.startsWith('mailto:') ? undefined : '_blank'}
+              rel={link.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+            >
+              {link.platform === 'github' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+              )}
+              {link.platform === 'linkedin' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                  <rect x="2" y="9" width="4" height="12" />
+                  <circle cx="4" cy="4" r="2" />
+                </svg>
+              )}
+              {link.platform === 'email' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              )}
+              {link.label}
+            </a>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
 // Main content component (wrapped with EditModeProvider)
 function HomeContent() {
   const { theme, preference, setPreference } = useTheme()
   const { setEditingSection } = useEditMode()
+  const [searchParams] = useSearchParams()
+  const isLinkTreeView = searchParams.get('links') === 'true'
 
   // Fetch all content from Convex
   const profile = useQuery(api.content.getProfile)
@@ -1038,6 +1098,11 @@ function HomeContent() {
   // If no data exists in Convex, show loading (data should be seeded)
   if (!profile || !about || !footer) {
     return <LoadingSkeleton />
+  }
+
+  // Show LinkTree view if URL param is set
+  if (isLinkTreeView) {
+    return <LinkTreeView profile={profile} about={about} />
   }
 
   // Use data from Convex directly

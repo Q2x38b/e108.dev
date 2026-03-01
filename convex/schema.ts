@@ -112,6 +112,7 @@ export default defineSchema({
     quoteText: v.optional(v.string()),
     quoteAuthor: v.optional(v.string()),
     quoteSource: v.optional(v.string()),
+    quoteStyle: v.optional(v.union(v.literal("default"), v.literal("bar"))),
     // Text fields
     textContent: v.optional(v.string()),
     textLabel: v.optional(v.string()),
