@@ -7,6 +7,7 @@ import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
 import { EditableSection } from '../components/EditableSection'
 import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor } from '../components/editors'
+import { useHaptics } from '../hooks/useHaptics'
 
 // Animation variants
 const fadeInUp = {
@@ -32,9 +33,16 @@ function Accordion({ title, content, isOpen, onToggle }: {
   isOpen: boolean
   onToggle: () => void
 }) {
+  const haptics = useHaptics()
+
+  const handleToggle = () => {
+    haptics.soft()
+    onToggle()
+  }
+
   return (
     <div className="accordion">
-      <button className={`accordion-header ${isOpen ? 'open' : ''}`} onClick={onToggle}>
+      <button className={`accordion-header ${isOpen ? 'open' : ''}`} onClick={handleToggle}>
         <span className={`accordion-title ${isOpen ? 'active' : ''}`}>{title}</span>
         <span className={`accordion-icon ${isOpen ? 'open' : ''}`}>
           <span className="accordion-icon-bar accordion-icon-horizontal" />
@@ -116,6 +124,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
+  const haptics = useHaptics()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -189,7 +198,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
     <div className="theme-dropdown" ref={dropdownRef}>
       <motion.button
         className="theme-toggle"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => { haptics.soft(); setIsOpen(!isOpen) }}
         whileTap={{ scale: 0.95 }}
         aria-label="Change theme"
         aria-expanded={isOpen}
@@ -210,6 +219,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
                 key={option.value}
                 className={`theme-dropdown-item ${preference === option.value ? 'active' : ''}`}
                 onClick={() => {
+                  haptics.selection()
                   setPreference(option.value)
                   setIsOpen(false)
                 }}
@@ -235,6 +245,7 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const convex = useConvex()
+  const haptics = useHaptics()
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id.toLowerCase())
@@ -270,7 +281,7 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
       {/* Mobile menu toggle */}
       <button
         className="mobile-menu-toggle"
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        onClick={() => { haptics.soft(); setMobileMenuOpen(!mobileMenuOpen) }}
         aria-label="Toggle menu"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -485,6 +496,7 @@ function ImageCarousel({ images }: { images: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const haptics = useHaptics()
 
   // Autoplay every 5 seconds
   useEffect(() => {
@@ -501,11 +513,13 @@ function ImageCarousel({ images }: { images: string[] }) {
   if (!images || images.length === 0) return null
 
   const goToNext = () => {
+    haptics.soft()
     setDirection(1)
     setCurrentIndex((prev) => (prev + 1) % images.length)
   }
 
   const goToPrev = () => {
+    haptics.soft()
     setDirection(-1)
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
   }
@@ -576,6 +590,7 @@ function ImageCarousel({ images }: { images: string[] }) {
                 key={idx}
                 className={`image-carousel-dot ${idx === currentIndex ? 'active' : ''}`}
                 onClick={() => {
+                  haptics.selection()
                   setDirection(idx > currentIndex ? 1 : -1)
                   setCurrentIndex(idx)
                 }}
@@ -592,6 +607,7 @@ function ImageCarousel({ images }: { images: string[] }) {
 function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selectedProject = projects.find(p => p.name === selectedId)
+  const haptics = useHaptics()
 
   useEffect(() => {
     if (selectedId) {
@@ -629,7 +645,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                   className="work-item"
                   variants={fadeInUp}
                   transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
-                  onClick={() => setSelectedId(project.name)}
+                  onClick={() => { haptics.soft(); setSelectedId(project.name) }}
                 >
                   <div className="work-info">
                     <div className="work-name">{project.name}</div>
@@ -665,7 +681,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             >
               <button
                 className="work-modal-close"
-                onClick={() => setSelectedId(null)}
+                onClick={() => { haptics.soft(); setSelectedId(null) }}
                 aria-label="Close"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -770,14 +786,18 @@ function LoginModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
+  const haptics = useHaptics()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    haptics.rigid()
     setLoading(true)
     const success = await login(password)
     if (success) {
+      haptics.nudge()
       onClose()
     } else {
+      haptics.buzz()
       setError(true)
       setPassword('')
     }
@@ -820,6 +840,7 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
   const { isAuthenticated, logout } = useAuth()
   const { isEditMode, toggleEditMode } = useEditMode()
   const navigate = useNavigate()
+  const haptics = useHaptics()
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -845,11 +866,18 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
   }
 
   const scrollToTop = () => {
+    haptics.soft()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleLogout = async () => {
+    haptics.nudge()
     await logout()
+  }
+
+  const handleToggleEditMode = () => {
+    haptics.selection()
+    toggleEditMode()
   }
 
   return (
@@ -884,7 +912,7 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
             >
               <motion.button
                 className="concise-view-btn"
-                onClick={() => navigate('/?concise=t')}
+                onClick={() => { haptics.soft(); navigate('/?concise=t') }}
                 whileTap={{ scale: 0.95 }}
                 aria-label="Quick View"
               >
@@ -912,7 +940,7 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
             <SignedIn>
               <motion.button
                 className={`edit-mode-btn ${isEditMode ? 'active' : ''}`}
-                onClick={toggleEditMode}
+                onClick={handleToggleEditMode}
                 whileTap={{ scale: 0.95 }}
                 title={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
               >
@@ -1051,13 +1079,14 @@ function ConciseView({ profile, about, theme, preference, setPreference }: {
   setPreference: (theme: ThemePreference) => void
 }) {
   const navigate = useNavigate()
+  const haptics = useHaptics()
 
   return (
     <div className="concise-container">
       <div className="concise-header">
         <button
           className="concise-back-btn"
-          onClick={() => navigate('/')}
+          onClick={() => { haptics.soft(); navigate('/') }}
           aria-label="Back to main view"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

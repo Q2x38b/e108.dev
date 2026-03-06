@@ -2,20 +2,25 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth, SignedIn } from '../contexts/AuthContext'
 import { useEditMode } from '../contexts/EditModeContext'
+import { useHaptics } from '../hooks/useHaptics'
 
 function LoginModal({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
+  const haptics = useHaptics()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    haptics.rigid()
     setLoading(true)
     const success = await login(password)
     if (success) {
+      haptics.nudge()
       onClose()
     } else {
+      haptics.buzz()
       setError(true)
       setPassword('')
     }
@@ -61,6 +66,7 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
   const [showLogin, setShowLogin] = useState(false)
   const { isAuthenticated, logout } = useAuth()
   const editModeContext = useEditMode()
+  const haptics = useHaptics()
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -86,11 +92,18 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
   }
 
   const scrollToTop = () => {
+    haptics.soft()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleLogout = async () => {
+    haptics.nudge()
     await logout()
+  }
+
+  const handleToggleEditMode = () => {
+    haptics.selection()
+    editModeContext?.toggleEditMode()
   }
 
   return (
@@ -116,7 +129,7 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
               <SignedIn>
                 <motion.button
                   className={`edit-mode-btn ${editModeContext.isEditMode ? 'active' : ''}`}
-                  onClick={editModeContext.toggleEditMode}
+                  onClick={handleToggleEditMode}
                   whileTap={{ scale: 0.95 }}
                   title={editModeContext.isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
                 >

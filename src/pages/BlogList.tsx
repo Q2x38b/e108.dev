@@ -6,6 +6,7 @@ import { useTheme } from './Home'
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Footer } from '../components/Footer'
+import { useHaptics } from '../hooks/useHaptics'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -54,6 +55,7 @@ export default function BlogList() {
   const posts = useQuery(api.posts.list)
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [searchQuery, setSearchQuery] = useState('')
+  const haptics = useHaptics()
 
   // Filter and sort posts based on search query (sorted by publishedAt desc)
   const filteredPosts = useMemo(() => {
@@ -89,7 +91,7 @@ export default function BlogList() {
         <div className="header-right">
           <button
             className="theme-toggle"
-            onClick={toggle}
+            onClick={() => { haptics.selection(); toggle() }}
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (
@@ -142,7 +144,7 @@ export default function BlogList() {
         <div className="blog-view-toggle">
           <button
             className={`view-toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
-            onClick={() => setViewMode('card')}
+            onClick={() => { haptics.selection(); setViewMode('card') }}
             aria-label="Card view"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -154,7 +156,7 @@ export default function BlogList() {
           </button>
           <button
             className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
-            onClick={() => setViewMode('list')}
+            onClick={() => { haptics.selection(); setViewMode('list') }}
             aria-label="List view"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

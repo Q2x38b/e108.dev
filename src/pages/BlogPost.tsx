@@ -11,6 +11,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Footer } from '../components/Footer'
+import { useHaptics } from '../hooks/useHaptics'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -164,6 +165,7 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
+  const haptics = useHaptics()
 
   const ttsRef = useRef<WebSpeechTTS | null>(null)
 
@@ -220,6 +222,7 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
   const togglePlayPause = useCallback(() => {
     if (isLoading || !ttsRef.current) return
 
+    haptics.soft()
     if (ttsRef.current.speaking) {
       if (ttsRef.current.paused) {
         ttsRef.current.resume()
@@ -231,7 +234,7 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
     } else {
       generateAndPlay()
     }
-  }, [isLoading, generateAndPlay])
+  }, [isLoading, generateAndPlay, haptics])
 
   const handleSeek = useCallback((_e: React.MouseEvent<HTMLDivElement>) => {
     // Web Speech API doesn't support seeking
@@ -290,7 +293,7 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
         )}
       </div>
 
-      <button className="audio-player-close" onClick={onClose} aria-label="Close">
+      <button className="audio-player-close" onClick={() => { haptics.soft(); onClose() }} aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
@@ -321,8 +324,10 @@ function getReadingTime(wordCount: number): string {
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
+  const haptics = useHaptics()
 
   const handleCopy = async () => {
+    haptics.rigid()
     await navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -355,42 +360,52 @@ interface ShareModalProps {
 function ShareModal({ title, subtitle, titleImage, onClose, onCopy }: ShareModalProps) {
   const [showMore, setShowMore] = useState(false)
   const url = window.location.href
+  const haptics = useHaptics()
 
   const handleCopyLink = () => {
+    haptics.rigid()
     onCopy()
     onClose()
   }
 
   const handlePreviewClick = () => {
+    haptics.rigid()
     onCopy()
     onClose()
   }
 
   const shareToFacebook = () => {
+    haptics.soft()
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400')
   }
 
   const shareToEmail = () => {
+    haptics.soft()
     window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`
   }
 
   const shareToTwitter = () => {
+    haptics.soft()
     window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
   }
 
   const shareToLinkedIn = () => {
+    haptics.soft()
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400')
   }
 
   const shareToReddit = () => {
+    haptics.soft()
     window.open(`https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
   }
 
   const shareToBluesky = () => {
+    haptics.soft()
     window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(title + ' ' + url)}`, '_blank', 'width=600,height=400')
   }
 
   const shareToHackerNews = () => {
+    haptics.soft()
     window.open(`https://news.ycombinator.com/submitlink?u=${encodeURIComponent(url)}&t=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
   }
 
@@ -576,8 +591,10 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
   const skipNextClickRef = useRef(false)
   const startYRef = useRef(0)
   const startScrollRef = useRef(0)
+  const haptics = useHaptics()
 
   const scrollToHeading = (id: string) => {
+    haptics.selection()
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
@@ -789,9 +806,11 @@ interface MoreArticlesProps {
 function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
   const [activeTab, setActiveTab] = useState<'top' | 'latest' | 'discussions'>('top')
   const navigate = useNavigate()
+  const haptics = useHaptics()
 
   const handleTabClick = (tab: 'top' | 'latest' | 'discussions', e: React.MouseEvent) => {
     e.preventDefault()
+    haptics.selection()
     setActiveTab(tab)
     // Blur to prevent focus scroll
     ;(e.target as HTMLElement).blur()
@@ -874,7 +893,7 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
 
       <button
         className="see-all-btn"
-        onClick={() => navigate('/blog')}
+        onClick={() => { haptics.soft(); navigate('/blog') }}
       >
         See all
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -899,6 +918,7 @@ export default function BlogPost() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [tocOpen, setTocOpen] = useState(false)
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null)
+  const haptics = useHaptics()
 
   // Record view on mount
   useEffect(() => {
@@ -916,10 +936,11 @@ export default function BlogPost() {
   }, [post, recordView])
 
   const copyLink = useCallback(() => {
+    haptics.rigid()
     navigator.clipboard.writeText(window.location.href)
     setLinkCopied(true)
     setTimeout(() => setLinkCopied(false), 2000)
-  }, [])
+  }, [haptics])
 
   const copyHeaderLink = useCallback((id: string, e?: React.MouseEvent) => {
     e?.preventDefault()
@@ -1073,7 +1094,7 @@ export default function BlogPost() {
         <div className="header-right">
           <button
             className="theme-toggle"
-            onClick={toggle}
+            onClick={() => { haptics.selection(); toggle() }}
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (
@@ -1135,12 +1156,12 @@ export default function BlogPost() {
             />
             <span className="article-author-name">Ethan Jerla</span>
             <div className="article-author-actions">
-              <button className="listen-btn-small" onClick={() => setShowAudioPlayer(true)} aria-label="Listen to article">
+              <button className="listen-btn-small" onClick={() => { haptics.soft(); setShowAudioPlayer(true) }} aria-label="Listen to article">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
               </button>
-              <button className={`share-btn-icon ${linkCopied ? 'copied' : ''}`} onClick={() => setShowShareModal(true)} aria-label="Share">
+              <button className={`share-btn-icon ${linkCopied ? 'copied' : ''}`} onClick={() => { haptics.soft(); setShowShareModal(true) }} aria-label="Share">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="18" cy="5" r="3" />
                   <circle cx="6" cy="12" r="3" />

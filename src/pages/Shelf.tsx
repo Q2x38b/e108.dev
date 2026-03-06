@@ -6,6 +6,7 @@ import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Footer } from '../components/Footer'
+import { useHaptics } from '../hooks/useHaptics'
 import {
   DndContext,
   closestCenter,
@@ -252,6 +253,7 @@ export default function Shelf() {
   const { theme, toggle } = useTheme()
   const { sessionToken, isAuthenticated } = useAuth()
   const items = useQuery(api.shelf.list)
+  const haptics = useHaptics()
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const addImage = useMutation(api.shelf.addImage)
   const addQuote = useMutation(api.shelf.addQuote)
@@ -580,7 +582,7 @@ export default function Shelf() {
         <div className="header-right">
           <button
             className="theme-toggle"
-            onClick={toggle}
+            onClick={() => { haptics.selection(); toggle() }}
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (
@@ -604,7 +606,7 @@ export default function Shelf() {
           <SignedIn>
             <button
               className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
-              onClick={() => setIsEditMode(!isEditMode)}
+              onClick={() => { haptics.selection(); setIsEditMode(!isEditMode) }}
               aria-label={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
               title={isEditMode ? 'Exit edit mode' : 'Reorder items'}
             >
@@ -616,7 +618,7 @@ export default function Shelf() {
             </button>
             <button
               className="add-post-btn"
-              onClick={() => setShowAddModal(true)}
+              onClick={() => { haptics.soft(); setShowAddModal(true) }}
               aria-label="Add item"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -709,7 +711,7 @@ export default function Shelf() {
               <div className="shelf-type-selector">
                 <button
                   className={`type-btn ${addType === 'image' ? 'active' : ''}`}
-                  onClick={() => setAddType('image')}
+                  onClick={() => { haptics.selection(); setAddType('image') }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -720,7 +722,7 @@ export default function Shelf() {
                 </button>
                 <button
                   className={`type-btn ${addType === 'quote' ? 'active' : ''}`}
-                  onClick={() => setAddType('quote')}
+                  onClick={() => { haptics.selection(); setAddType('quote') }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z" />
@@ -730,7 +732,7 @@ export default function Shelf() {
                 </button>
                 <button
                   className={`type-btn ${addType === 'text' ? 'active' : ''}`}
-                  onClick={() => setAddType('text')}
+                  onClick={() => { haptics.selection(); setAddType('text') }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="17" y1="10" x2="3" y2="10" />
@@ -816,13 +818,13 @@ export default function Shelf() {
                     <div className="style-selector">
                       <button
                         className={`style-btn ${quoteStyle === 'default' ? 'active' : ''}`}
-                        onClick={() => setQuoteStyle('default')}
+                        onClick={() => { haptics.selection(); setQuoteStyle('default') }}
                       >
                         Classic
                       </button>
                       <button
                         className={`style-btn ${quoteStyle === 'bar' ? 'active' : ''}`}
-                        onClick={() => setQuoteStyle('bar')}
+                        onClick={() => { haptics.selection(); setQuoteStyle('bar') }}
                       >
                         Bar
                       </button>
@@ -835,7 +837,7 @@ export default function Shelf() {
                         <button
                           key={size}
                           className={`size-btn ${itemSize === size ? 'active' : ''}`}
-                          onClick={() => setItemSize(size)}
+                          onClick={() => { haptics.selection(); setItemSize(size) }}
                         >
                           {size}
                         </button>
@@ -850,7 +852,7 @@ export default function Shelf() {
                           key={color.value || 'default'}
                           className={`color-btn ${backgroundColor === color.value ? 'active' : ''}`}
                           style={{ backgroundColor: color.value || 'var(--bg-secondary)' }}
-                          onClick={() => setBackgroundColor(color.value)}
+                          onClick={() => { haptics.selection(); setBackgroundColor(color.value) }}
                           title={color.name}
                         />
                       ))}
@@ -881,7 +883,7 @@ export default function Shelf() {
                         <button
                           key={size}
                           className={`size-btn ${itemSize === size ? 'active' : ''}`}
-                          onClick={() => setItemSize(size)}
+                          onClick={() => { haptics.selection(); setItemSize(size) }}
                         >
                           {size}
                         </button>
@@ -896,7 +898,7 @@ export default function Shelf() {
                           key={color.value || 'default'}
                           className={`color-btn ${backgroundColor === color.value ? 'active' : ''}`}
                           style={{ backgroundColor: color.value || 'var(--bg-secondary)' }}
-                          onClick={() => setBackgroundColor(color.value)}
+                          onClick={() => { haptics.selection(); setBackgroundColor(color.value) }}
                           title={color.name}
                         />
                       ))}
@@ -908,14 +910,14 @@ export default function Shelf() {
               <div className="shelf-modal-actions">
                 <button
                   className="shelf-modal-cancel"
-                  onClick={() => { setShowAddModal(false); resetForm(); }}
+                  onClick={() => { haptics.soft(); setShowAddModal(false); resetForm(); }}
                 >
                   Cancel
                 </button>
                 {addType === 'image' && pendingFile && (
                   <button
                     className="shelf-modal-submit"
-                    onClick={handleAddImage}
+                    onClick={() => { haptics.rigid(); handleAddImage() }}
                     disabled={isUploading}
                   >
                     Add
@@ -924,7 +926,7 @@ export default function Shelf() {
                 {addType === 'quote' && (
                   <button
                     className="shelf-modal-submit"
-                    onClick={handleAddQuote}
+                    onClick={() => { haptics.rigid(); handleAddQuote() }}
                     disabled={!quoteText.trim() || isUploading}
                   >
                     Add
@@ -933,7 +935,7 @@ export default function Shelf() {
                 {addType === 'text' && (
                   <button
                     className="shelf-modal-submit"
-                    onClick={handleAddText}
+                    onClick={() => { haptics.rigid(); handleAddText() }}
                     disabled={!textContent.trim() || isUploading}
                   >
                     Add
@@ -1014,13 +1016,13 @@ export default function Shelf() {
                     <div className="style-selector">
                       <button
                         className={`style-btn ${editQuoteStyle === 'default' ? 'active' : ''}`}
-                        onClick={() => setEditQuoteStyle('default')}
+                        onClick={() => { haptics.selection(); setEditQuoteStyle('default') }}
                       >
                         Classic
                       </button>
                       <button
                         className={`style-btn ${editQuoteStyle === 'bar' ? 'active' : ''}`}
-                        onClick={() => setEditQuoteStyle('bar')}
+                        onClick={() => { haptics.selection(); setEditQuoteStyle('bar') }}
                       >
                         Bar
                       </button>
@@ -1033,7 +1035,7 @@ export default function Shelf() {
                         <button
                           key={size}
                           className={`size-btn ${editItemSize === size ? 'active' : ''}`}
-                          onClick={() => setEditItemSize(size)}
+                          onClick={() => { haptics.selection(); setEditItemSize(size) }}
                         >
                           {size}
                         </button>
@@ -1048,7 +1050,7 @@ export default function Shelf() {
                           key={color.value || 'default'}
                           className={`color-btn ${editBackgroundColor === color.value ? 'active' : ''}`}
                           style={{ backgroundColor: color.value || 'var(--bg-secondary)' }}
-                          onClick={() => setEditBackgroundColor(color.value)}
+                          onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
                           title={color.name}
                         />
                       ))}
@@ -1079,7 +1081,7 @@ export default function Shelf() {
                         <button
                           key={size}
                           className={`size-btn ${editItemSize === size ? 'active' : ''}`}
-                          onClick={() => setEditItemSize(size)}
+                          onClick={() => { haptics.selection(); setEditItemSize(size) }}
                         >
                           {size}
                         </button>
@@ -1094,7 +1096,7 @@ export default function Shelf() {
                           key={color.value || 'default'}
                           className={`color-btn ${editBackgroundColor === color.value ? 'active' : ''}`}
                           style={{ backgroundColor: color.value || 'var(--bg-secondary)' }}
-                          onClick={() => setEditBackgroundColor(color.value)}
+                          onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
                           title={color.name}
                         />
                       ))}
@@ -1106,20 +1108,20 @@ export default function Shelf() {
               <div className="shelf-modal-actions">
                 <button
                   className="shelf-modal-delete"
-                  onClick={() => handleDelete(editingItem._id)}
+                  onClick={() => { haptics.nudge(); handleDelete(editingItem._id) }}
                 >
                   Delete
                 </button>
                 <div className="shelf-modal-actions-right">
                   <button
                     className="shelf-modal-cancel"
-                    onClick={() => setEditingItem(null)}
+                    onClick={() => { haptics.soft(); setEditingItem(null) }}
                   >
                     Cancel
                   </button>
                   <button
                     className="shelf-modal-submit"
-                    onClick={handleUpdate}
+                    onClick={() => { haptics.rigid(); handleUpdate() }}
                     disabled={isUploading}
                   >
                     Save
@@ -1189,7 +1191,7 @@ export default function Shelf() {
               <SignedIn>
                 <button
                   className="shelf-preview-edit"
-                  onClick={() => openEditModal(selectedItem)}
+                  onClick={() => { haptics.soft(); openEditModal(selectedItem) }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -1198,7 +1200,7 @@ export default function Shelf() {
                 </button>
                 <button
                   className="shelf-preview-delete"
-                  onClick={() => handleDelete(selectedItem._id)}
+                  onClick={() => { haptics.nudge(); handleDelete(selectedItem._id) }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="3 6 5 6 21 6" />
@@ -1210,7 +1212,7 @@ export default function Shelf() {
               </SignedIn>
               <button
                 className="shelf-preview-close"
-                onClick={() => setSelectedItem(null)}
+                onClick={() => { haptics.soft(); setSelectedItem(null) }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18" />
