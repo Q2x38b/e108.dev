@@ -937,6 +937,116 @@
   transform: none;
 }
 
+/* ==================== */
+/* Shelf Infinite Scroll Layout */
+/* ==================== */
+
+.shelf-infinite-layout {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+.shelf-fixed-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  padding: 32px 24px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.shelf-fixed-header::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.shelf-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 24px 200px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  /* Smooth scrolling for user interactions */
+  scroll-behavior: auto;
+  /* Hide scrollbar for cleaner look */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.shelf-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.shelf-scroll-container.edit-mode {
+  overflow-y: auto;
+  padding-bottom: 100px;
+}
+
+/* Duplicate masonry grid spacing */
+.shelf-masonry-duplicate {
+  margin-top: 20px;
+}
+
+/* Shelf blur text overlay */
+.shelf-blur-overlay {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 32px;
+  height: 160px;
+  background: linear-gradient(
+    to top,
+    var(--bg) 0%,
+    var(--bg) 30%,
+    transparent 100%
+  );
+}
+
+.shelf-blur-text {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-style: italic;
+  text-align: center;
+  max-width: 500px;
+  line-height: 1.6;
+  opacity: 0.7;
+  padding: 0 24px;
+}
+
+[data-theme="dark"] .shelf-blur-text {
+  color: #ffffff;
+}
+
+[data-theme="light"] .shelf-blur-text {
+  color: #000000;
+}
+
+@media (max-width: 768px) {
+  .shelf-fixed-header {
+    padding: 24px 16px 0;
+  }
+
+  .shelf-scroll-container {
+    padding: 0 16px 180px;
+  }
+
+  .shelf-blur-text {
+    font-size: 0.85rem;
+    max-width: 320px;
+  }
+}
+
 /* Status badge */
 .status-badge {
   display: inline-flex;

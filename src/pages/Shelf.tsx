@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Footer } from '../components/Footer'
+// Footer removed for infinite scroll
 import { useHaptics } from '../hooks/useHaptics'
 import {
   DndContext,
@@ -271,6 +271,13 @@ export default function Shelf() {
   const [isEditMode, setIsEditMode] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Auto-scroll refs and state
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const isUserScrolling = useRef(false)
+  const userScrollTimeout = useRef<NodeJS.Timeout | null>(null)
+  const animationFrameRef = useRef<number | null>(null)
+  const lastScrollTime = useRef<number>(0)
+
   // Image preview states
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -301,6 +308,100 @@ export default function Shelf() {
     if (!items) return []
     return items as ShelfItem[]
   }, [items])
+
+  // Auto-scroll effect
+  useEffect(() => {
+    if (isEditMode || !scrollContainerRef.current || shelfItems.length === 0) return
+
+    const container = scrollContainerRef.current
+    const scrollSpeed = 0.5 // pixels per frame (slow speed)
+
+    const autoScroll = (timestamp: number) => {
+      if (isUserScrolling.current) {
+        animationFrameRef.current = requestAnimationFrame(autoScroll)
+        return
+      }
+
+      // Throttle scrolling for smoothness
+      if (timestamp - lastScrollTime.current < 16) { // ~60fps
+        animationFrameRef.current = requestAnimationFrame(autoScroll)
+        return
+      }
+      lastScrollTime.current = timestamp
+
+      const maxScroll = container.scrollHeight / 2 // We duplicate content, so max is half
+
+      container.scrollTop += scrollSpeed
+
+      // Reset to top when reaching halfway (seamless loop)
+      if (container.scrollTop >= maxScroll) {
+        container.scrollTop = 0
+      }
+
+      animationFrameRef.current = requestAnimationFrame(autoScroll)
+    }
+
+    // Start auto-scroll
+    animationFrameRef.current = requestAnimationFrame(autoScroll)
+
+    // Handle user scroll interaction
+    const handleScroll = () => {
+      isUserScrolling.current = true
+
+      if (userScrollTimeout.current) {
+        clearTimeout(userScrollTimeout.current)
+      }
+
+      // Resume auto-scroll after 2 seconds of no user interaction
+      userScrollTimeout.current = setTimeout(() => {
+        isUserScrolling.current = false
+      }, 2000)
+    }
+
+    const handleWheel = () => {
+      isUserScrolling.current = true
+
+      if (userScrollTimeout.current) {
+        clearTimeout(userScrollTimeout.current)
+      }
+
+      userScrollTimeout.current = setTimeout(() => {
+        isUserScrolling.current = false
+      }, 2000)
+    }
+
+    const handleTouchStart = () => {
+      isUserScrolling.current = true
+    }
+
+    const handleTouchEnd = () => {
+      if (userScrollTimeout.current) {
+        clearTimeout(userScrollTimeout.current)
+      }
+
+      userScrollTimeout.current = setTimeout(() => {
+        isUserScrolling.current = false
+      }, 2000)
+    }
+
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    container.addEventListener('wheel', handleWheel, { passive: true })
+    container.addEventListener('touchstart', handleTouchStart, { passive: true })
+    container.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+      if (userScrollTimeout.current) {
+        clearTimeout(userScrollTimeout.current)
+      }
+      container.removeEventListener('scroll', handleScroll)
+      container.removeEventListener('wheel', handleWheel)
+      container.removeEventListener('touchstart', handleTouchStart)
+      container.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [isEditMode, shelfItems.length])
 
   // DnD sensors
   const sensors = useSensors(
@@ -567,100 +668,127 @@ export default function Shelf() {
   }
 
   return (
-    <div className="blog-list-layout shelf-page">
-      <motion.header
-        className="blog-header blog-list-header"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <nav className="breadcrumb">
-          <Link to="/" className="breadcrumb-link">Home</Link>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-current">Shelf</span>
-        </nav>
-        <div className="header-right">
-          <button
-            className="theme-toggle"
-            onClick={() => { haptics.selection(); toggle() }}
-            aria-label="Toggle theme"
-          >
-            {theme === 'light' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-            )}
-          </button>
-          <SignedIn>
+    <div className="blog-list-layout shelf-page shelf-infinite-layout">
+      {/* Fixed Header Section */}
+      <div className="shelf-fixed-header">
+        <motion.header
+          className="blog-header blog-list-header"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <nav className="breadcrumb">
+            <Link to="/" className="breadcrumb-link">Home</Link>
+            <span className="breadcrumb-sep">/</span>
+            <span className="breadcrumb-current">Shelf</span>
+          </nav>
+          <div className="header-right">
             <button
-              className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
-              onClick={() => { haptics.selection(); setIsEditMode(!isEditMode) }}
-              aria-label={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
-              title={isEditMode ? 'Exit edit mode' : 'Reorder items'}
+              className="theme-toggle"
+              onClick={() => { haptics.selection(); toggle() }}
+              aria-label="Toggle theme"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                <line x1="12" y1="22.08" x2="12" y2="12" />
-              </svg>
+              {theme === 'light' ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              )}
             </button>
-            <button
-              className="add-post-btn"
-              onClick={() => { haptics.soft(); setShowAddModal(true) }}
-              aria-label="Add item"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </button>
-          </SignedIn>
-        </div>
-      </motion.header>
+            <SignedIn>
+              <button
+                className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
+                onClick={() => { haptics.selection(); setIsEditMode(!isEditMode) }}
+                aria-label={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
+                title={isEditMode ? 'Exit edit mode' : 'Reorder items'}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+              </button>
+              <button
+                className="add-post-btn"
+                onClick={() => { haptics.soft(); setShowAddModal(true) }}
+                aria-label="Add item"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </button>
+            </SignedIn>
+          </div>
+        </motion.header>
 
-      <div className="blog-list-title">
-        <h1 className="shelf-artistic-title">my shelf</h1>
-        {isEditMode && (
-          <p className="shelf-edit-hint">Drag items to reorder</p>
-        )}
+        <div className="blog-list-title">
+          <h1 className="shelf-artistic-title">my shelf</h1>
+          {isEditMode && (
+            <p className="shelf-edit-hint">Drag items to reorder</p>
+          )}
+        </div>
       </div>
 
-      <main className="blog-list-content shelf-content">
-        {items === undefined ? (
-          <div className="blog-loading-spinner-container">
-            <div className="blog-loading-spinner" />
-          </div>
-        ) : shelfItems.length === 0 ? (
-          <p className="shelf-empty">No items yet.</p>
-        ) : isEditMode && isAuthenticated ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={shelfItems.map(item => item._id)}
-              strategy={verticalListSortingStrategy}
+      {/* Scrollable Content Container */}
+      <div
+        ref={scrollContainerRef}
+        className={`shelf-scroll-container ${isEditMode ? 'edit-mode' : ''}`}
+      >
+        <main className="blog-list-content shelf-content">
+          {items === undefined ? (
+            <div className="blog-loading-spinner-container">
+              <div className="blog-loading-spinner" />
+            </div>
+          ) : shelfItems.length === 0 ? (
+            <p className="shelf-empty">No items yet.</p>
+          ) : isEditMode && isAuthenticated ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              <div className="shelf-reorder-list">
+              <SortableContext
+                items={shelfItems.map(item => item._id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="shelf-reorder-list">
+                  {shelfItems.map((item, index) => (
+                    <SortableItem
+                      key={item._id}
+                      item={item}
+                      index={index}
+                      isEditMode={isEditMode}
+                      onSelect={setSelectedItem}
+                      onEdit={openEditModal}
+                      isDarkBg={isDarkBg}
+                      isAuthenticated={isAuthenticated}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <>
+              {/* First set of items */}
+              <div className="shelf-masonry">
                 {shelfItems.map((item, index) => (
                   <SortableItem
                     key={item._id}
                     item={item}
                     index={index}
-                    isEditMode={isEditMode}
+                    isEditMode={false}
                     onSelect={setSelectedItem}
                     onEdit={openEditModal}
                     isDarkBg={isDarkBg}
@@ -668,25 +796,25 @@ export default function Shelf() {
                   />
                 ))}
               </div>
-            </SortableContext>
-          </DndContext>
-        ) : (
-          <div className="shelf-masonry">
-            {shelfItems.map((item, index) => (
-              <SortableItem
-                key={item._id}
-                item={item}
-                index={index}
-                isEditMode={false}
-                onSelect={setSelectedItem}
-                onEdit={openEditModal}
-                isDarkBg={isDarkBg}
-                isAuthenticated={isAuthenticated}
-              />
-            ))}
-          </div>
-        )}
-      </main>
+              {/* Duplicated items for infinite scroll */}
+              <div className="shelf-masonry shelf-masonry-duplicate">
+                {shelfItems.map((item, index) => (
+                  <SortableItem
+                    key={`dup-${item._id}`}
+                    item={item}
+                    index={index + shelfItems.length}
+                    isEditMode={false}
+                    onSelect={setSelectedItem}
+                    onEdit={openEditModal}
+                    isDarkBg={isDarkBg}
+                    isAuthenticated={isAuthenticated}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </main>
+      </div>
 
       {/* Add Item Modal */}
       <AnimatePresence>
@@ -1224,8 +1352,12 @@ export default function Shelf() {
         )}
       </AnimatePresence>
 
-      <Footer showSignature={false} />
-      <div className="blog-blur-bottom" />
+      {/* Bottom blur with text overlay */}
+      <div className="blog-blur-bottom shelf-blur-overlay">
+        <p className="shelf-blur-text">
+          A collection of moments, ideas, and inspirations that have shaped my journey.
+        </p>
+      </div>
     </div>
   )
 }
