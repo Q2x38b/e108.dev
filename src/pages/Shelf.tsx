@@ -326,16 +326,14 @@ export default function Shelf() {
         return
       }
 
-      // Calculate the midpoint (where the duplicate items start)
       const scrollHeight = container.scrollHeight
       const clientHeight = container.clientHeight
       const maxScroll = scrollHeight - clientHeight
-      const midpoint = maxScroll / 2
 
       container.scrollTop += scrollSpeed
 
-      // Reset to top when we've scrolled past the midpoint (seamless loop)
-      if (container.scrollTop >= midpoint) {
+      // Reset to top when reaching the bottom (simple loop)
+      if (container.scrollTop >= maxScroll - 10) {
         container.scrollTop = 0
       }
 
@@ -774,25 +772,11 @@ export default function Shelf() {
             </DndContext>
           ) : (
             <div className="shelf-masonry">
-              {/* First set of items */}
               {shelfItems.map((item, index) => (
                 <SortableItem
                   key={item._id}
                   item={item}
                   index={index}
-                  isEditMode={false}
-                  onSelect={setSelectedItem}
-                  onEdit={openEditModal}
-                  isDarkBg={isDarkBg}
-                  isAuthenticated={isAuthenticated}
-                />
-              ))}
-              {/* Duplicated items for infinite scroll - same container for seamless columns */}
-              {shelfItems.map((item, index) => (
-                <SortableItem
-                  key={`dup-${item._id}`}
-                  item={item}
-                  index={index + shelfItems.length}
                   isEditMode={false}
                   onSelect={setSelectedItem}
                   onEdit={openEditModal}
