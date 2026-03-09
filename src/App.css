@@ -943,19 +943,31 @@
 
 .shelf-infinite-layout {
   position: relative;
-  overflow: hidden;
   padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .shelf-fixed-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 100;
   background: var(--bg);
-  padding: 32px 24px 0;
-  max-width: 1200px;
+  padding: 32px 24px 24px;
+  flex-shrink: 0;
+}
+
+.shelf-fixed-header .blog-header {
+  max-width: 1152px;
   margin: 0 auto;
-  width: 100%;
+  padding: 0;
+}
+
+.shelf-fixed-header .blog-list-title {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0;
 }
 
 .shelf-fixed-header::after {
@@ -967,6 +979,7 @@
   height: 40px;
   background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
   pointer-events: none;
+  z-index: 10;
 }
 
 .shelf-scroll-container {
@@ -974,14 +987,14 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0 24px 200px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-  /* Smooth scrolling for user interactions */
-  scroll-behavior: auto;
   /* Hide scrollbar for cleaner look */
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.shelf-scroll-container .shelf-content {
+  max-width: 1152px;
+  margin: 0 auto;
 }
 
 .shelf-scroll-container::-webkit-scrollbar {
@@ -989,7 +1002,6 @@
 }
 
 .shelf-scroll-container.edit-mode {
-  overflow-y: auto;
   padding-bottom: 100px;
 }
 

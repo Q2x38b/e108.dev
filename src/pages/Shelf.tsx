@@ -314,60 +314,54 @@ export default function Shelf() {
     if (isEditMode || !scrollContainerRef.current || shelfItems.length === 0) return
 
     const container = scrollContainerRef.current
-    const scrollSpeed = 0.5 // pixels per frame (slow speed)
+    const scrollSpeed = 0.8 // pixels per frame
+    let isAutoScrolling = true
+    let startTimeout: NodeJS.Timeout
 
-    const autoScroll = (timestamp: number) => {
-      if (isUserScrolling.current) {
+    const autoScroll = () => {
+      if (!isAutoScrolling || isUserScrolling.current || !container) {
+        if (isAutoScrolling) {
+          animationFrameRef.current = requestAnimationFrame(autoScroll)
+        }
+        return
+      }
+
+      // Get the first masonry grid height (half of total since we duplicate)
+      const firstMasonry = container.querySelector('.shelf-masonry:not(.shelf-masonry-duplicate)')
+      if (!firstMasonry) {
         animationFrameRef.current = requestAnimationFrame(autoScroll)
         return
       }
 
-      // Throttle scrolling for smoothness
-      if (timestamp - lastScrollTime.current < 16) { // ~60fps
-        animationFrameRef.current = requestAnimationFrame(autoScroll)
-        return
-      }
-      lastScrollTime.current = timestamp
-
-      const maxScroll = container.scrollHeight / 2 // We duplicate content, so max is half
+      const firstMasonryHeight = firstMasonry.getBoundingClientRect().height + 20 // +20 for margin
 
       container.scrollTop += scrollSpeed
 
-      // Reset to top when reaching halfway (seamless loop)
-      if (container.scrollTop >= maxScroll) {
+      // Reset to top when we've scrolled past the first set of items
+      if (container.scrollTop >= firstMasonryHeight) {
         container.scrollTop = 0
       }
 
       animationFrameRef.current = requestAnimationFrame(autoScroll)
     }
 
-    // Start auto-scroll
-    animationFrameRef.current = requestAnimationFrame(autoScroll)
+    // Delay start to let images load
+    startTimeout = setTimeout(() => {
+      animationFrameRef.current = requestAnimationFrame(autoScroll)
+    }, 1000)
 
     // Handle user scroll interaction
-    const handleScroll = () => {
+    const handleUserInteraction = () => {
       isUserScrolling.current = true
 
       if (userScrollTimeout.current) {
         clearTimeout(userScrollTimeout.current)
       }
 
-      // Resume auto-scroll after 2 seconds of no user interaction
+      // Resume auto-scroll after 3 seconds of no user interaction
       userScrollTimeout.current = setTimeout(() => {
         isUserScrolling.current = false
-      }, 2000)
-    }
-
-    const handleWheel = () => {
-      isUserScrolling.current = true
-
-      if (userScrollTimeout.current) {
-        clearTimeout(userScrollTimeout.current)
-      }
-
-      userScrollTimeout.current = setTimeout(() => {
-        isUserScrolling.current = false
-      }, 2000)
+      }, 3000)
     }
 
     const handleTouchStart = () => {
@@ -381,25 +375,27 @@ export default function Shelf() {
 
       userScrollTimeout.current = setTimeout(() => {
         isUserScrolling.current = false
-      }, 2000)
+      }, 3000)
     }
 
-    container.addEventListener('scroll', handleScroll, { passive: true })
-    container.addEventListener('wheel', handleWheel, { passive: true })
+    container.addEventListener('wheel', handleUserInteraction, { passive: true })
     container.addEventListener('touchstart', handleTouchStart, { passive: true })
     container.addEventListener('touchend', handleTouchEnd, { passive: true })
+    container.addEventListener('mousedown', handleUserInteraction, { passive: true })
 
     return () => {
+      isAutoScrolling = false
+      clearTimeout(startTimeout)
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
       if (userScrollTimeout.current) {
         clearTimeout(userScrollTimeout.current)
       }
-      container.removeEventListener('scroll', handleScroll)
-      container.removeEventListener('wheel', handleWheel)
+      container.removeEventListener('wheel', handleUserInteraction)
       container.removeEventListener('touchstart', handleTouchStart)
       container.removeEventListener('touchend', handleTouchEnd)
+      container.removeEventListener('mousedown', handleUserInteraction)
     }
   }, [isEditMode, shelfItems.length])
 
