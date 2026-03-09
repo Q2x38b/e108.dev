@@ -340,6 +340,17 @@ export default function Shelf() {
       animationFrameRef.current = requestAnimationFrame(autoScroll)
     }
 
+    // Handle scroll loop - always reset to top when reaching bottom (even during manual scroll)
+    const handleScrollLoop = () => {
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      const maxScroll = scrollHeight - clientHeight
+
+      if (container.scrollTop >= maxScroll - 5) {
+        container.scrollTop = 0
+      }
+    }
+
     // Delay start to let images load
     startTimeout = setTimeout(() => {
       animationFrameRef.current = requestAnimationFrame(autoScroll)
@@ -373,6 +384,7 @@ export default function Shelf() {
       }, 3000)
     }
 
+    container.addEventListener('scroll', handleScrollLoop, { passive: true })
     container.addEventListener('wheel', handleUserInteraction, { passive: true })
     container.addEventListener('touchstart', handleTouchStart, { passive: true })
     container.addEventListener('touchend', handleTouchEnd, { passive: true })
@@ -387,6 +399,7 @@ export default function Shelf() {
       if (userScrollTimeout.current) {
         clearTimeout(userScrollTimeout.current)
       }
+      container.removeEventListener('scroll', handleScrollLoop)
       container.removeEventListener('wheel', handleUserInteraction)
       container.removeEventListener('touchstart', handleTouchStart)
       container.removeEventListener('touchend', handleTouchEnd)
