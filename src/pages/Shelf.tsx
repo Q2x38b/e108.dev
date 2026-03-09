@@ -332,25 +332,21 @@ export default function Shelf() {
 
       container.scrollTop += scrollSpeed
 
-      // Reset at midpoint - we have duplicate items so this is seamless
-      const midpoint = maxScroll / 2
-      if (container.scrollTop >= midpoint) {
+      // Loop back to top when reaching the bottom
+      if (container.scrollTop >= maxScroll - 50) {
         container.scrollTop = 0
       }
 
       animationFrameRef.current = requestAnimationFrame(autoScroll)
     }
 
-    // Handle scroll loop - reset at midpoint for seamless infinite scroll
+    // Handle scroll loop - reset to top when reaching bottom
     const handleScrollLoop = () => {
       const scrollHeight = container.scrollHeight
       const clientHeight = container.clientHeight
       const maxScroll = scrollHeight - clientHeight
 
-      // Reset at midpoint - duplicate items make this seamless
-      const midpoint = maxScroll / 2
-
-      if (container.scrollTop >= midpoint) {
+      if (container.scrollTop >= maxScroll - 20) {
         container.scrollTop = 0
       }
     }
@@ -789,25 +785,11 @@ export default function Shelf() {
             </DndContext>
           ) : (
             <div className="shelf-masonry">
-              {/* Original items */}
               {shelfItems.map((item, index) => (
                 <SortableItem
                   key={item._id}
                   item={item}
                   index={index}
-                  isEditMode={false}
-                  onSelect={setSelectedItem}
-                  onEdit={openEditModal}
-                  isDarkBg={isDarkBg}
-                  isAuthenticated={isAuthenticated}
-                />
-              ))}
-              {/* Duplicate items for seamless infinite scroll */}
-              {shelfItems.map((item, index) => (
-                <SortableItem
-                  key={`dup-${item._id}`}
-                  item={item}
-                  index={index + shelfItems.length}
                   isEditMode={false}
                   onSelect={setSelectedItem}
                   onEdit={openEditModal}

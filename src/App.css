@@ -6415,45 +6415,28 @@
   padding: 60px 0;
 }
 
-/* Masonry Grid using Flexbox Columns - items flow top-to-bottom for seamless infinite scroll */
+/* Masonry Grid using CSS Columns */
 .shelf-masonry {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-content: flex-start;
-  /* Height determines when to wrap to next column - set in JS or use max-height */
-  max-height: 3000px;
-}
-
-.shelf-masonry .shelf-item {
-  width: calc(25% - 12px);
-  break-inside: avoid;
+  column-count: 4;
+  column-gap: 20px;
 }
 
 @media (max-width: 1100px) {
-  .shelf-masonry .shelf-item {
-    width: calc(33.333% - 11px);
+  .shelf-masonry {
+    column-count: 3;
   }
 }
 
 @media (max-width: 768px) {
   .shelf-masonry {
-    gap: 12px;
-  }
-  .shelf-masonry .shelf-item {
-    width: calc(50% - 6px);
+    column-count: 2;
+    column-gap: 16px;
   }
 }
 
 @media (max-width: 480px) {
   .shelf-masonry {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    max-height: none;
-  }
-  .shelf-masonry .shelf-item {
-    width: 100%;
+    column-count: 1;
   }
 }
 
