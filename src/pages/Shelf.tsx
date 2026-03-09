@@ -326,19 +326,16 @@ export default function Shelf() {
         return
       }
 
-      // Get the first masonry grid height (half of total since we duplicate)
-      const firstMasonry = container.querySelector('.shelf-masonry:not(.shelf-masonry-duplicate)')
-      if (!firstMasonry) {
-        animationFrameRef.current = requestAnimationFrame(autoScroll)
-        return
-      }
-
-      const firstMasonryHeight = firstMasonry.getBoundingClientRect().height + 20 // +20 for margin
+      // Calculate the midpoint (where the duplicate items start)
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      const maxScroll = scrollHeight - clientHeight
+      const midpoint = maxScroll / 2
 
       container.scrollTop += scrollSpeed
 
-      // Reset to top when we've scrolled past the first set of items
-      if (container.scrollTop >= firstMasonryHeight) {
+      // Reset to top when we've scrolled past the midpoint (seamless loop)
+      if (container.scrollTop >= midpoint) {
         container.scrollTop = 0
       }
 
@@ -348,7 +345,7 @@ export default function Shelf() {
     // Delay start to let images load
     startTimeout = setTimeout(() => {
       animationFrameRef.current = requestAnimationFrame(autoScroll)
-    }, 1000)
+    }, 1500)
 
     // Handle user scroll interaction
     const handleUserInteraction = () => {
@@ -776,38 +773,34 @@ export default function Shelf() {
               </SortableContext>
             </DndContext>
           ) : (
-            <>
+            <div className="shelf-masonry">
               {/* First set of items */}
-              <div className="shelf-masonry">
-                {shelfItems.map((item, index) => (
-                  <SortableItem
-                    key={item._id}
-                    item={item}
-                    index={index}
-                    isEditMode={false}
-                    onSelect={setSelectedItem}
-                    onEdit={openEditModal}
-                    isDarkBg={isDarkBg}
-                    isAuthenticated={isAuthenticated}
-                  />
-                ))}
-              </div>
-              {/* Duplicated items for infinite scroll */}
-              <div className="shelf-masonry shelf-masonry-duplicate">
-                {shelfItems.map((item, index) => (
-                  <SortableItem
-                    key={`dup-${item._id}`}
-                    item={item}
-                    index={index + shelfItems.length}
-                    isEditMode={false}
-                    onSelect={setSelectedItem}
-                    onEdit={openEditModal}
-                    isDarkBg={isDarkBg}
-                    isAuthenticated={isAuthenticated}
-                  />
-                ))}
-              </div>
-            </>
+              {shelfItems.map((item, index) => (
+                <SortableItem
+                  key={item._id}
+                  item={item}
+                  index={index}
+                  isEditMode={false}
+                  onSelect={setSelectedItem}
+                  onEdit={openEditModal}
+                  isDarkBg={isDarkBg}
+                  isAuthenticated={isAuthenticated}
+                />
+              ))}
+              {/* Duplicated items for infinite scroll - same container for seamless columns */}
+              {shelfItems.map((item, index) => (
+                <SortableItem
+                  key={`dup-${item._id}`}
+                  item={item}
+                  index={index + shelfItems.length}
+                  isEditMode={false}
+                  onSelect={setSelectedItem}
+                  onEdit={openEditModal}
+                  isDarkBg={isDarkBg}
+                  isAuthenticated={isAuthenticated}
+                />
+              ))}
+            </div>
           )}
         </main>
       </div>

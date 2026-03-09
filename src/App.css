@@ -1005,11 +1005,6 @@
   padding-bottom: 100px;
 }
 
-/* Duplicate masonry grid spacing */
-.shelf-masonry-duplicate {
-  margin-top: 20px;
-}
-
 /* Shelf blur text overlay */
 .shelf-blur-overlay {
   display: flex;
