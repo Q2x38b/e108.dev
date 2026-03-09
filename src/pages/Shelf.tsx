@@ -332,21 +332,25 @@ export default function Shelf() {
 
       container.scrollTop += scrollSpeed
 
-      // Reset to top when reaching the bottom (simple loop)
-      if (container.scrollTop >= maxScroll - 10) {
+      // Reset at midpoint - we have duplicate items so this is seamless
+      const midpoint = maxScroll / 2
+      if (container.scrollTop >= midpoint) {
         container.scrollTop = 0
       }
 
       animationFrameRef.current = requestAnimationFrame(autoScroll)
     }
 
-    // Handle scroll loop - always reset to top when reaching bottom (even during manual scroll)
+    // Handle scroll loop - reset at midpoint for seamless infinite scroll
     const handleScrollLoop = () => {
       const scrollHeight = container.scrollHeight
       const clientHeight = container.clientHeight
       const maxScroll = scrollHeight - clientHeight
 
-      if (container.scrollTop >= maxScroll - 5) {
+      // Reset at midpoint - duplicate items make this seamless
+      const midpoint = maxScroll / 2
+
+      if (container.scrollTop >= midpoint) {
         container.scrollTop = 0
       }
     }
@@ -785,11 +789,25 @@ export default function Shelf() {
             </DndContext>
           ) : (
             <div className="shelf-masonry">
+              {/* Original items */}
               {shelfItems.map((item, index) => (
                 <SortableItem
                   key={item._id}
                   item={item}
                   index={index}
+                  isEditMode={false}
+                  onSelect={setSelectedItem}
+                  onEdit={openEditModal}
+                  isDarkBg={isDarkBg}
+                  isAuthenticated={isAuthenticated}
+                />
+              ))}
+              {/* Duplicate items for seamless infinite scroll */}
+              {shelfItems.map((item, index) => (
+                <SortableItem
+                  key={`dup-${item._id}`}
+                  item={item}
+                  index={index + shelfItems.length}
                   isEditMode={false}
                   onSelect={setSelectedItem}
                   onEdit={openEditModal}
