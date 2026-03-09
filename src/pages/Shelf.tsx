@@ -314,7 +314,7 @@ export default function Shelf() {
     if (isEditMode || !scrollContainerRef.current || shelfItems.length === 0) return
 
     const container = scrollContainerRef.current
-    const scrollSpeed = 0.8 // pixels per frame
+    const scrollSpeed = 0.3 // pixels per frame (slow, gentle scroll)
     let isAutoScrolling = true
     let startTimeout: NodeJS.Timeout
 
