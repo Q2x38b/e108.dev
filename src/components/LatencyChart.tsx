@@ -111,9 +111,10 @@ export function LatencyChart() {
             fill={true}
             pulse={true}
             scrub={true}
-            momentum={true}
-            showValue={true}
-            window={90}
+            momentum={false}
+            showValue={false}
+            window={60}
+            lerpSpeed={0.15}
             formatValue={(v: number) => `${Math.round(v)}ms`}
             formatTime={(t: number) => {
               const date = new Date(t * 1000)
