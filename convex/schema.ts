@@ -91,6 +91,13 @@ export default defineSchema({
     updatedAt: v.number(),
   }),
 
+  // Latency section content (singleton)
+  latency: defineTable({
+    title: v.string(),
+    description: v.string(),
+    updatedAt: v.number(),
+  }),
+
   // Uploaded images for blog posts
   images: defineTable({
     storageId: v.id("_storage"),

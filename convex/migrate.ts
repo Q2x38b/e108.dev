@@ -120,7 +120,33 @@ export const seedInitialData = mutation({
       updatedAt: now,
     });
 
+    // Seed Latency
+    await ctx.db.insert("latency", {
+      title: "Connection Latency",
+      description: "Real-time round-trip latency to this server",
+      updatedAt: now,
+    });
+
     return { message: "Initial data seeded successfully", seeded: true };
+  },
+});
+
+// Seed latency data only (for adding to existing databases)
+export const seedLatencyData = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const existing = await ctx.db.query("latency").first();
+    if (existing) {
+      return { message: "Latency data already exists", seeded: false };
+    }
+
+    await ctx.db.insert("latency", {
+      title: "Connection Latency",
+      description: "Real-time round-trip latency to this server",
+      updatedAt: Date.now(),
+    });
+
+    return { message: "Latency data seeded successfully", seeded: true };
   },
 });
 
@@ -234,6 +260,13 @@ export const seedInitialDataNoAuth = mutation({
     await ctx.db.insert("footer", {
       quote: "The only limit is yourself",
       copyrightYear: "2025",
+      updatedAt: now,
+    });
+
+    // Seed Latency
+    await ctx.db.insert("latency", {
+      title: "Connection Latency",
+      description: "Real-time round-trip latency to this server",
       updatedAt: now,
     });
 

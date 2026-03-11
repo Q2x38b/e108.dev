@@ -8,6 +8,7 @@ import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
 import { EditableSection } from '../components/EditableSection'
 import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
+import { LatencyChart } from '../components/LatencyChart'
 
 // Animation variants
 const fadeInUp = {
@@ -1228,6 +1229,7 @@ function HomeContent() {
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
+      <LatencyChart />
       <Footer copyrightYear={footerData.copyrightYear} />
 
       {/* Editors */}

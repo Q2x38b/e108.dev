@@ -373,3 +373,36 @@ export const updateFooter = mutation({
     }
   },
 });
+
+// ===== LATENCY =====
+export const getLatency = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("latency").first();
+  },
+});
+
+export const updateLatency = mutation({
+  args: {
+    token: v.string(),
+    title: v.string(),
+    description: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (!await requireAuth(ctx, args.token)) {
+      throw new Error("Unauthorized");
+    }
+
+    const existing = await ctx.db.query("latency").first();
+    const data = {
+      title: args.title,
+      description: args.description,
+      updatedAt: Date.now(),
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, data);
+    } else {
+      await ctx.db.insert("latency", data);
+    }
+  },
+});

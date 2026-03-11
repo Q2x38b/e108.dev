@@ -197,6 +197,16 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
 }
 
 /* Bio */
@@ -782,6 +792,53 @@
     background: var(--hover-bg);
     color: var(--text);
   }
+}
+
+/* Latency Chart Section */
+.latency-section {
+  margin-top: 64px;
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+}
+
+.latency-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.latency-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.latency-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid;
+  font-variant-numeric: tabular-nums;
+}
+
+.latency-chart-container {
+  position: relative;
+  height: 200px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: visible;
+  background: transparent;
+}
+
+.latency-description {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  text-align: center;
 }
 
 /* Footer */
