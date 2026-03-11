@@ -80,7 +80,7 @@ export function LatencyChart() {
 
   // Get color based on latency
   const getColor = (latency: number): string => {
-    if (latency < 100) return '#22c55e' // green
+    if (latency < 120) return '#22c55e' // green
     if (latency < 200) return '#f59e0b' // amber/orange
     return '#ef4444' // red
   }
