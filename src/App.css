@@ -104,6 +104,16 @@
   height: 15px;
 }
 
+.theme-toggle.active {
+  background: var(--accent);
+  color: white;
+}
+
+.theme-toggle.active:hover {
+  background: var(--accent);
+  opacity: 0.9;
+}
+
 .theme-dropdown-menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -6467,9 +6477,63 @@
   max-width: 1200px;
 }
 
+/* Shelf Container - wider than blog */
+.shelf-container {
+  max-width: 1200px;
+  padding: 32px 24px 64px;
+}
+
+.shelf-container .blog-header {
+  margin-bottom: 0;
+}
+
+.shelf-title-section {
+  margin-top: 32px;
+  margin-bottom: 40px;
+}
+
+.shelf-title {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
 .shelf-content {
   max-width: 100%;
   width: 100%;
+}
+
+.shelf-description {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  font-style: italic;
+  margin-top: 60px;
+  margin-bottom: 40px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .shelf-container {
+    padding: 24px 16px 48px;
+  }
+
+  .shelf-title {
+    font-size: 2rem;
+  }
+
+  .shelf-title-section {
+    margin-top: 24px;
+    margin-bottom: 32px;
+  }
+
+  .shelf-description {
+    font-size: 0.9rem;
+    margin-top: 40px;
+  }
 }
 
 .shelf-empty {

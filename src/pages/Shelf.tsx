@@ -6,6 +6,7 @@ import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useHaptics } from '../hooks/useHaptics'
+import { Footer } from '../components/Footer'
 import {
   DndContext,
   closestCenter,
@@ -403,79 +404,75 @@ export default function Shelf() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <motion.header
-        className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm"
-        initial={{ opacity: 0, y: -20 }}
+    <div className="blog-container shelf-container">
+      <header className="blog-header">
+        <nav className="breadcrumb">
+          <Link to="/" className="breadcrumb-link">Home</Link>
+          <span className="breadcrumb-sep">/</span>
+          <span className="breadcrumb-current">Shelf</span>
+        </nav>
+        <div className="header-right">
+          <button
+            className="theme-toggle"
+            onClick={() => { haptics.selection(); toggle() }}
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+            )}
+          </button>
+          <SignedIn>
+            <button
+              className={`theme-toggle ${isEditMode ? 'active' : ''}`}
+              onClick={() => { haptics.selection(); setIsEditMode(!isEditMode) }}
+              aria-label={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              </svg>
+            </button>
+            <button
+              className="theme-toggle"
+              onClick={() => { haptics.soft(); setShowAddModal(true) }}
+              aria-label="Add item"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </SignedIn>
+        </div>
+      </header>
+
+      <motion.div
+        className="shelf-title-section"
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-            <span>/</span>
-            <span className="text-foreground">Shelf</span>
-          </nav>
-          <div className="flex items-center gap-2">
-            <button
-              className="rounded-lg p-2 hover:bg-accent transition-colors"
-              onClick={() => { haptics.selection(); toggle() }}
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? (
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                </svg>
-              ) : (
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="5" />
-                  <line x1="12" y1="1" x2="12" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                  <line x1="1" y1="12" x2="3" y2="12" />
-                  <line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-              )}
-            </button>
-            <SignedIn>
-              <button
-                className={`rounded-lg p-2 transition-colors ${isEditMode ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
-                onClick={() => { haptics.selection(); setIsEditMode(!isEditMode) }}
-                aria-label={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                </svg>
-              </button>
-              <button
-                className="rounded-lg p-2 hover:bg-accent transition-colors"
-                onClick={() => { haptics.soft(); setShowAddModal(true) }}
-                aria-label="Add item"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-              </button>
-            </SignedIn>
-          </div>
-        </div>
-      </motion.header>
-
-      {/* Title */}
-      <div className="mx-auto max-w-5xl px-4 py-8">
-        <h1 className="text-4xl font-light tracking-tight">my shelf</h1>
+        <h1 className="shelf-title">my shelf</h1>
         {isEditMode && (
-          <p className="mt-2 text-sm text-muted-foreground">Drag items to reorder</p>
+          <p className="shelf-edit-hint">Drag items to reorder</p>
         )}
-      </div>
+      </motion.div>
 
       {/* Content */}
-      <main className="mx-auto max-w-5xl px-4 pb-20">
+      <main className="shelf-content">
         {items === undefined ? (
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -928,6 +925,13 @@ export default function Shelf() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Description */}
+      <p className="shelf-description">
+        A collection of moments, ideas, and inspirations that have shaped my journey.
+      </p>
+
+      <Footer showSignature={false} />
     </div>
   )
 }
