@@ -7298,6 +7298,43 @@
   color: white;
 }
 
+/* Reorder Item (simplified for edit mode) */
+.shelf-reorder-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  padding-left: 48px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  cursor: grab;
+  user-select: none;
+}
+
+.shelf-reorder-item:active {
+  cursor: grabbing;
+}
+
+.shelf-reorder-item.dark-bg {
+  color: white;
+}
+
+.shelf-reorder-item img {
+  max-height: 80px;
+  width: auto;
+  border-radius: 4px;
+}
+
+.shelf-reorder-quote,
+.shelf-reorder-text {
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
 /* Edit Hint */
 .shelf-edit-hint {
   font-size: 0.85rem;

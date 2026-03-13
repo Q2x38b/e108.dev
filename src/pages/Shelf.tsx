@@ -1,11 +1,10 @@
-import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import { motion, AnimatePresence } from 'framer-motion'
-// Footer removed for infinite scroll
 import { useHaptics } from '../hooks/useHaptics'
 import {
   DndContext,
@@ -24,12 +23,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { ImageGallery } from '@/components/image-gallery'
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-}
+import { LazyImage } from '@/components/lazy-image'
 
 type ItemType = 'image' | 'quote' | 'text'
 type ItemSize = 'small' | 'medium' | 'large'
@@ -38,20 +32,16 @@ type QuoteStyle = 'default' | 'bar'
 interface ShelfItem {
   _id: string
   type: ItemType
-  // Image fields
   storageId?: string
   fileName?: string
   contentType?: string
   url?: string | null
-  // Quote fields
   quoteText?: string
   quoteAuthor?: string
   quoteSource?: string
   quoteStyle?: QuoteStyle
-  // Text fields
   textContent?: string
   textLabel?: string
-  // Common fields
   caption?: string
   aspectRatio?: number
   size?: ItemSize
@@ -59,7 +49,6 @@ interface ShelfItem {
   order?: number
   uploadedAt: number
 }
-
 
 const BACKGROUND_COLORS = [
   { name: 'Default', value: '' },
@@ -76,95 +65,7 @@ const BACKGROUND_COLORS = [
   { name: 'Zinc', value: '#27272a' },
 ]
 
-// Display Item Component (for non-edit mode, no dnd-kit)
-function DisplayItem({ item, index, onSelect, onEdit, isDarkBg, isAuthenticated }: {
-  item: ShelfItem
-  index: number
-  onSelect: (item: ShelfItem) => void
-  onEdit: (item: ShelfItem) => void
-  isDarkBg: (color: string) => boolean
-  isAuthenticated: boolean
-}) {
-  if (item.type === 'quote') {
-    const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
-    const isDark = isDarkBg(item.backgroundColor || '')
-    const isBarStyle = item.quoteStyle === 'bar'
-    return (
-      <motion.div
-        style={bgStyle}
-        className={`shelf-item shelf-item-quote shelf-item-${item.size || 'medium'} ${isDark ? 'dark-bg' : ''} ${isBarStyle ? 'bar-style' : ''}`}
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.4, delay: index * 0.03 }}
-      >
-        {isAuthenticated && (
-          <button
-            className="shelf-item-edit-btn"
-            onClick={(e) => { e.stopPropagation(); onEdit(item); }}
-            aria-label="Edit item"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-          </button>
-        )}
-        <div className="shelf-quote-content">
-          {!isBarStyle && (
-            <svg className="shelf-quote-mark" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6.5 10c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 6.5 10zm11 0c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 17.5 10z"/>
-            </svg>
-          )}
-          {isBarStyle && <div className="shelf-quote-bar" />}
-          <blockquote>{item.quoteText}</blockquote>
-          {(item.quoteAuthor || item.quoteSource) && (
-            <cite>
-              {item.quoteAuthor && <span className="quote-author">{item.quoteAuthor}</span>}
-              {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
-            </cite>
-          )}
-        </div>
-      </motion.div>
-    )
-  }
-
-  if (item.type === 'text') {
-    const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
-    const isDark = isDarkBg(item.backgroundColor || '')
-    return (
-      <motion.div
-        style={bgStyle}
-        className={`shelf-item shelf-item-text shelf-item-${item.size || 'small'} ${isDark ? 'dark-bg' : ''}`}
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.4, delay: index * 0.03 }}
-      >
-        {isAuthenticated && (
-          <button
-            className="shelf-item-edit-btn"
-            onClick={(e) => { e.stopPropagation(); onEdit(item); }}
-            aria-label="Edit item"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-          </button>
-        )}
-        <div className="shelf-text-content">
-          {item.textLabel && <span className="text-label">{item.textLabel}</span>}
-          <p>{item.textContent}</p>
-        </div>
-      </motion.div>
-    )
-  }
-
-  return null
-}
-
-// Sortable Item Component (for edit mode only, with dnd-kit)
+// Sortable Item for edit mode
 function SortableItem({ item, index, isDarkBg }: {
   item: ShelfItem
   index: number
@@ -186,124 +87,38 @@ function SortableItem({ item, index, isDarkBg }: {
     zIndex: isDragging ? 1000 : 1,
   }
 
-  if (item.type === 'image') {
-    return (
-      <motion.div
-        ref={setNodeRef}
-        style={style}
-        className="shelf-item shelf-item-image edit-mode"
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.4, delay: index * 0.03 }}
-        {...attributes}
-        {...listeners}
-      >
-        <div className="shelf-item-drag-handle">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="9" cy="6" r="1.5" />
-            <circle cx="15" cy="6" r="1.5" />
-            <circle cx="9" cy="12" r="1.5" />
-            <circle cx="15" cy="12" r="1.5" />
-            <circle cx="9" cy="18" r="1.5" />
-            <circle cx="15" cy="18" r="1.5" />
-          </svg>
-        </div>
-        {item.url && (
-          <img
-            src={item.url}
-            alt={item.caption || item.fileName}
-            loading="lazy"
-          />
-        )}
-        {item.caption && (
-          <div className="shelf-item-caption">
-            <span>{item.caption}</span>
-          </div>
-        )}
-      </motion.div>
-    )
-  }
+  const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
+  const isDark = isDarkBg(item.backgroundColor || '')
 
-  if (item.type === 'quote') {
-    const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
-    const isDark = isDarkBg(item.backgroundColor || '')
-    const isBarStyle = item.quoteStyle === 'bar'
-    return (
-      <motion.div
-        ref={setNodeRef}
-        style={{ ...style, ...bgStyle }}
-        className={`shelf-item shelf-item-quote shelf-item-${item.size || 'medium'} ${isDark ? 'dark-bg' : ''} ${isBarStyle ? 'bar-style' : ''} edit-mode`}
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.4, delay: index * 0.03 }}
-        {...attributes}
-        {...listeners}
-      >
-        <div className="shelf-item-drag-handle">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="9" cy="6" r="1.5" />
-            <circle cx="15" cy="6" r="1.5" />
-            <circle cx="9" cy="12" r="1.5" />
-            <circle cx="15" cy="12" r="1.5" />
-            <circle cx="9" cy="18" r="1.5" />
-            <circle cx="15" cy="18" r="1.5" />
-          </svg>
-        </div>
-        <div className="shelf-quote-content">
-          {!isBarStyle && (
-            <svg className="shelf-quote-mark" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6.5 10c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 6.5 10zm11 0c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 17.5 10z"/>
-            </svg>
-          )}
-          {isBarStyle && <div className="shelf-quote-bar" />}
-          <blockquote>{item.quoteText}</blockquote>
-          {(item.quoteAuthor || item.quoteSource) && (
-            <cite>
-              {item.quoteAuthor && <span className="quote-author">{item.quoteAuthor}</span>}
-              {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
-            </cite>
-          )}
-        </div>
-      </motion.div>
-    )
-  }
-
-  if (item.type === 'text') {
-    const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
-    const isDark = isDarkBg(item.backgroundColor || '')
-    return (
-      <motion.div
-        ref={setNodeRef}
-        style={{ ...style, ...bgStyle }}
-        className={`shelf-item shelf-item-text shelf-item-${item.size || 'small'} ${isDark ? 'dark-bg' : ''} edit-mode`}
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.4, delay: index * 0.03 }}
-        {...attributes}
-        {...listeners}
-      >
-        <div className="shelf-item-drag-handle">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="9" cy="6" r="1.5" />
-            <circle cx="15" cy="6" r="1.5" />
-            <circle cx="9" cy="12" r="1.5" />
-            <circle cx="15" cy="12" r="1.5" />
-            <circle cx="9" cy="18" r="1.5" />
-            <circle cx="15" cy="18" r="1.5" />
-          </svg>
-        </div>
-        <div className="shelf-text-content">
-          {item.textLabel && <span className="text-label">{item.textLabel}</span>}
-          <p>{item.textContent}</p>
-        </div>
-      </motion.div>
-    )
-  }
-
-  return null
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ ...style, ...bgStyle }}
+      className={`shelf-reorder-item ${isDark ? 'dark-bg' : ''}`}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="shelf-item-drag-handle">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="6" r="1.5" />
+          <circle cx="15" cy="6" r="1.5" />
+          <circle cx="9" cy="12" r="1.5" />
+          <circle cx="15" cy="12" r="1.5" />
+          <circle cx="9" cy="18" r="1.5" />
+          <circle cx="15" cy="18" r="1.5" />
+        </svg>
+      </div>
+      {item.type === 'image' && item.url && (
+        <img src={item.url} alt={item.caption || item.fileName} />
+      )}
+      {item.type === 'quote' && (
+        <p className="shelf-reorder-quote">"{item.quoteText}"</p>
+      )}
+      {item.type === 'text' && (
+        <p className="shelf-reorder-text">{item.textContent}</p>
+      )}
+    </div>
+  )
 }
 
 export default function Shelf() {
@@ -328,14 +143,6 @@ export default function Shelf() {
   const [isEditMode, setIsEditMode] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Auto-scroll refs and state
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const isUserScrolling = useRef(false)
-  const userScrollTimeout = useRef<NodeJS.Timeout | null>(null)
-  const animationFrameRef = useRef<number | null>(null)
-  const lastScrollTime = useRef<number>(0)
-
-  // Image preview states
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
@@ -366,131 +173,31 @@ export default function Shelf() {
     return items as ShelfItem[]
   }, [items])
 
-  // Auto-scroll effect
-  useEffect(() => {
-    if (isEditMode || !scrollContainerRef.current || shelfItems.length === 0) return
-
-    const container = scrollContainerRef.current
-    const scrollSpeed = 0.3 // pixels per frame (slow, gentle scroll)
-    let isAutoScrolling = true
-    let startTimeout: NodeJS.Timeout
-
-    const autoScroll = () => {
-      if (!isAutoScrolling || isUserScrolling.current || !container) {
-        if (isAutoScrolling) {
-          animationFrameRef.current = requestAnimationFrame(autoScroll)
-        }
-        return
-      }
-
-      const scrollHeight = container.scrollHeight
-      const clientHeight = container.clientHeight
-      const maxScroll = scrollHeight - clientHeight
-
-      container.scrollTop += scrollSpeed
-
-      // Loop back to top when reaching the bottom
-      if (container.scrollTop >= maxScroll - 50) {
-        container.scrollTop = 0
-      }
-
-      animationFrameRef.current = requestAnimationFrame(autoScroll)
-    }
-
-    // Handle scroll loop - reset to top when reaching bottom
-    const handleScrollLoop = () => {
-      const scrollHeight = container.scrollHeight
-      const clientHeight = container.clientHeight
-      const maxScroll = scrollHeight - clientHeight
-
-      if (container.scrollTop >= maxScroll - 20) {
-        container.scrollTop = 0
-      }
-    }
-
-    // Delay start to let images load
-    startTimeout = setTimeout(() => {
-      animationFrameRef.current = requestAnimationFrame(autoScroll)
-    }, 1500)
-
-    // Handle user scroll interaction
-    const handleUserInteraction = () => {
-      isUserScrolling.current = true
-
-      if (userScrollTimeout.current) {
-        clearTimeout(userScrollTimeout.current)
-      }
-
-      // Resume auto-scroll after 3 seconds of no user interaction
-      userScrollTimeout.current = setTimeout(() => {
-        isUserScrolling.current = false
-      }, 3000)
-    }
-
-    const handleTouchStart = () => {
-      isUserScrolling.current = true
-    }
-
-    const handleTouchEnd = () => {
-      if (userScrollTimeout.current) {
-        clearTimeout(userScrollTimeout.current)
-      }
-
-      userScrollTimeout.current = setTimeout(() => {
-        isUserScrolling.current = false
-      }, 3000)
-    }
-
-    container.addEventListener('scroll', handleScrollLoop, { passive: true })
-    container.addEventListener('wheel', handleUserInteraction, { passive: true })
-    container.addEventListener('touchstart', handleTouchStart, { passive: true })
-    container.addEventListener('touchend', handleTouchEnd, { passive: true })
-    container.addEventListener('mousedown', handleUserInteraction, { passive: true })
-
-    return () => {
-      isAutoScrolling = false
-      clearTimeout(startTimeout)
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-      if (userScrollTimeout.current) {
-        clearTimeout(userScrollTimeout.current)
-      }
-      container.removeEventListener('scroll', handleScrollLoop)
-      container.removeEventListener('wheel', handleUserInteraction)
-      container.removeEventListener('touchstart', handleTouchStart)
-      container.removeEventListener('touchend', handleTouchEnd)
-      container.removeEventListener('mousedown', handleUserInteraction)
-    }
-  }, [isEditMode, shelfItems.length])
+  // Distribute items across 4 columns for masonry
+  const columns = useMemo(() => {
+    const cols: ShelfItem[][] = [[], [], [], []]
+    shelfItems.forEach((item, index) => {
+      cols[index % 4].push(item)
+    })
+    return cols
+  }, [shelfItems])
 
   // DnD sensors
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
-
     if (over && active.id !== over.id && sessionToken) {
       const oldIndex = shelfItems.findIndex((item) => item._id === active.id)
       const newIndex = shelfItems.findIndex((item) => item._id === over.id)
-
       const newItems = arrayMove(shelfItems, oldIndex, newIndex)
-
-      // Update order in database
       const orderUpdates = newItems.map((item, index) => ({
         id: item._id as any,
         order: index,
       }))
-
       try {
         await reorderItems({ token: sessionToken, items: orderUpdates })
       } catch (error) {
@@ -510,10 +217,7 @@ export default function Shelf() {
     setItemSize('medium')
     setBackgroundColor('')
     setAddType('image')
-    // Clear file preview
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
-    }
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
     setPendingFile(null)
     setPreviewUrl(null)
   }
@@ -546,18 +250,13 @@ export default function Shelf() {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-
     const files = e.dataTransfer.files
-    if (files && files[0]) {
-      handleFileSelect(files[0])
-    }
+    if (files && files[0]) handleFileSelect(files[0])
   }, [])
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      handleFileSelect(file)
-    }
+    if (file) handleFileSelect(file)
   }
 
   const handleFileSelect = (file: File) => {
@@ -565,58 +264,10 @@ export default function Shelf() {
       alert('Please select an image file')
       return
     }
-
-    // Clear previous preview
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
-    }
-
-    // Create preview URL and store the file
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
     const url = URL.createObjectURL(file)
     setPreviewUrl(url)
     setPendingFile(file)
-  }
-
-  const handleAddImage = async () => {
-    if (!sessionToken || !pendingFile) return
-
-    setIsUploading(true)
-    try {
-      const aspectRatio = await getImageAspectRatio(pendingFile)
-      const uploadUrl = await generateUploadUrl()
-
-      const result = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': pendingFile.type },
-        body: pendingFile,
-      })
-
-      if (!result.ok) {
-        throw new Error('Upload failed')
-      }
-
-      const { storageId } = await result.json()
-
-      await addImage({
-        token: sessionToken,
-        storageId,
-        fileName: pendingFile.name,
-        contentType: pendingFile.type,
-        caption: uploadCaption || undefined,
-        aspectRatio,
-      })
-
-      resetForm()
-      setShowAddModal(false)
-    } catch (error) {
-      console.error('Upload error:', error)
-      alert('Failed to upload image')
-    } finally {
-      setIsUploading(false)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
   }
 
   const getImageAspectRatio = (file: File): Promise<number> => {
@@ -626,16 +277,45 @@ export default function Shelf() {
         resolve(img.width / img.height)
         URL.revokeObjectURL(img.src)
       }
-      img.onerror = () => {
-        resolve(1)
-      }
+      img.onerror = () => resolve(1)
       img.src = URL.createObjectURL(file)
     })
   }
 
+  const handleAddImage = async () => {
+    if (!sessionToken || !pendingFile) return
+    setIsUploading(true)
+    try {
+      const aspectRatio = await getImageAspectRatio(pendingFile)
+      const uploadUrl = await generateUploadUrl()
+      const result = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': pendingFile.type },
+        body: pendingFile,
+      })
+      if (!result.ok) throw new Error('Upload failed')
+      const { storageId } = await result.json()
+      await addImage({
+        token: sessionToken,
+        storageId,
+        fileName: pendingFile.name,
+        contentType: pendingFile.type,
+        caption: uploadCaption || undefined,
+        aspectRatio,
+      })
+      resetForm()
+      setShowAddModal(false)
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Failed to upload image')
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const handleAddQuote = async () => {
     if (!sessionToken || !quoteText.trim()) return
-
     setIsUploading(true)
     try {
       await addQuote({
@@ -647,7 +327,6 @@ export default function Shelf() {
         backgroundColor: backgroundColor || undefined,
         quoteStyle: quoteStyle,
       })
-
       resetForm()
       setShowAddModal(false)
     } catch (error) {
@@ -660,7 +339,6 @@ export default function Shelf() {
 
   const handleAddText = async () => {
     if (!sessionToken || !textContent.trim()) return
-
     setIsUploading(true)
     try {
       await addText({
@@ -670,7 +348,6 @@ export default function Shelf() {
         size: itemSize,
         backgroundColor: backgroundColor || undefined,
       })
-
       resetForm()
       setShowAddModal(false)
     } catch (error) {
@@ -683,7 +360,6 @@ export default function Shelf() {
 
   const handleUpdate = async () => {
     if (!sessionToken || !editingItem) return
-
     setIsUploading(true)
     try {
       await updateItem({
@@ -699,7 +375,6 @@ export default function Shelf() {
         size: editItemSize,
         backgroundColor: editBackgroundColor || undefined,
       })
-
       setEditingItem(null)
     } catch (error) {
       console.error('Update error:', error)
@@ -712,7 +387,6 @@ export default function Shelf() {
   const handleDelete = async (id: string) => {
     if (!sessionToken) return
     if (!confirm('Are you sure you want to delete this item?')) return
-
     try {
       await removeItem({ token: sessionToken, id: id as any })
       setSelectedItem(null)
@@ -729,32 +403,32 @@ export default function Shelf() {
   }
 
   return (
-    <div className="blog-list-layout shelf-page shelf-infinite-layout">
-      {/* Fixed Header Section */}
-      <div className="shelf-fixed-header">
-        <motion.header
-          className="blog-header blog-list-header"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <nav className="breadcrumb">
-            <Link to="/" className="breadcrumb-link">Home</Link>
-            <span className="breadcrumb-sep">/</span>
-            <span className="breadcrumb-current">Shelf</span>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <motion.header
+        className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
+            <span>/</span>
+            <span className="text-foreground">Shelf</span>
           </nav>
-          <div className="header-right">
+          <div className="flex items-center gap-2">
             <button
-              className="theme-toggle"
+              className="rounded-lg p-2 hover:bg-accent transition-colors"
               onClick={() => { haptics.selection(); toggle() }}
               aria-label="Toggle theme"
             >
               {theme === 'light' ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                 </svg>
               ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="5" />
                   <line x1="12" y1="1" x2="12" y2="3" />
                   <line x1="12" y1="21" x2="12" y2="23" />
@@ -769,163 +443,167 @@ export default function Shelf() {
             </button>
             <SignedIn>
               <button
-                className={`edit-mode-toggle ${isEditMode ? 'active' : ''}`}
+                className={`rounded-lg p-2 transition-colors ${isEditMode ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
                 onClick={() => { haptics.selection(); setIsEditMode(!isEditMode) }}
                 aria-label={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
-                title={isEditMode ? 'Exit edit mode' : 'Reorder items'}
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                  <line x1="12" y1="22.08" x2="12" y2="12" />
                 </svg>
               </button>
               <button
-                className="add-post-btn"
+                className="rounded-lg p-2 hover:bg-accent transition-colors"
                 onClick={() => { haptics.soft(); setShowAddModal(true) }}
                 aria-label="Add item"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
               </button>
             </SignedIn>
           </div>
-        </motion.header>
-
-        <div className="blog-list-title">
-          <h1 className="shelf-artistic-title">my shelf</h1>
-          {isEditMode && (
-            <p className="shelf-edit-hint">Drag items to reorder</p>
-          )}
         </div>
+      </motion.header>
+
+      {/* Title */}
+      <div className="mx-auto max-w-5xl px-4 py-8">
+        <h1 className="text-4xl font-light tracking-tight">my shelf</h1>
+        {isEditMode && (
+          <p className="mt-2 text-sm text-muted-foreground">Drag items to reorder</p>
+        )}
       </div>
 
-      {/* Scrollable Content Container */}
-      <div
-        ref={scrollContainerRef}
-        className={`shelf-scroll-container ${isEditMode ? 'edit-mode' : ''}`}
-      >
-        <main className="blog-list-content shelf-content">
-          {items === undefined ? (
-            <div className="blog-loading-spinner-container">
-              <div className="blog-loading-spinner" />
-            </div>
-          ) : shelfItems.length === 0 ? (
-            <p className="shelf-empty">No items yet.</p>
-          ) : isEditMode && isAuthenticated ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={shelfItems.map(item => item._id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="shelf-reorder-list">
-                  {shelfItems.map((item, index) => (
-                    <SortableItem
-                      key={item._id}
-                      item={item}
-                      index={index}
-                      isDarkBg={isDarkBg}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          ) : (
-            <>
-              {/* Image Gallery for images */}
-              <ImageGallery
-                images={shelfItems.filter(item => item.type === 'image')}
-                onImageClick={(image) => setSelectedItem(image as ShelfItem)}
-              />
-              {/* Quotes and Text items */}
-              <div className="shelf-masonry mt-8">
-                {shelfItems.filter(item => item.type !== 'image').map((item, index) => (
-                  <DisplayItem
-                    key={item._id}
-                    item={item}
-                    index={index}
-                    onSelect={setSelectedItem}
-                    onEdit={openEditModal}
-                    isDarkBg={isDarkBg}
-                    isAuthenticated={isAuthenticated}
-                  />
+      {/* Content */}
+      <main className="mx-auto max-w-5xl px-4 pb-20">
+        {items === undefined ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : shelfItems.length === 0 ? (
+          <p className="py-20 text-center text-muted-foreground">No items yet.</p>
+        ) : isEditMode && isAuthenticated ? (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={shelfItems.map(item => item._id)} strategy={verticalListSortingStrategy}>
+              <div className="flex flex-col gap-3">
+                {shelfItems.map((item, index) => (
+                  <SortableItem key={item._id} item={item} index={index} isDarkBg={isDarkBg} />
                 ))}
               </div>
-            </>
-          )}
-        </main>
-      </div>
+            </SortableContext>
+          </DndContext>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
+            {columns.map((columnItems, col) => (
+              <div className="grid gap-4" key={col}>
+                {columnItems.map((item) => {
+                  if (item.type === 'image' && item.url) {
+                    return (
+                      <div
+                        key={item._id}
+                        onClick={() => setSelectedItem(item)}
+                        className="cursor-pointer overflow-hidden rounded-lg transition-transform hover:scale-[1.02]"
+                      >
+                        <LazyImage
+                          alt={item.caption || item.fileName || 'Image'}
+                          containerClassName="rounded-lg"
+                          inView={true}
+                          ratio={item.aspectRatio || 1}
+                          src={item.url}
+                        />
+                        {item.caption && (
+                          <p className="mt-2 text-sm text-muted-foreground">{item.caption}</p>
+                        )}
+                      </div>
+                    )
+                  }
 
-      {/* Add Item Modal */}
+                  if (item.type === 'quote') {
+                    const isDark = isDarkBg(item.backgroundColor || '')
+                    return (
+                      <div
+                        key={item._id}
+                        onClick={() => setSelectedItem(item)}
+                        className={`cursor-pointer rounded-lg p-6 transition-transform hover:scale-[1.02] ${isDark ? 'text-white' : ''}`}
+                        style={{ backgroundColor: item.backgroundColor || 'var(--accent)' }}
+                      >
+                        <blockquote className="text-sm italic leading-relaxed">
+                          "{item.quoteText}"
+                        </blockquote>
+                        {item.quoteAuthor && (
+                          <cite className="mt-3 block text-xs font-medium not-italic opacity-80">
+                            — {item.quoteAuthor}
+                          </cite>
+                        )}
+                      </div>
+                    )
+                  }
+
+                  if (item.type === 'text') {
+                    const isDark = isDarkBg(item.backgroundColor || '')
+                    return (
+                      <div
+                        key={item._id}
+                        onClick={() => setSelectedItem(item)}
+                        className={`cursor-pointer rounded-lg p-4 transition-transform hover:scale-[1.02] ${isDark ? 'text-white' : ''}`}
+                        style={{ backgroundColor: item.backgroundColor || 'var(--accent)' }}
+                      >
+                        {item.textLabel && (
+                          <span className="mb-1 block text-xs font-medium uppercase tracking-wider opacity-60">
+                            {item.textLabel}
+                          </span>
+                        )}
+                        <p className="text-sm">{item.textContent}</p>
+                      </div>
+                    )
+                  }
+
+                  return null
+                })}
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+
+      {/* Add Modal */}
       <AnimatePresence>
         {showAddModal && (
           <motion.div
-            className="shelf-modal-overlay"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => { setShowAddModal(false); resetForm(); }}
+            onClick={() => { setShowAddModal(false); resetForm() }}
           >
             <motion.div
-              className="shelf-modal shelf-add-modal"
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-xl bg-background p-6 shadow-xl"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2>Add to Shelf</h2>
+              <h2 className="mb-4 text-xl font-semibold">Add to Shelf</h2>
 
-              {/* Type Selector */}
-              <div className="shelf-type-selector">
-                <button
-                  className={`type-btn ${addType === 'image' ? 'active' : ''}`}
-                  onClick={() => { haptics.selection(); setAddType('image') }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21 15 16 10 5 21" />
-                  </svg>
-                  Image
-                </button>
-                <button
-                  className={`type-btn ${addType === 'quote' ? 'active' : ''}`}
-                  onClick={() => { haptics.selection(); setAddType('quote') }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z" />
-                    <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z" />
-                  </svg>
-                  Quote
-                </button>
-                <button
-                  className={`type-btn ${addType === 'text' ? 'active' : ''}`}
-                  onClick={() => { haptics.selection(); setAddType('text') }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="17" y1="10" x2="3" y2="10" />
-                    <line x1="21" y1="6" x2="3" y2="6" />
-                    <line x1="21" y1="14" x2="3" y2="14" />
-                    <line x1="17" y1="18" x2="3" y2="18" />
-                  </svg>
-                  Text
-                </button>
+              <div className="mb-4 flex gap-2">
+                {(['image', 'quote', 'text'] as ItemType[]).map((type) => (
+                  <button
+                    key={type}
+                    className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${addType === type ? 'bg-primary text-primary-foreground' : 'bg-accent hover:bg-accent/80'}`}
+                    onClick={() => { haptics.selection(); setAddType(type) }}
+                  >
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </button>
+                ))}
               </div>
 
-              {/* Image Upload */}
               {addType === 'image' && (
                 <>
                   {previewUrl ? (
-                    <div className="shelf-image-preview">
-                      <img src={previewUrl} alt="Preview" />
+                    <div className="mb-4">
+                      <img src={previewUrl} alt="Preview" className="w-full rounded-lg" />
                       <button
-                        className="shelf-preview-change"
+                        className="mt-2 text-sm text-primary hover:underline"
                         onClick={() => fileInputRef.current?.click()}
                       >
                         Change image
@@ -933,462 +611,315 @@ export default function Shelf() {
                     </div>
                   ) : (
                     <div
-                      className={`shelf-upload-zone ${dragActive ? 'active' : ''}`}
+                      className={`mb-4 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${dragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
                       onDragEnter={handleDrag}
                       onDragLeave={handleDrag}
                       onDragOver={handleDrag}
                       onDrop={handleDrop}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg className="mb-2 h-8 w-8 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <polyline points="17 8 12 3 7 8" />
                         <line x1="12" y1="3" x2="12" y2="15" />
                       </svg>
-                      <p>Drag & drop or click to upload</p>
+                      <p className="text-sm text-muted-foreground">Drag & drop or click to upload</p>
                     </div>
                   )}
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInputChange} className="hidden" />
                   <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileInputChange}
-                    style={{ display: 'none' }}
+                    type="text"
+                    placeholder="Caption (optional)"
+                    value={uploadCaption}
+                    onChange={(e) => setUploadCaption(e.target.value)}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
-                  <div className="shelf-upload-caption">
-                    <input
-                      type="text"
-                      placeholder="Caption (optional)"
-                      value={uploadCaption}
-                      onChange={(e) => setUploadCaption(e.target.value)}
-                    />
-                  </div>
                 </>
               )}
 
-              {/* Quote Form */}
               {addType === 'quote' && (
-                <div className="shelf-form">
+                <div className="space-y-3">
                   <textarea
                     placeholder="Enter your quote..."
                     value={quoteText}
                     onChange={(e) => setQuoteText(e.target.value)}
                     rows={4}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
                   <input
                     type="text"
                     placeholder="Author (optional)"
                     value={quoteAuthor}
                     onChange={(e) => setQuoteAuthor(e.target.value)}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
                   <input
                     type="text"
                     placeholder="Source (optional)"
                     value={quoteSource}
                     onChange={(e) => setQuoteSource(e.target.value)}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
-                  <div className="shelf-form-row">
-                    <label>Style</label>
-                    <div className="style-selector">
+                  <div className="flex flex-wrap gap-2">
+                    {BACKGROUND_COLORS.map((color) => (
                       <button
-                        className={`style-btn ${quoteStyle === 'default' ? 'active' : ''}`}
-                        onClick={() => { haptics.selection(); setQuoteStyle('default') }}
-                      >
-                        Classic
-                      </button>
-                      <button
-                        className={`style-btn ${quoteStyle === 'bar' ? 'active' : ''}`}
-                        onClick={() => { haptics.selection(); setQuoteStyle('bar') }}
-                      >
-                        Bar
-                      </button>
-                    </div>
-                  </div>
-                  <div className="shelf-form-row">
-                    <label>Size</label>
-                    <div className="size-selector">
-                      {(['small', 'medium', 'large'] as ItemSize[]).map((size) => (
-                        <button
-                          key={size}
-                          className={`size-btn ${itemSize === size ? 'active' : ''}`}
-                          onClick={() => { haptics.selection(); setItemSize(size) }}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="shelf-form-row">
-                    <label>Background</label>
-                    <div className="color-selector">
-                      {BACKGROUND_COLORS.map((color) => (
-                        <button
-                          key={color.value || 'default'}
-                          className={`color-btn ${backgroundColor === color.value ? 'active' : ''}`}
-                          style={{ backgroundColor: color.value || 'var(--bg-secondary)' }}
-                          onClick={() => { haptics.selection(); setBackgroundColor(color.value) }}
-                          title={color.name}
-                        />
-                      ))}
-                    </div>
+                        key={color.value || 'default'}
+                        className={`h-8 w-8 rounded-full border-2 transition-transform ${backgroundColor === color.value ? 'scale-110 border-primary' : 'border-transparent'}`}
+                        style={{ backgroundColor: color.value || 'var(--accent)' }}
+                        onClick={() => { haptics.selection(); setBackgroundColor(color.value) }}
+                        title={color.name}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
 
-              {/* Text Form */}
               {addType === 'text' && (
-                <div className="shelf-form">
+                <div className="space-y-3">
                   <input
                     type="text"
-                    placeholder="Label (optional, e.g. 'Currently Reading')"
+                    placeholder="Label (optional)"
                     value={textLabel}
                     onChange={(e) => setTextLabel(e.target.value)}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
                   <textarea
                     placeholder="Enter your text..."
                     value={textContent}
                     onChange={(e) => setTextContent(e.target.value)}
                     rows={3}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
-                  <div className="shelf-form-row">
-                    <label>Size</label>
-                    <div className="size-selector">
-                      {(['small', 'medium', 'large'] as ItemSize[]).map((size) => (
-                        <button
-                          key={size}
-                          className={`size-btn ${itemSize === size ? 'active' : ''}`}
-                          onClick={() => { haptics.selection(); setItemSize(size) }}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="shelf-form-row">
-                    <label>Background</label>
-                    <div className="color-selector">
-                      {BACKGROUND_COLORS.map((color) => (
-                        <button
-                          key={color.value || 'default'}
-                          className={`color-btn ${backgroundColor === color.value ? 'active' : ''}`}
-                          style={{ backgroundColor: color.value || 'var(--bg-secondary)' }}
-                          onClick={() => { haptics.selection(); setBackgroundColor(color.value) }}
-                          title={color.name}
-                        />
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {BACKGROUND_COLORS.map((color) => (
+                      <button
+                        key={color.value || 'default'}
+                        className={`h-8 w-8 rounded-full border-2 transition-transform ${backgroundColor === color.value ? 'scale-110 border-primary' : 'border-transparent'}`}
+                        style={{ backgroundColor: color.value || 'var(--accent)' }}
+                        onClick={() => { haptics.selection(); setBackgroundColor(color.value) }}
+                        title={color.name}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
 
-              <div className="shelf-modal-actions">
+              <div className="mt-6 flex justify-end gap-2">
                 <button
-                  className="shelf-modal-cancel"
-                  onClick={() => { haptics.soft(); setShowAddModal(false); resetForm(); }}
+                  className="rounded-lg px-4 py-2 text-sm hover:bg-accent"
+                  onClick={() => { haptics.soft(); setShowAddModal(false); resetForm() }}
                 >
                   Cancel
                 </button>
-                {addType === 'image' && pendingFile && (
-                  <button
-                    className="shelf-modal-submit"
-                    onClick={() => { haptics.rigid(); handleAddImage() }}
-                    disabled={isUploading}
-                  >
-                    Add
-                  </button>
-                )}
-                {addType === 'quote' && (
-                  <button
-                    className="shelf-modal-submit"
-                    onClick={() => { haptics.rigid(); handleAddQuote() }}
-                    disabled={!quoteText.trim() || isUploading}
-                  >
-                    Add
-                  </button>
-                )}
-                {addType === 'text' && (
-                  <button
-                    className="shelf-modal-submit"
-                    onClick={() => { haptics.rigid(); handleAddText() }}
-                    disabled={!textContent.trim() || isUploading}
-                  >
-                    Add
-                  </button>
-                )}
+                <button
+                  className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
+                  onClick={() => {
+                    haptics.rigid()
+                    if (addType === 'image') handleAddImage()
+                    else if (addType === 'quote') handleAddQuote()
+                    else handleAddText()
+                  }}
+                  disabled={isUploading || (addType === 'image' && !pendingFile) || (addType === 'quote' && !quoteText.trim()) || (addType === 'text' && !textContent.trim())}
+                >
+                  {isUploading ? 'Adding...' : 'Add'}
+                </button>
               </div>
-
-              {isUploading && (
-                <div className="shelf-uploading">
-                  <div className="blog-loading-spinner" />
-                  <span>Adding...</span>
-                </div>
-              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Edit Item Modal */}
+      {/* Edit Modal */}
       <AnimatePresence>
         {editingItem && (
           <motion.div
-            className="shelf-modal-overlay"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setEditingItem(null)}
           >
             <motion.div
-              className="shelf-modal shelf-edit-modal"
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-xl bg-background p-6 shadow-xl"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2>Edit Item</h2>
+              <h2 className="mb-4 text-xl font-semibold">Edit Item</h2>
 
-              {/* Image Edit */}
               {editingItem.type === 'image' && (
-                <div className="shelf-form">
+                <div className="space-y-3">
                   {editingItem.url && (
-                    <div className="shelf-edit-image-preview">
-                      <img src={editingItem.url} alt="Preview" />
-                    </div>
+                    <img src={editingItem.url} alt="Preview" className="w-full rounded-lg" />
                   )}
                   <input
                     type="text"
                     placeholder="Caption (optional)"
                     value={editCaption}
                     onChange={(e) => setEditCaption(e.target.value)}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
                 </div>
               )}
 
-              {/* Quote Edit */}
               {editingItem.type === 'quote' && (
-                <div className="shelf-form">
+                <div className="space-y-3">
                   <textarea
                     placeholder="Enter your quote..."
                     value={editQuoteText}
                     onChange={(e) => setEditQuoteText(e.target.value)}
                     rows={4}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
                   <input
                     type="text"
                     placeholder="Author (optional)"
                     value={editQuoteAuthor}
                     onChange={(e) => setEditQuoteAuthor(e.target.value)}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
                   <input
                     type="text"
                     placeholder="Source (optional)"
                     value={editQuoteSource}
                     onChange={(e) => setEditQuoteSource(e.target.value)}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
-                  <div className="shelf-form-row">
-                    <label>Style</label>
-                    <div className="style-selector">
+                  <div className="flex flex-wrap gap-2">
+                    {BACKGROUND_COLORS.map((color) => (
                       <button
-                        className={`style-btn ${editQuoteStyle === 'default' ? 'active' : ''}`}
-                        onClick={() => { haptics.selection(); setEditQuoteStyle('default') }}
-                      >
-                        Classic
-                      </button>
-                      <button
-                        className={`style-btn ${editQuoteStyle === 'bar' ? 'active' : ''}`}
-                        onClick={() => { haptics.selection(); setEditQuoteStyle('bar') }}
-                      >
-                        Bar
-                      </button>
-                    </div>
-                  </div>
-                  <div className="shelf-form-row">
-                    <label>Size</label>
-                    <div className="size-selector">
-                      {(['small', 'medium', 'large'] as ItemSize[]).map((size) => (
-                        <button
-                          key={size}
-                          className={`size-btn ${editItemSize === size ? 'active' : ''}`}
-                          onClick={() => { haptics.selection(); setEditItemSize(size) }}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="shelf-form-row">
-                    <label>Background</label>
-                    <div className="color-selector">
-                      {BACKGROUND_COLORS.map((color) => (
-                        <button
-                          key={color.value || 'default'}
-                          className={`color-btn ${editBackgroundColor === color.value ? 'active' : ''}`}
-                          style={{ backgroundColor: color.value || 'var(--bg-secondary)' }}
-                          onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
-                          title={color.name}
-                        />
-                      ))}
-                    </div>
+                        key={color.value || 'default'}
+                        className={`h-8 w-8 rounded-full border-2 transition-transform ${editBackgroundColor === color.value ? 'scale-110 border-primary' : 'border-transparent'}`}
+                        style={{ backgroundColor: color.value || 'var(--accent)' }}
+                        onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
+                        title={color.name}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
 
-              {/* Text Edit */}
               {editingItem.type === 'text' && (
-                <div className="shelf-form">
+                <div className="space-y-3">
                   <input
                     type="text"
                     placeholder="Label (optional)"
                     value={editTextLabel}
                     onChange={(e) => setEditTextLabel(e.target.value)}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
                   <textarea
                     placeholder="Enter your text..."
                     value={editTextContent}
                     onChange={(e) => setEditTextContent(e.target.value)}
                     rows={3}
+                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
                   />
-                  <div className="shelf-form-row">
-                    <label>Size</label>
-                    <div className="size-selector">
-                      {(['small', 'medium', 'large'] as ItemSize[]).map((size) => (
-                        <button
-                          key={size}
-                          className={`size-btn ${editItemSize === size ? 'active' : ''}`}
-                          onClick={() => { haptics.selection(); setEditItemSize(size) }}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="shelf-form-row">
-                    <label>Background</label>
-                    <div className="color-selector">
-                      {BACKGROUND_COLORS.map((color) => (
-                        <button
-                          key={color.value || 'default'}
-                          className={`color-btn ${editBackgroundColor === color.value ? 'active' : ''}`}
-                          style={{ backgroundColor: color.value || 'var(--bg-secondary)' }}
-                          onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
-                          title={color.name}
-                        />
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {BACKGROUND_COLORS.map((color) => (
+                      <button
+                        key={color.value || 'default'}
+                        className={`h-8 w-8 rounded-full border-2 transition-transform ${editBackgroundColor === color.value ? 'scale-110 border-primary' : 'border-transparent'}`}
+                        style={{ backgroundColor: color.value || 'var(--accent)' }}
+                        onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
+                        title={color.name}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
 
-              <div className="shelf-modal-actions">
+              <div className="mt-6 flex justify-between">
                 <button
-                  className="shelf-modal-delete"
+                  className="rounded-lg px-4 py-2 text-sm text-destructive hover:bg-destructive/10"
                   onClick={() => { haptics.nudge(); handleDelete(editingItem._id) }}
                 >
                   Delete
                 </button>
-                <div className="shelf-modal-actions-right">
+                <div className="flex gap-2">
                   <button
-                    className="shelf-modal-cancel"
+                    className="rounded-lg px-4 py-2 text-sm hover:bg-accent"
                     onClick={() => { haptics.soft(); setEditingItem(null) }}
                   >
                     Cancel
                   </button>
                   <button
-                    className="shelf-modal-submit"
+                    className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
                     onClick={() => { haptics.rigid(); handleUpdate() }}
                     disabled={isUploading}
                   >
-                    Save
+                    {isUploading ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </div>
-
-              {isUploading && (
-                <div className="shelf-uploading">
-                  <div className="blog-loading-spinner" />
-                  <span>Saving...</span>
-                </div>
-              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Item Preview Modal */}
+      {/* Preview Modal */}
       <AnimatePresence>
         {selectedItem && (
           <motion.div
-            className="shelf-modal-overlay shelf-preview-overlay"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedItem(null)}
           >
             <motion.div
-              className="shelf-preview-modal"
+              className="relative max-h-[90vh] max-w-4xl overflow-auto"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               onClick={(e) => e.stopPropagation()}
             >
               {selectedItem.type === 'image' && selectedItem.url && (
-                <>
-                  <img
-                    src={selectedItem.url}
-                    alt={selectedItem.caption || selectedItem.fileName}
-                  />
-                  {selectedItem.caption && (
-                    <p className="shelf-preview-caption">{selectedItem.caption}</p>
-                  )}
-                </>
+                <img
+                  src={selectedItem.url}
+                  alt={selectedItem.caption || selectedItem.fileName}
+                  className="max-h-[80vh] rounded-lg"
+                />
               )}
 
               {selectedItem.type === 'quote' && (
-                <div className="shelf-preview-quote">
-                  <blockquote>{selectedItem.quoteText}</blockquote>
-                  {(selectedItem.quoteAuthor || selectedItem.quoteSource) && (
-                    <cite>
-                      {selectedItem.quoteAuthor && <span className="quote-author">{selectedItem.quoteAuthor}</span>}
-                      {selectedItem.quoteSource && <span className="quote-source">{selectedItem.quoteSource}</span>}
-                    </cite>
+                <div className="max-w-lg rounded-lg bg-background p-8">
+                  <blockquote className="text-xl italic">{selectedItem.quoteText}</blockquote>
+                  {selectedItem.quoteAuthor && (
+                    <cite className="mt-4 block text-muted-foreground">— {selectedItem.quoteAuthor}</cite>
                   )}
                 </div>
               )}
 
               {selectedItem.type === 'text' && (
-                <div className="shelf-preview-text">
-                  {selectedItem.textLabel && <span className="text-label">{selectedItem.textLabel}</span>}
+                <div className="max-w-lg rounded-lg bg-background p-8">
+                  {selectedItem.textLabel && (
+                    <span className="mb-2 block text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                      {selectedItem.textLabel}
+                    </span>
+                  )}
                   <p>{selectedItem.textContent}</p>
                 </div>
               )}
 
               <SignedIn>
                 <button
-                  className="shelf-preview-edit"
+                  className="absolute right-2 top-2 rounded-full bg-background/80 p-2 backdrop-blur-sm hover:bg-background"
                   onClick={() => { haptics.soft(); openEditModal(selectedItem) }}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
                 </button>
-                <button
-                  className="shelf-preview-delete"
-                  onClick={() => { haptics.nudge(); handleDelete(selectedItem._id) }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    <line x1="10" y1="11" x2="10" y2="17" />
-                    <line x1="14" y1="11" x2="14" y2="17" />
-                  </svg>
-                </button>
               </SignedIn>
+
               <button
-                className="shelf-preview-close"
+                className="absolute left-2 top-2 rounded-full bg-background/80 p-2 backdrop-blur-sm hover:bg-background"
                 onClick={() => { haptics.soft(); setSelectedItem(null) }}
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -1397,13 +928,6 @@ export default function Shelf() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Bottom blur with text overlay */}
-      <div className="blog-blur-bottom shelf-blur-overlay">
-        <p className="shelf-blur-text">
-          A collection of moments, ideas, and inspirations that have shaped my journey.
-        </p>
-      </div>
     </div>
   )
 }
