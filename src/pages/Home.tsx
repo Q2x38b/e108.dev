@@ -570,32 +570,22 @@ function ImageCarousel({ images }: { images: string[] }) {
       </div>
 
       {images.length > 1 && (
-        <>
-          <div className="image-carousel-nav">
-            <button
-              className="image-carousel-btn"
-              onClick={goToPrev}
-              aria-label="Previous image"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-            <button
-              className="image-carousel-btn"
-              onClick={goToNext}
-              aria-label="Next image"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
-          <div className="image-carousel-dots">
+        <div className="image-carousel-pill">
+          <button
+            className="image-carousel-pill-btn"
+            onClick={goToPrev}
+            aria-label="Previous image"
+          >
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M14.5 18L8.5 12L14.5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          <div className="image-carousel-pill-dots">
             {images.map((_, idx) => (
               <button
                 key={idx}
-                className={`image-carousel-dot ${idx === currentIndex ? 'active' : ''}`}
+                className={`image-carousel-pill-dot ${idx === currentIndex ? 'active' : ''}`}
                 onClick={() => {
                   haptics.selection()
                   setDirection(idx > currentIndex ? 1 : -1)
@@ -605,7 +595,17 @@ function ImageCarousel({ images }: { images: string[] }) {
               />
             ))}
           </div>
-        </>
+
+          <button
+            className="image-carousel-pill-btn"
+            onClick={goToNext}
+            aria-label="Next image"
+          >
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9.5 18L15.5 12L9.5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
       )}
     </div>
   )
@@ -691,9 +691,9 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                 onClick={() => { haptics.soft(); setSelectedId(null) }}
                 aria-label="Close"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
+                <svg viewBox="0 0 24 24" fill="none">
+                  <line x1="18" y1="6" x2="6" y2="18" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="6" y1="6" x2="18" y2="18" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
                 </svg>
               </button>
 

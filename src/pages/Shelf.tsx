@@ -977,7 +977,7 @@ export default function Shelf() {
 
             {/* Navigation Pill */}
             <motion.div
-              className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-full bg-black/20 px-3 py-2 backdrop-blur-xl"
+              className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/20 px-2 py-1.5 backdrop-blur-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
@@ -991,23 +991,9 @@ export default function Shelf() {
                 aria-label="Previous"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <path d="M14.5 18L8.5 12L14.5 6" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M14.5 18L8.5 12L14.5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-
-              <div className="flex items-center gap-1.5">
-                {shelfItems.slice(Math.max(0, selectedIndex - 2), Math.min(shelfItems.length, selectedIndex + 3)).map((item, i) => {
-                  const actualIndex = Math.max(0, selectedIndex - 2) + i
-                  return (
-                    <button
-                      key={item._id}
-                      className={`h-1.5 rounded-full transition-all ${actualIndex === selectedIndex ? 'w-6 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/60'}`}
-                      onClick={() => goToItem(actualIndex)}
-                      aria-label={`Go to item ${actualIndex + 1}`}
-                    />
-                  )
-                })}
-              </div>
 
               <button
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
@@ -1016,15 +1002,9 @@ export default function Shelf() {
                 aria-label="Next"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <path d="M9.5 18L15.5 12L9.5 6" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M9.5 18L15.5 12L9.5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-
-              {(selectedItem.caption || selectedItem.quoteAuthor || selectedItem.textLabel) && (
-                <span className="ml-1 max-w-[200px] truncate text-sm text-white/80">
-                  {selectedItem.caption || (selectedItem.quoteAuthor ? `— ${selectedItem.quoteAuthor}` : selectedItem.textLabel)}
-                </span>
-              )}
             </motion.div>
           </motion.div>
         )}

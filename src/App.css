@@ -442,31 +442,30 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: none;
   cursor: pointer;
-  color: var(--text-secondary);
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: 50%;
+  transition: background 0.2s ease;
   z-index: 10;
 }
 
 @media (hover: hover) {
   .work-modal-close:hover {
-    background: var(--hover-bg);
-    color: var(--text);
-    border-color: transparent;
+    background: rgba(0, 0, 0, 0.3);
   }
 }
 
 .work-modal-close svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .work-modal-links {
@@ -531,68 +530,68 @@
   display: block;
 }
 
-.image-carousel-nav {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  display: flex;
-  gap: 8px;
-  z-index: 5;
-}
-
-.image-carousel-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-}
-
-.image-carousel-btn:hover {
-  background: rgba(128, 128, 128, 0.1);
-  color: var(--text);
-}
-
-.image-carousel-btn svg {
-  width: 14px;
-  height: 14px;
-}
-
-.image-carousel-dots {
+.image-carousel-pill {
   position: absolute;
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 9999px;
   z-index: 5;
 }
 
-.image-carousel-dot {
-  width: 8px;
-  height: 8px;
+.image-carousel-pill-btn {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--bg);
+  background: rgba(255, 255, 255, 0.1);
   border: none;
   cursor: pointer;
-  opacity: 0.5;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.image-carousel-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.image-carousel-pill-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.image-carousel-pill-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.image-carousel-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
   padding: 0;
+  transition: all 0.2s ease;
 }
 
-.image-carousel-dot.active {
-  opacity: 1;
-  transform: scale(1.2);
+.image-carousel-pill-dot.active {
+  width: 24px;
+  background: white;
 }
 
-.image-carousel-dot:hover {
-  opacity: 0.8;
+.image-carousel-pill-dot:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* Experience */
