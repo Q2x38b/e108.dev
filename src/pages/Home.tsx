@@ -655,8 +655,8 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                   onClick={() => { haptics.soft(); setSelectedId(project.name) }}
                 >
                   <div className="work-info">
-                    <div className="work-name">{project.name}</div>
-                    <div className="work-description">{project.description}</div>
+                    <span className="work-name">{project.name}</span>
+                    <span className="work-description">{project.description}</span>
                   </div>
                   <div className="work-meta">
                     <span className="work-year">{project.year}</span>

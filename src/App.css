@@ -306,17 +306,24 @@
   }
 }
 
+.work-item {
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.work-item:last-child {
+  border-bottom: none;
+}
+
 .work-info {
   flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .work-name {
   font-size: 0.95rem;
   font-weight: 500;
-  margin-bottom: 3px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .work-description {
