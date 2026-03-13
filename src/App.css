@@ -6522,12 +6522,16 @@
 .shelf-quote-card {
   background: var(--bg-secondary);
   border-radius: 12px;
-  padding: 24px;
+  padding: 28px;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 16px;
+  min-height: 140px;
 }
 
 .shelf-quote-card:hover {
@@ -6556,10 +6560,9 @@
 }
 
 .shelf-quote-card blockquote {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-style: italic;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--text);
   margin: 0;
 }
@@ -6571,6 +6574,7 @@
 .shelf-quote-card cite {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
   font-style: normal;
 }
@@ -6596,13 +6600,16 @@
 
 /* Bar Style Quote */
 .shelf-quote-card.bar-style {
-  padding: 20px;
+  padding: 24px;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .shelf-quote-bar-wrapper {
   display: flex;
   gap: 16px;
   align-items: stretch;
+  width: 100%;
 }
 
 .shelf-quote-bar-line {
@@ -6625,6 +6632,10 @@
 
 .shelf-quote-card.bar-style blockquote {
   font-style: normal;
+}
+
+.shelf-quote-card.bar-style cite {
+  align-items: flex-start;
 }
 
 /* Quote Preview Modal */
@@ -6650,7 +6661,6 @@
 }
 
 .shelf-quote-preview blockquote {
-  font-family: 'Cormorant Garamond', serif;
   font-size: 1.5rem;
   font-style: italic;
   line-height: 1.7;

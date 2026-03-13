@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
+import { useTheme } from './Home'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useHaptics } from '../hooks/useHaptics'
 import { Footer } from '../components/Footer'
@@ -122,6 +123,8 @@ function SortableItem({ item, index, isDarkBg }: {
 }
 
 export default function Shelf() {
+  // Initialize theme (ensures data-theme is set when landing directly on this page)
+  useTheme()
   const { sessionToken, isAuthenticated } = useAuth()
   const items = useQuery(api.shelf.list)
   const haptics = useHaptics()
