@@ -76,101 +76,29 @@ const BACKGROUND_COLORS = [
   { name: 'Zinc', value: '#27272a' },
 ]
 
-// Sortable Item Component
-function SortableItem({ item, index, isEditMode, onSelect, onEdit, isDarkBg, isAuthenticated }: {
+// Display Item Component (for non-edit mode, no dnd-kit)
+function DisplayItem({ item, index, onSelect, onEdit, isDarkBg, isAuthenticated }: {
   item: ShelfItem
   index: number
-  isEditMode: boolean
   onSelect: (item: ShelfItem) => void
   onEdit: (item: ShelfItem) => void
   isDarkBg: (color: string) => boolean
   isAuthenticated: boolean
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item._id, disabled: !isEditMode })
-
-  const style = isEditMode ? {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1000 : 1,
-  } : {}
-
-  if (item.type === 'image') {
-    return (
-      <motion.div
-        ref={setNodeRef}
-        style={style}
-        className={`shelf-item shelf-item-image ${isEditMode ? 'edit-mode' : ''}`}
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.4, delay: index * 0.03 }}
-        onClick={() => !isEditMode && onSelect(item)}
-        {...(isEditMode ? { ...attributes, ...listeners } : {})}
-      >
-        {isEditMode && (
-          <div className="shelf-item-drag-handle">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="9" cy="6" r="1.5" />
-              <circle cx="15" cy="6" r="1.5" />
-              <circle cx="9" cy="12" r="1.5" />
-              <circle cx="15" cy="12" r="1.5" />
-              <circle cx="9" cy="18" r="1.5" />
-              <circle cx="15" cy="18" r="1.5" />
-            </svg>
-          </div>
-        )}
-        {item.url && (
-          <img
-            src={item.url}
-            alt={item.caption || item.fileName}
-            loading="lazy"
-          />
-        )}
-        {item.caption && (
-          <div className="shelf-item-caption">
-            <span>{item.caption}</span>
-          </div>
-        )}
-      </motion.div>
-    )
-  }
-
   if (item.type === 'quote') {
     const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
     const isDark = isDarkBg(item.backgroundColor || '')
     const isBarStyle = item.quoteStyle === 'bar'
     return (
       <motion.div
-        ref={setNodeRef}
-        style={{ ...style, ...bgStyle }}
-        className={`shelf-item shelf-item-quote shelf-item-${item.size || 'medium'} ${isDark ? 'dark-bg' : ''} ${isBarStyle ? 'bar-style' : ''} ${isEditMode ? 'edit-mode' : ''}`}
+        style={bgStyle}
+        className={`shelf-item shelf-item-quote shelf-item-${item.size || 'medium'} ${isDark ? 'dark-bg' : ''} ${isBarStyle ? 'bar-style' : ''}`}
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
         transition={{ duration: 0.4, delay: index * 0.03 }}
-        {...(isEditMode ? { ...attributes, ...listeners } : {})}
       >
-        {isEditMode && (
-          <div className="shelf-item-drag-handle">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="9" cy="6" r="1.5" />
-              <circle cx="15" cy="6" r="1.5" />
-              <circle cx="9" cy="12" r="1.5" />
-              <circle cx="15" cy="12" r="1.5" />
-              <circle cx="9" cy="18" r="1.5" />
-              <circle cx="15" cy="18" r="1.5" />
-            </svg>
-          </div>
-        )}
-        {isAuthenticated && !isEditMode && (
+        {isAuthenticated && (
           <button
             className="shelf-item-edit-btn"
             onClick={(e) => { e.stopPropagation(); onEdit(item); }}
@@ -206,28 +134,14 @@ function SortableItem({ item, index, isEditMode, onSelect, onEdit, isDarkBg, isA
     const isDark = isDarkBg(item.backgroundColor || '')
     return (
       <motion.div
-        ref={setNodeRef}
-        style={{ ...style, ...bgStyle }}
-        className={`shelf-item shelf-item-text shelf-item-${item.size || 'small'} ${isDark ? 'dark-bg' : ''} ${isEditMode ? 'edit-mode' : ''}`}
+        style={bgStyle}
+        className={`shelf-item shelf-item-text shelf-item-${item.size || 'small'} ${isDark ? 'dark-bg' : ''}`}
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
         transition={{ duration: 0.4, delay: index * 0.03 }}
-        {...(isEditMode ? { ...attributes, ...listeners } : {})}
       >
-        {isEditMode && (
-          <div className="shelf-item-drag-handle">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="9" cy="6" r="1.5" />
-              <circle cx="15" cy="6" r="1.5" />
-              <circle cx="9" cy="12" r="1.5" />
-              <circle cx="15" cy="12" r="1.5" />
-              <circle cx="9" cy="18" r="1.5" />
-              <circle cx="15" cy="18" r="1.5" />
-            </svg>
-          </div>
-        )}
-        {isAuthenticated && !isEditMode && (
+        {isAuthenticated && (
           <button
             className="shelf-item-edit-btn"
             onClick={(e) => { e.stopPropagation(); onEdit(item); }}
@@ -239,6 +153,148 @@ function SortableItem({ item, index, isEditMode, onSelect, onEdit, isDarkBg, isA
             </svg>
           </button>
         )}
+        <div className="shelf-text-content">
+          {item.textLabel && <span className="text-label">{item.textLabel}</span>}
+          <p>{item.textContent}</p>
+        </div>
+      </motion.div>
+    )
+  }
+
+  return null
+}
+
+// Sortable Item Component (for edit mode only, with dnd-kit)
+function SortableItem({ item, index, isDarkBg }: {
+  item: ShelfItem
+  index: number
+  isDarkBg: (color: string) => boolean
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item._id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 1,
+  }
+
+  if (item.type === 'image') {
+    return (
+      <motion.div
+        ref={setNodeRef}
+        style={style}
+        className="shelf-item shelf-item-image edit-mode"
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.4, delay: index * 0.03 }}
+        {...attributes}
+        {...listeners}
+      >
+        <div className="shelf-item-drag-handle">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="6" r="1.5" />
+            <circle cx="15" cy="6" r="1.5" />
+            <circle cx="9" cy="12" r="1.5" />
+            <circle cx="15" cy="12" r="1.5" />
+            <circle cx="9" cy="18" r="1.5" />
+            <circle cx="15" cy="18" r="1.5" />
+          </svg>
+        </div>
+        {item.url && (
+          <img
+            src={item.url}
+            alt={item.caption || item.fileName}
+            loading="lazy"
+          />
+        )}
+        {item.caption && (
+          <div className="shelf-item-caption">
+            <span>{item.caption}</span>
+          </div>
+        )}
+      </motion.div>
+    )
+  }
+
+  if (item.type === 'quote') {
+    const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
+    const isDark = isDarkBg(item.backgroundColor || '')
+    const isBarStyle = item.quoteStyle === 'bar'
+    return (
+      <motion.div
+        ref={setNodeRef}
+        style={{ ...style, ...bgStyle }}
+        className={`shelf-item shelf-item-quote shelf-item-${item.size || 'medium'} ${isDark ? 'dark-bg' : ''} ${isBarStyle ? 'bar-style' : ''} edit-mode`}
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.4, delay: index * 0.03 }}
+        {...attributes}
+        {...listeners}
+      >
+        <div className="shelf-item-drag-handle">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="6" r="1.5" />
+            <circle cx="15" cy="6" r="1.5" />
+            <circle cx="9" cy="12" r="1.5" />
+            <circle cx="15" cy="12" r="1.5" />
+            <circle cx="9" cy="18" r="1.5" />
+            <circle cx="15" cy="18" r="1.5" />
+          </svg>
+        </div>
+        <div className="shelf-quote-content">
+          {!isBarStyle && (
+            <svg className="shelf-quote-mark" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6.5 10c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 6.5 10zm11 0c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 17.5 10z"/>
+            </svg>
+          )}
+          {isBarStyle && <div className="shelf-quote-bar" />}
+          <blockquote>{item.quoteText}</blockquote>
+          {(item.quoteAuthor || item.quoteSource) && (
+            <cite>
+              {item.quoteAuthor && <span className="quote-author">{item.quoteAuthor}</span>}
+              {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
+            </cite>
+          )}
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (item.type === 'text') {
+    const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
+    const isDark = isDarkBg(item.backgroundColor || '')
+    return (
+      <motion.div
+        ref={setNodeRef}
+        style={{ ...style, ...bgStyle }}
+        className={`shelf-item shelf-item-text shelf-item-${item.size || 'small'} ${isDark ? 'dark-bg' : ''} edit-mode`}
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.4, delay: index * 0.03 }}
+        {...attributes}
+        {...listeners}
+      >
+        <div className="shelf-item-drag-handle">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="6" r="1.5" />
+            <circle cx="15" cy="6" r="1.5" />
+            <circle cx="9" cy="12" r="1.5" />
+            <circle cx="15" cy="12" r="1.5" />
+            <circle cx="9" cy="18" r="1.5" />
+            <circle cx="15" cy="18" r="1.5" />
+          </svg>
+        </div>
         <div className="shelf-text-content">
           {item.textLabel && <span className="text-label">{item.textLabel}</span>}
           <p>{item.textContent}</p>
@@ -774,11 +830,7 @@ export default function Shelf() {
                       key={item._id}
                       item={item}
                       index={index}
-                      isEditMode={isEditMode}
-                      onSelect={setSelectedItem}
-                      onEdit={openEditModal}
                       isDarkBg={isDarkBg}
-                      isAuthenticated={isAuthenticated}
                     />
                   ))}
                 </div>
@@ -794,11 +846,10 @@ export default function Shelf() {
               {/* Quotes and Text items */}
               <div className="shelf-masonry mt-8">
                 {shelfItems.filter(item => item.type !== 'image').map((item, index) => (
-                  <SortableItem
+                  <DisplayItem
                     key={item._id}
                     item={item}
                     index={index}
-                    isEditMode={false}
                     onSelect={setSelectedItem}
                     onEdit={openEditModal}
                     isDarkBg={isDarkBg}
