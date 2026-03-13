@@ -532,13 +532,13 @@
 
 .image-carousel-pill {
   position: absolute;
-  bottom: 12px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 6px;
+  padding: 4px 5px;
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -547,8 +547,8 @@
 }
 
 .image-carousel-pill-btn {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   border: none;
@@ -564,19 +564,19 @@
 }
 
 .image-carousel-pill-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
 }
 
 .image-carousel-pill-dots {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .image-carousel-pill-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.4);
   border: none;
@@ -586,7 +586,7 @@
 }
 
 .image-carousel-pill-dot.active {
-  width: 24px;
+  width: 16px;
   background: white;
 }
 

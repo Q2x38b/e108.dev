@@ -885,14 +885,14 @@ export default function Shelf() {
       <AnimatePresence>
         {selectedItem && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedItem(null)}
           >
             <motion.div
-              className="relative max-h-[90vh] max-w-4xl overflow-auto"
+              className="relative max-h-[75vh] max-w-4xl overflow-auto"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -977,10 +977,10 @@ export default function Shelf() {
 
             {/* Navigation Pill */}
             <motion.div
-              className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/20 px-2 py-1.5 backdrop-blur-xl"
-              initial={{ opacity: 0, y: 20 }}
+              className="mt-4 flex items-center gap-2 rounded-full bg-black/20 px-2 py-1.5 backdrop-blur-xl"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
+              exit={{ opacity: 0, y: 10 }}
               transition={{ delay: 0.1 }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -1006,6 +1006,20 @@ export default function Shelf() {
                 </svg>
               </button>
             </motion.div>
+
+            {/* Description */}
+            {(selectedItem.caption || selectedItem.quoteAuthor || selectedItem.textLabel) && (
+              <motion.p
+                className="mt-3 max-w-md text-center text-sm text-white/70"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.15 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {selectedItem.caption || (selectedItem.quoteAuthor ? `— ${selectedItem.quoteAuthor}` : selectedItem.textLabel)}
+              </motion.p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
