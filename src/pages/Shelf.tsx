@@ -24,6 +24,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { ImageGallery } from '@/components/image-gallery'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -784,20 +785,28 @@ export default function Shelf() {
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="shelf-masonry">
-              {shelfItems.map((item, index) => (
-                <SortableItem
-                  key={item._id}
-                  item={item}
-                  index={index}
-                  isEditMode={false}
-                  onSelect={setSelectedItem}
-                  onEdit={openEditModal}
-                  isDarkBg={isDarkBg}
-                  isAuthenticated={isAuthenticated}
-                />
-              ))}
-            </div>
+            <>
+              {/* Image Gallery for images */}
+              <ImageGallery
+                images={shelfItems.filter(item => item.type === 'image')}
+                onImageClick={(image) => setSelectedItem(image as ShelfItem)}
+              />
+              {/* Quotes and Text items */}
+              <div className="shelf-masonry mt-8">
+                {shelfItems.filter(item => item.type !== 'image').map((item, index) => (
+                  <SortableItem
+                    key={item._id}
+                    item={item}
+                    index={index}
+                    isEditMode={false}
+                    onSelect={setSelectedItem}
+                    onEdit={openEditModal}
+                    isDarkBg={isDarkBg}
+                    isAuthenticated={isAuthenticated}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </main>
       </div>
