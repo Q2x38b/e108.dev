@@ -95,12 +95,12 @@ function SortableItem({ item, index, isEditMode, onSelect, onEdit, isDarkBg, isA
     isDragging,
   } = useSortable({ id: item._id, disabled: !isEditMode })
 
-  const style = {
+  const style = isEditMode ? {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1000 : 1,
-  }
+  } : {}
 
   if (item.type === 'image') {
     return (
