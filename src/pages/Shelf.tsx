@@ -175,6 +175,34 @@ export default function Shelf() {
     return items as ShelfItem[]
   }, [items])
 
+  // Get current index of selected item
+  const selectedIndex = useMemo(() => {
+    if (!selectedItem || !shelfItems.length) return -1
+    return shelfItems.findIndex(item => item._id === selectedItem._id)
+  }, [selectedItem, shelfItems])
+
+  // Navigation functions
+  const goToPrevItem = useCallback(() => {
+    if (selectedIndex > 0) {
+      haptics.selection()
+      setSelectedItem(shelfItems[selectedIndex - 1])
+    }
+  }, [selectedIndex, shelfItems, haptics])
+
+  const goToNextItem = useCallback(() => {
+    if (selectedIndex < shelfItems.length - 1) {
+      haptics.selection()
+      setSelectedItem(shelfItems[selectedIndex + 1])
+    }
+  }, [selectedIndex, shelfItems, haptics])
+
+  const goToItem = useCallback((index: number) => {
+    if (index >= 0 && index < shelfItems.length) {
+      haptics.selection()
+      setSelectedItem(shelfItems[index])
+    }
+  }, [shelfItems, haptics])
+
   // Distribute items across 4 columns for masonry
   const columns = useMemo(() => {
     const cols: ShelfItem[][] = [[], [], [], []]
@@ -945,6 +973,58 @@ export default function Shelf() {
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
+            </motion.div>
+
+            {/* Navigation Pill */}
+            <motion.div
+              className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-full bg-black/20 px-3 py-2 backdrop-blur-xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ delay: 0.1 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
+                onClick={goToPrevItem}
+                disabled={selectedIndex <= 0}
+                aria-label="Previous"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <path d="M14.5 18L8.5 12L14.5 6" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              <div className="flex items-center gap-1.5">
+                {shelfItems.slice(Math.max(0, selectedIndex - 2), Math.min(shelfItems.length, selectedIndex + 3)).map((item, i) => {
+                  const actualIndex = Math.max(0, selectedIndex - 2) + i
+                  return (
+                    <button
+                      key={item._id}
+                      className={`h-1.5 rounded-full transition-all ${actualIndex === selectedIndex ? 'w-6 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/60'}`}
+                      onClick={() => goToItem(actualIndex)}
+                      aria-label={`Go to item ${actualIndex + 1}`}
+                    />
+                  )
+                })}
+              </div>
+
+              <button
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
+                onClick={goToNextItem}
+                disabled={selectedIndex >= shelfItems.length - 1}
+                aria-label="Next"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <path d="M9.5 18L15.5 12L9.5 6" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {(selectedItem.caption || selectedItem.quoteAuthor || selectedItem.textLabel) && (
+                <span className="ml-1 max-w-[200px] truncate text-sm text-white/80">
+                  {selectedItem.caption || (selectedItem.quoteAuthor ? `— ${selectedItem.quoteAuthor}` : selectedItem.textLabel)}
+                </span>
+              )}
             </motion.div>
           </motion.div>
         )}
