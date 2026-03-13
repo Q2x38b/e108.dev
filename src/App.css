@@ -6493,10 +6493,12 @@
 }
 
 .shelf-title {
-  font-size: 2.5rem;
-  font-weight: 300;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3rem;
+  font-weight: 500;
+  font-style: italic;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
 }
 
 .shelf-content {
@@ -6516,13 +6518,208 @@
   margin-right: auto;
 }
 
+/* Quote Card Styling */
+.shelf-quote-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.shelf-quote-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .shelf-quote-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.shelf-quote-card.dark {
+  color: white;
+}
+
+.shelf-quote-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--text-tertiary);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.shelf-quote-card.dark .shelf-quote-icon {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.shelf-quote-card blockquote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+}
+
+.shelf-quote-card.dark blockquote {
+  color: white;
+}
+
+.shelf-quote-card cite {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-style: normal;
+}
+
+.shelf-quote-card .quote-author {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.shelf-quote-card.dark .quote-author {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.shelf-quote-card .quote-source {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.shelf-quote-card.dark .quote-source {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Bar Style Quote */
+.shelf-quote-card.bar-style {
+  padding: 20px;
+}
+
+.shelf-quote-bar-wrapper {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.shelf-quote-bar-line {
+  width: 3px;
+  background: var(--text-tertiary);
+  border-radius: 2px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.shelf-quote-card.dark .shelf-quote-bar-line {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.shelf-quote-bar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shelf-quote-card.bar-style blockquote {
+  font-style: normal;
+}
+
+/* Quote Preview Modal */
+.shelf-quote-preview {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 48px;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.shelf-quote-preview.dark {
+  color: white;
+}
+
+.shelf-quote-preview .shelf-quote-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.shelf-quote-preview blockquote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  line-height: 1.7;
+  color: var(--text);
+  margin: 0;
+}
+
+.shelf-quote-preview.dark blockquote {
+  color: white;
+}
+
+.shelf-quote-preview cite {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-style: normal;
+}
+
+.shelf-quote-preview .quote-author {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.shelf-quote-preview.dark .quote-author {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.shelf-quote-preview .quote-source {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+}
+
+.shelf-quote-preview.dark .quote-source {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Bar Style Preview */
+.shelf-quote-preview.bar-style {
+  align-items: flex-start;
+  text-align: left;
+  padding: 40px;
+}
+
+.shelf-quote-preview.bar-style .shelf-quote-bar-wrapper {
+  width: 100%;
+}
+
+.shelf-quote-preview.bar-style .shelf-quote-bar-line {
+  width: 4px;
+}
+
+.shelf-quote-preview.bar-style blockquote {
+  font-style: normal;
+  font-size: 1.35rem;
+}
+
+.shelf-quote-preview.bar-style cite {
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
 @media (max-width: 768px) {
   .shelf-container {
     padding: 24px 16px 48px;
   }
 
   .shelf-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
 
   .shelf-title-section {
@@ -6533,6 +6730,22 @@
   .shelf-description {
     font-size: 0.9rem;
     margin-top: 40px;
+  }
+
+  .shelf-quote-card {
+    padding: 20px;
+  }
+
+  .shelf-quote-card blockquote {
+    font-size: 1rem;
+  }
+
+  .shelf-quote-preview {
+    padding: 32px;
+  }
+
+  .shelf-quote-preview blockquote {
+    font-size: 1.25rem;
   }
 }
 

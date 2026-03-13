@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
-import { useTheme } from './Home'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useHaptics } from '../hooks/useHaptics'
 import { Footer } from '../components/Footer'
@@ -123,7 +122,6 @@ function SortableItem({ item, index, isDarkBg }: {
 }
 
 export default function Shelf() {
-  const { theme, toggle } = useTheme()
   const { sessionToken, isAuthenticated } = useAuth()
   const items = useQuery(api.shelf.list)
   const haptics = useHaptics()
@@ -412,29 +410,6 @@ export default function Shelf() {
           <span className="breadcrumb-current">Shelf</span>
         </nav>
         <div className="header-right">
-          <button
-            className="theme-toggle"
-            onClick={() => { haptics.selection(); toggle() }}
-            aria-label="Toggle theme"
-          >
-            {theme === 'light' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-            )}
-          </button>
           <SignedIn>
             <button
               className={`theme-toggle ${isEditMode ? 'active' : ''}`}
@@ -517,20 +492,40 @@ export default function Shelf() {
 
                   if (item.type === 'quote') {
                     const isDark = isDarkBg(item.backgroundColor || '')
+                    const isBarStyle = item.quoteStyle === 'bar'
                     return (
                       <div
                         key={item._id}
                         onClick={() => setSelectedItem(item)}
-                        className={`cursor-pointer rounded-lg p-6 transition-transform hover:scale-[1.02] ${isDark ? 'text-white' : ''}`}
-                        style={{ backgroundColor: item.backgroundColor || 'var(--accent)' }}
+                        className={`shelf-quote-card ${isDark ? 'dark' : ''} ${isBarStyle ? 'bar-style' : ''}`}
+                        style={{ backgroundColor: item.backgroundColor || undefined }}
                       >
-                        <blockquote className="text-sm italic leading-relaxed">
-                          "{item.quoteText}"
-                        </blockquote>
-                        {item.quoteAuthor && (
-                          <cite className="mt-3 block text-xs font-medium not-italic opacity-80">
-                            — {item.quoteAuthor}
-                          </cite>
+                        {isBarStyle ? (
+                          <div className="shelf-quote-bar-wrapper">
+                            <div className="shelf-quote-bar-line" />
+                            <div className="shelf-quote-bar-content">
+                              <blockquote>"{item.quoteText}"</blockquote>
+                              {(item.quoteAuthor || item.quoteSource) && (
+                                <cite>
+                                  {item.quoteAuthor && <span className="quote-author">— {item.quoteAuthor}</span>}
+                                  {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
+                                </cite>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <svg className="shelf-quote-icon" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/>
+                            </svg>
+                            <blockquote>{item.quoteText}</blockquote>
+                            {(item.quoteAuthor || item.quoteSource) && (
+                              <cite>
+                                {item.quoteAuthor && <span className="quote-author">— {item.quoteAuthor}</span>}
+                                {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
+                              </cite>
+                            )}
+                          </>
                         )}
                       </div>
                     )
@@ -881,10 +876,36 @@ export default function Shelf() {
               )}
 
               {selectedItem.type === 'quote' && (
-                <div className="max-w-lg rounded-lg bg-background p-8">
-                  <blockquote className="text-xl italic">{selectedItem.quoteText}</blockquote>
-                  {selectedItem.quoteAuthor && (
-                    <cite className="mt-4 block text-muted-foreground">— {selectedItem.quoteAuthor}</cite>
+                <div
+                  className={`shelf-quote-preview ${isDarkBg(selectedItem.backgroundColor || '') ? 'dark' : ''} ${selectedItem.quoteStyle === 'bar' ? 'bar-style' : ''}`}
+                  style={{ backgroundColor: selectedItem.backgroundColor || undefined }}
+                >
+                  {selectedItem.quoteStyle === 'bar' ? (
+                    <div className="shelf-quote-bar-wrapper">
+                      <div className="shelf-quote-bar-line" />
+                      <div className="shelf-quote-bar-content">
+                        <blockquote>"{selectedItem.quoteText}"</blockquote>
+                        {(selectedItem.quoteAuthor || selectedItem.quoteSource) && (
+                          <cite>
+                            {selectedItem.quoteAuthor && <span className="quote-author">— {selectedItem.quoteAuthor}</span>}
+                            {selectedItem.quoteSource && <span className="quote-source">{selectedItem.quoteSource}</span>}
+                          </cite>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <svg className="shelf-quote-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/>
+                      </svg>
+                      <blockquote>{selectedItem.quoteText}</blockquote>
+                      {(selectedItem.quoteAuthor || selectedItem.quoteSource) && (
+                        <cite>
+                          {selectedItem.quoteAuthor && <span className="quote-author">— {selectedItem.quoteAuthor}</span>}
+                          {selectedItem.quoteSource && <span className="quote-source">{selectedItem.quoteSource}</span>}
+                        </cite>
+                      )}
+                    </>
                   )}
                 </div>
               )}
