@@ -892,7 +892,7 @@ export default function Shelf() {
             onClick={() => setSelectedItem(null)}
           >
             <motion.div
-              className="relative max-h-[75vh] max-w-4xl overflow-auto"
+              className="relative max-w-4xl"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -902,7 +902,7 @@ export default function Shelf() {
                 <img
                   src={selectedItem.url}
                   alt={selectedItem.caption || selectedItem.fileName}
-                  className="max-h-[80vh] rounded-lg"
+                  className="max-h-[70vh] rounded-lg"
                 />
               )}
 
@@ -977,7 +977,7 @@ export default function Shelf() {
 
             {/* Navigation Pill */}
             <motion.div
-              className="mt-4 flex items-center gap-2 rounded-full bg-black/20 px-2 py-1.5 backdrop-blur-xl"
+              className="mt-6 flex items-center gap-2 rounded-full bg-black/20 px-2 py-1.5 backdrop-blur-xl"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
