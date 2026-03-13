@@ -207,16 +207,14 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
-.section-title::after {
-  content: '';
-  flex: 1;
+/* Short centered divider between sections */
+.section-divider {
+  width: 60px;
   height: 1px;
   background: var(--border);
+  margin: 48px auto;
 }
 
 /* Bio */

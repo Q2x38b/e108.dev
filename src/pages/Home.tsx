@@ -1219,22 +1219,27 @@ function HomeContent() {
         profile={profileData}
         onEdit={() => { setEditingProfile(true); setEditingSection('profile') }}
       />
+      <div className="section-divider" />
       <About
         about={aboutData}
         onEdit={() => { setEditingAbout(true); setEditingSection('about') }}
       />
+      <div className="section-divider" />
       <Work
         projects={projectsData as ProjectData[]}
         onEdit={() => { setEditingProjects(true); setEditingSection('work') }}
       />
+      <div className="section-divider" />
       <Experience
         experiences={experiencesData as ExperienceData[]}
         onEdit={() => { setEditingExperiences(true); setEditingSection('experience') }}
       />
+      <div className="section-divider" />
       <Skills
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
+      <div className="section-divider" />
       <LatencyChart />
       <Footer copyrightYear={footerData.copyrightYear} />
 
