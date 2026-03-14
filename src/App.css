@@ -42,8 +42,18 @@
   font-size: 0.9rem;
   color: var(--text-secondary);
   position: relative;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, font-weight 0.2s ease;
   cursor: pointer;
+}
+
+/* Invisible bold text to prevent layout shift on font-weight change */
+.nav-link::before {
+  content: attr(data-text);
+  font-weight: 600;
+  visibility: hidden;
+  height: 0;
+  display: block;
+  overflow: hidden;
 }
 
 .nav-link::after {
@@ -60,6 +70,7 @@
 @media (hover: hover) {
   .nav-link:hover {
     color: var(--text);
+    font-weight: 600;
   }
 
   .nav-link:hover::after {
@@ -88,8 +99,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   color: var(--text-tertiary);
+  user-select: none;
 }
 
 @media (hover: hover) {
@@ -99,9 +111,15 @@
   }
 }
 
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-color, #3b82f6);
+}
+
 .theme-toggle svg {
   width: 15px;
   height: 15px;
+  pointer-events: none;
 }
 
 .theme-toggle.active {
@@ -214,7 +232,7 @@
 
 .section-title {
   font-family: 'Geist Variable', 'Geist', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 460;
   color: var(--text-tertiary);
   letter-spacing: 0.3px;
@@ -825,8 +843,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   color: var(--text-tertiary);
+  user-select: none;
 }
 
 @media (hover: hover) {
@@ -836,9 +855,15 @@
   }
 }
 
+.back-to-top:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-color, #3b82f6);
+}
+
 .back-to-top svg {
   width: 14px;
   height: 14px;
+  pointer-events: none;
 }
 
 /* Shelf page full-width blur */
@@ -1806,6 +1831,11 @@
 
 .login-modal input:focus {
   border-color: var(--text-tertiary);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .login-modal input:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
 }
 
 .login-modal input.error {
@@ -2844,9 +2874,6 @@
   border: none;
   cursor: pointer;
   color: var(--text-tertiary);
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
 }
 
 @media (hover: hover) {
@@ -3652,13 +3679,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   color: var(--text-tertiary);
+  user-select: none;
 }
 
-.edit-mode-btn:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .edit-mode-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
+}
+
+.edit-mode-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-color, #3b82f6);
 }
 
 .edit-mode-btn.active {
@@ -3669,6 +3704,7 @@
 .edit-mode-btn svg {
   width: 14px;
   height: 14px;
+  pointer-events: none;
 }
 
 /* Small Logout Button in Footer */
@@ -3682,13 +3718,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   color: var(--text-tertiary);
+  user-select: none;
 }
 
-.logout-btn-small:hover {
-  background: var(--hover-bg);
-  color: var(--text);
+@media (hover: hover) {
+  .logout-btn-small:hover {
+    background: var(--hover-bg);
+    color: var(--text);
+  }
+}
+
+.logout-btn-small:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-color, #3b82f6);
 }
 
 .logout-btn-small svg {
@@ -6106,7 +6150,6 @@
   justify-content: center;
   transition: color 0.2s ease;
   color: var(--text-tertiary);
-  padding: 0;
 }
 
 .view-toggle-btn.active {

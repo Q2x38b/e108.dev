@@ -12,20 +12,33 @@ import { LatencyChart } from '../components/LatencyChart'
 
 // Animation variants - simple opacity fade
 const fadeInUp = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.6, ease: 'easeOut' }
+    y: 0,
+    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }
   }
 }
 
 const stagger = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 1 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.04
+      staggerChildren: 0.06,
+      delayChildren: 0.02
+    }
+  }
+}
+
+// Container for main page sections - staggers children
+const pageStagger = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05
     }
   }
 }
@@ -34,15 +47,16 @@ const fadeIn = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.5, ease: 'easeOut' }
+    transition: { duration: 0.4, ease: 'easeOut' }
   }
 }
 
 const lineItem = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 4 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.5, ease: 'easeOut' }
+    y: 0,
+    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }
   }
 }
 
@@ -50,13 +64,16 @@ const lineItem = {
 const navLinks: string[] = []
 
 // Accordion component
-function Accordion({ title, content, isOpen, onToggle }: {
+function Accordion({ title, content, isOpen, onToggle, id }: {
   title: string
   content: string
   isOpen: boolean
   onToggle: () => void
+  id: string
 }) {
   const haptics = useHaptics()
+  const contentId = `accordion-content-${id}`
+  const headerId = `accordion-header-${id}`
 
   const handleToggle = () => {
     haptics.soft()
@@ -65,19 +82,28 @@ function Accordion({ title, content, isOpen, onToggle }: {
 
   return (
     <div className="accordion">
-      <button className={`accordion-header ${isOpen ? 'open' : ''}`} onClick={handleToggle}>
+      <button
+        id={headerId}
+        className={`accordion-header ${isOpen ? 'open' : ''}`}
+        onClick={handleToggle}
+        aria-expanded={isOpen}
+        aria-controls={contentId}
+      >
         <span className={`accordion-title ${isOpen ? 'active' : ''}`}>{title}</span>
-        <span className={`accordion-icon ${isOpen ? 'open' : ''}`}>
+        <span className={`accordion-icon ${isOpen ? 'open' : ''}`} aria-hidden="true">
           <span className="accordion-icon-bar accordion-icon-horizontal" />
           <span className="accordion-icon-bar accordion-icon-vertical" />
         </span>
       </button>
       <div
+        id={contentId}
         className="accordion-content-wrapper"
+        role="region"
+        aria-labelledby={headerId}
         style={{
           display: 'grid',
           gridTemplateRows: isOpen ? '1fr' : '0fr',
-          transition: 'grid-template-rows 0.25s ease-out'
+          transition: 'grid-template-rows 0.2s ease-out'
         }}
       >
         <div style={{ overflow: 'hidden' }}>
@@ -252,9 +278,10 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
                   setPreference(option.value)
                   setIsOpen(false)
                 }}
-                title={option.label}
+                aria-label={`${option.label} theme`}
+                aria-pressed={preference === option.value}
               >
-                <span className="theme-dropdown-icon">{option.icon}</span>
+                <span className="theme-dropdown-icon" aria-hidden="true">{option.icon}</span>
               </button>
             ))}
           </motion.div>
@@ -290,9 +317,7 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
   return (
     <motion.header
       className="header"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
+      variants={fadeInUp}
     >
       <div className="header-left">
         <img
@@ -302,8 +327,8 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
         />
         {/* Desktop navigation */}
         <nav className="nav nav-desktop">
-          <Link to="/blog" className="nav-link">Writing</Link>
-          <Link to="/shelf" className="nav-link" onMouseEnter={prefetchShelf}>Shelf</Link>
+          <Link to="/blog" className="nav-link" data-text="Writing">Writing</Link>
+          <Link to="/shelf" className="nav-link" data-text="Shelf" onMouseEnter={prefetchShelf}>Shelf</Link>
         </nav>
       </div>
 
@@ -376,9 +401,6 @@ function Profile({ profile, onEdit }: { profile: ProfileData; onEdit: () => void
       <motion.section
         className="profile"
         variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, delay: 0.1 }}
       >
         <h1 className="profile-name">{profile.name}</h1>
         <p className="profile-title">{profile.title}</p>
@@ -409,9 +431,6 @@ function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
         id="about"
         className="section"
         variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, delay: 0.2 }}
       >
         <div className="bio">
           {about.bio.map((paragraph, index) => (
@@ -469,25 +488,22 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
       <motion.section
         id="skills"
         className="section"
-        variants={stagger}
-        initial="hidden"
-        animate="visible"
+        variants={fadeInUp}
       >
-        <motion.h2
-          className="section-title"
-          variants={fadeInUp}
-          transition={{ duration: 0.5, delay: 0.6 }}
+        <h2 className="section-title">Skills</h2>
+        <motion.div
+          className="accordion-list"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
         >
-          Skills
-        </motion.h2>
-        <div className="accordion-list">
           {skills.map((skill, index) => (
             <motion.div
               key={skill._id}
-              variants={fadeInUp}
-              transition={{ duration: 0.4, delay: 0.65 + index * 0.05 }}
+              variants={lineItem}
             >
               <Accordion
+                id={skill._id}
                 title={skill.title}
                 content={skill.content}
                 isOpen={openIndex === index}
@@ -495,7 +511,7 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
               />
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </motion.section>
     </EditableSection>
   )
@@ -667,41 +683,38 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
         <motion.section
           id="work"
           className="section work-section"
-          variants={stagger}
-          initial="hidden"
-          animate="visible"
+          variants={fadeInUp}
         >
-          <motion.h2
-            className="section-title"
-            variants={fadeInUp}
-          >
-            Work
-          </motion.h2>
+          <h2 className="section-title">Work</h2>
           <LayoutGroup>
-            <div className="work-table">
+            <motion.div
+              className="work-table"
+              variants={stagger}
+              initial="hidden"
+              animate="visible"
+            >
               {sortedYears.map((year) => (
                 <motion.div
                   key={year}
                   className="work-year-group"
-                  variants={fadeInUp}
+                  variants={lineItem}
                 >
                   <div className="work-year-label">{year}</div>
                   <div className="work-year-entries">
                     {projectsByYear[year].map((project) => (
-                      <motion.button
+                      <button
                         key={project._id}
                         className="work-entry"
-                        variants={fadeInUp}
                         onClick={() => { haptics.soft(); setSelectedId(project.name) }}
                       >
                         <span className="work-entry-name">{project.name}</span>
                         <span className="work-entry-date">{project.year}</span>
-                      </motion.button>
+                      </button>
                     ))}
                   </div>
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           </LayoutGroup>
         </motion.section>
       </EditableSection>
@@ -793,24 +806,20 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
       <motion.section
         id="experience"
         className="section"
-        variants={stagger}
-        initial="hidden"
-        animate="visible"
+        variants={fadeInUp}
       >
-        <motion.h2
-          className="section-title"
-          variants={fadeInUp}
-          transition={{ duration: 0.5, delay: 0.5 }}
+        <h2 className="section-title">Experience</h2>
+        <motion.div
+          className="experience-list"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
         >
-          Experience
-        </motion.h2>
-        <div className="experience-list">
-          {experiences.map((exp, index) => (
+          {experiences.map((exp) => (
             <motion.div
               key={exp._id}
               className="experience-row"
-              variants={fadeInUp}
-              transition={{ duration: 0.4, delay: 0.55 + index * 0.05 }}
+              variants={lineItem}
             >
               <span className="experience-company">{exp.company}</span>
               <span className="experience-line" />
@@ -820,7 +829,7 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
               </span>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </motion.section>
     </EditableSection>
   )
@@ -927,9 +936,7 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
     <>
       <motion.footer
         className="footer"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+        variants={fadeInUp}
       >
         {/* Desktop: quote at top, Mobile: quote in top row */}
         <div className="footer-quote-row">
@@ -1128,7 +1135,12 @@ function HomeContent() {
   }
 
   return (
-    <div className="container">
+    <motion.div
+      className="container"
+      variants={pageStagger}
+      initial="hidden"
+      animate="visible"
+    >
       <Header theme={theme} preference={preference} setPreference={setPreference} location={profileData.location} profileImageUrl={profileData.imageUrl} />
       <EditModeIndicator />
 
@@ -1152,7 +1164,9 @@ function HomeContent() {
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
-      <LatencyChart />
+      <motion.div variants={fadeInUp}>
+        <LatencyChart />
+      </motion.div>
       <Footer copyrightYear={footerData.copyrightYear} />
 
       {/* Editors */}
@@ -1188,7 +1202,7 @@ function HomeContent() {
           />
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   )
 }
 
