@@ -100,59 +100,74 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="experience-editor-title"
     >
       <motion.div
         className="inline-editor inline-editor-large"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.15 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="editor-title">Edit Experience</h3>
+        <h3 id="experience-editor-title" className="editor-title">Edit Experience</h3>
 
         <div className="editor-section">
           <div className="editor-section-header">
-            <label>Experiences</label>
+            <span>Experiences</span>
             <button type="button" onClick={addExperience} className="add-btn">
               + Add Experience
             </button>
           </div>
           {localExperiences.map((exp, index) => (
-            <div key={exp._id} className="editor-item-card">
+            <div key={exp._id} className="editor-item-card" role="group" aria-label={`Experience ${index + 1}`}>
               <div className="editor-row">
                 <div className="editor-field">
-                  <label>Company</label>
+                  <label htmlFor={`exp-company-${index}`}>Company</label>
                   <input
+                    id={`exp-company-${index}`}
                     type="text"
                     value={exp.company}
                     onChange={(e) => handleChange(index, 'company', e.target.value)}
                     placeholder="Company name"
+                    spellCheck="false"
+                    autoComplete="organization"
                   />
                 </div>
                 <div className="editor-field">
-                  <label>Role</label>
+                  <label htmlFor={`exp-role-${index}`}>Role</label>
                   <input
+                    id={`exp-role-${index}`}
                     type="text"
                     value={exp.role}
                     onChange={(e) => handleChange(index, 'role', e.target.value)}
                     placeholder="Your role"
+                    spellCheck="false"
+                    autoComplete="off"
                   />
                 </div>
               </div>
               <div className="editor-field">
-                <label>Date Range</label>
+                <label htmlFor={`exp-date-${index}`}>Date Range</label>
                 <input
+                  id={`exp-date-${index}`}
                   type="text"
                   value={exp.date}
                   onChange={(e) => handleChange(index, 'date', e.target.value)}
                   placeholder="2024 - now (leave empty for blinking cursor)"
+                  spellCheck="false"
+                  autoComplete="off"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => removeExperience(index)}
                 className="remove-item-btn"
+                aria-label={`Remove experience ${index + 1}`}
               >
                 Remove
               </button>
@@ -164,7 +179,7 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
           <button onClick={onClose} className="cancel-btn" disabled={saving}>
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="save-btn">
+          <button onClick={handleSave} disabled={saving} className="save-btn" aria-busy={saving}>
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>

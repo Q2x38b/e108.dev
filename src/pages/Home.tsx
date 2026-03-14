@@ -10,56 +10,6 @@ import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEdito
 import { useHaptics } from '../hooks/useHaptics'
 import { LatencyChart } from '../components/LatencyChart'
 
-// Animation variants - simple opacity fade
-const fadeInUp = {
-  hidden: { opacity: 0, y: 8 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }
-  }
-}
-
-const stagger = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.02
-    }
-  }
-}
-
-// Container for main page sections - staggers children
-const pageStagger = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.05
-    }
-  }
-}
-
-const fadeIn = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.4, ease: 'easeOut' }
-  }
-}
-
-const lineItem = {
-  hidden: { opacity: 0, y: 4 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }
-  }
-}
-
 // Navigation links
 const navLinks: string[] = []
 
@@ -315,10 +265,7 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
   }
 
   return (
-    <motion.header
-      className="header"
-      variants={fadeInUp}
-    >
+    <header className="header stagger-in stagger-in-1">
       <div className="header-left">
         <img
           src={profileImageUrl}
@@ -384,7 +331,7 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
           </motion.nav>
         )}
       </AnimatePresence>
-    </motion.header>
+    </header>
   )
 }
 
@@ -398,13 +345,10 @@ interface ProfileData {
 function Profile({ profile, onEdit }: { profile: ProfileData; onEdit: () => void }) {
   return (
     <EditableSection sectionId="profile" onEdit={onEdit}>
-      <motion.section
-        className="profile"
-        variants={fadeInUp}
-      >
+      <section className="profile stagger-in stagger-in-2">
         <h1 className="profile-name">{profile.name}</h1>
         <p className="profile-title">{profile.title}</p>
-      </motion.section>
+      </section>
     </EditableSection>
   )
 }
@@ -416,6 +360,7 @@ interface AboutData {
 // Hardcoded social links
 const socialLinks = [
   { platform: 'github', url: 'https://github.com/Q2x38b', label: 'GitHub' },
+  { platform: 'x', url: 'https://x.com/q2x38b', label: 'Twitter' },
   { platform: 'linkedin', url: 'https://linkedin.com/in/ethan-jerla-1b0901364', label: 'LinkedIn' },
   { platform: 'email', url: 'mailto:hello@e108.dev', label: 'Email' }
 ]
@@ -427,11 +372,7 @@ function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
 
   return (
     <EditableSection sectionId="about" onEdit={onEdit}>
-      <motion.section
-        id="about"
-        className="section"
-        variants={fadeInUp}
-      >
+      <section id="about" className="section stagger-in stagger-in-3">
         <div className="bio">
           {about.bio.map((paragraph, index) => (
             <p key={index}>{renderBio(paragraph)}</p>
@@ -451,6 +392,12 @@ function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
                   <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
                 </svg>
               )}
+              {link.platform === 'x' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
+                  <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+                </svg>
+              )}
               {link.platform === 'linkedin' && (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
@@ -468,7 +415,7 @@ function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
             </a>
           ))}
         </div>
-      </motion.section>
+      </section>
     </EditableSection>
   )
 }
@@ -485,23 +432,11 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
 
   return (
     <EditableSection sectionId="skills" onEdit={onEdit}>
-      <motion.section
-        id="skills"
-        className="section"
-        variants={fadeInUp}
-      >
+      <section id="skills" className="section stagger-in stagger-in-6">
         <h2 className="section-title">Skills</h2>
-        <motion.div
-          className="accordion-list"
-          variants={stagger}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="accordion-list">
           {skills.map((skill, index) => (
-            <motion.div
-              key={skill._id}
-              variants={lineItem}
-            >
+            <div key={skill._id}>
               <Accordion
                 id={skill._id}
                 title={skill.title}
@@ -509,10 +444,10 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
                 isOpen={openIndex === index}
                 onToggle={() => setOpenIndex(openIndex === index ? null : index)}
               />
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
-      </motion.section>
+        </div>
+      </section>
     </EditableSection>
   )
 }
@@ -680,43 +615,61 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
   return (
     <>
       <EditableSection sectionId="work" onEdit={onEdit}>
-        <motion.section
-          id="work"
-          className="section work-section"
-          variants={fadeInUp}
-        >
-          <h2 className="section-title">Work</h2>
+        <section id="work" className="section work-section stagger-in stagger-in-4">
+          <h2 className="section-title section-title-with-icon">
+            <svg width="14" height="14" stroke="currentColor" strokeWidth="2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12h.01"></path><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path><path d="M22 13a18.15 18.15 0 0 1-20 0"></path><rect width="20" height="14" x="2" y="6" rx="2"></rect></svg>
+            Work
+          </h2>
           <LayoutGroup>
-            <motion.div
-              className="work-table"
-              variants={stagger}
-              initial="hidden"
-              animate="visible"
-            >
+            <div className="work-table">
               {sortedYears.map((year) => (
-                <motion.div
-                  key={year}
-                  className="work-year-group"
-                  variants={lineItem}
-                >
+                <div key={year} className="work-year-group">
                   <div className="work-year-label">{year}</div>
                   <div className="work-year-entries">
-                    {projectsByYear[year].map((project) => (
-                      <button
-                        key={project._id}
-                        className="work-entry"
-                        onClick={() => { haptics.soft(); setSelectedId(project.name) }}
-                      >
-                        <span className="work-entry-name">{project.name}</span>
-                        <span className="work-entry-date">{project.year}</span>
-                      </button>
-                    ))}
+                    {projectsByYear[year].map((project) => {
+                      const hasDetails = project.details && project.details.trim() !== ''
+                      const primaryLink = project.url || (project.links && project.links.length > 0 ? project.links[0].url : null)
+                      const shouldLinkDirectly = !hasDetails && primaryLink
+
+                      if (shouldLinkDirectly) {
+                        return (
+                          <a
+                            key={project._id}
+                            href={primaryLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="work-entry"
+                            onClick={() => haptics.soft()}
+                          >
+                            <span className="work-entry-name">{project.name}</span>
+                            {project.description && (
+                              <span className="work-entry-description">{project.description}</span>
+                            )}
+                            <span className="work-entry-date">{project.year}</span>
+                          </a>
+                        )
+                      }
+
+                      return (
+                        <button
+                          key={project._id}
+                          className="work-entry"
+                          onClick={() => { haptics.soft(); setSelectedId(project.name) }}
+                        >
+                          <span className="work-entry-name">{project.name}</span>
+                          {project.description && (
+                            <span className="work-entry-description">{project.description}</span>
+                          )}
+                          <span className="work-entry-date">{project.year}</span>
+                        </button>
+                      )
+                    })}
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
           </LayoutGroup>
-        </motion.section>
+        </section>
       </EditableSection>
 
       <AnimatePresence>
@@ -803,34 +756,21 @@ interface ExperienceData {
 function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
   return (
     <EditableSection sectionId="experience" onEdit={onEdit}>
-      <motion.section
-        id="experience"
-        className="section"
-        variants={fadeInUp}
-      >
+      <section id="experience" className="section stagger-in stagger-in-5">
         <h2 className="section-title">Experience</h2>
-        <motion.div
-          className="experience-list"
-          variants={stagger}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="experience-list">
           {experiences.map((exp) => (
-            <motion.div
-              key={exp._id}
-              className="experience-row"
-              variants={lineItem}
-            >
+            <div key={exp._id} className="experience-row">
               <span className="experience-company">{exp.company}</span>
               <span className="experience-line" />
               <span className="experience-role">{exp.role}</span>
               <span className="experience-date">
                 {exp.date || <span className="blink-cursor">_</span>}
               </span>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
-      </motion.section>
+        </div>
+      </section>
     </EditableSection>
   )
 }
@@ -934,10 +874,7 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
 
   return (
     <>
-      <motion.footer
-        className="footer"
-        variants={fadeInUp}
-      >
+      <footer className="footer stagger-in stagger-in-8">
         {/* Desktop: quote at top, Mobile: quote in top row */}
         <div className="footer-quote-row">
           <span className="footer-quote-inline">The only limit is yourself</span>
@@ -998,7 +935,7 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
         <div className="footer-signature">
           <img src="/signature.png" alt="EJ" className="signature-img" />
         </div>
-      </motion.footer>
+      </footer>
       <AnimatePresence>
         {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
       </AnimatePresence>
@@ -1135,12 +1072,7 @@ function HomeContent() {
   }
 
   return (
-    <motion.div
-      className="container"
-      variants={pageStagger}
-      initial="hidden"
-      animate="visible"
-    >
+    <div className="container">
       <Header theme={theme} preference={preference} setPreference={setPreference} location={profileData.location} profileImageUrl={profileData.imageUrl} />
       <EditModeIndicator />
 
@@ -1164,9 +1096,9 @@ function HomeContent() {
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
-      <motion.div variants={fadeInUp}>
+      <div className="stagger-in stagger-in-7">
         <LatencyChart />
-      </motion.div>
+      </div>
       <Footer copyrightYear={footerData.copyrightYear} />
 
       {/* Editors */}
@@ -1202,7 +1134,7 @@ function HomeContent() {
           />
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   )
 }
 

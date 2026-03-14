@@ -45,53 +45,70 @@ export function ProfileEditor({ profile, onClose }: ProfileEditorProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="profile-editor-title"
     >
       <motion.div
         className="inline-editor"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.15 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="editor-title">Edit Profile</h3>
+        <h3 id="profile-editor-title" className="editor-title">Edit Profile</h3>
 
         <div className="editor-field">
-          <label>Name</label>
+          <label htmlFor="profile-name">Name</label>
           <input
+            id="profile-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            spellCheck="false"
+            autoComplete="name"
           />
         </div>
 
         <div className="editor-field">
-          <label>Title</label>
+          <label htmlFor="profile-title">Title</label>
           <input
+            id="profile-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Student • Developer"
+            spellCheck="false"
+            autoComplete="off"
           />
         </div>
 
         <div className="editor-field">
-          <label>Profile Image URL</label>
+          <label htmlFor="profile-image">Profile Image URL</label>
           <input
-            type="text"
+            id="profile-image"
+            type="url"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder="/profile.png"
+            spellCheck="false"
+            autoComplete="off"
           />
         </div>
 
         <div className="editor-field">
-          <label>Location</label>
+          <label htmlFor="profile-location">Location</label>
           <input
+            id="profile-location"
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Houston, TX"
+            spellCheck="false"
+            autoComplete="off"
           />
         </div>
 
@@ -99,7 +116,7 @@ export function ProfileEditor({ profile, onClose }: ProfileEditorProps) {
           <button onClick={onClose} className="cancel-btn" disabled={saving}>
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="save-btn">
+          <button onClick={handleSave} disabled={saving} className="save-btn" aria-busy={saving}>
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>

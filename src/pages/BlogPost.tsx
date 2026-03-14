@@ -1095,14 +1095,14 @@ export default function BlogPost() {
           <button
             className="theme-toggle"
             onClick={() => { haptics.selection(); toggle() }}
-            aria-label="Toggle theme"
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
           >
             {theme === 'light' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <circle cx="12" cy="12" r="5" />
                 <line x1="12" y1="1" x2="12" y2="3" />
                 <line x1="12" y1="21" x2="12" y2="23" />
@@ -1130,13 +1130,13 @@ export default function BlogPost() {
 
           <div className="article-meta-line">
             <span>{formatDate(post.createdAt)}</span>
-            <span className="article-meta-dot">·</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="article-meta-icon">
+            <span className="article-meta-dot" aria-hidden="true">·</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="article-meta-icon" aria-hidden="true">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
             </svg>
             <span>{getWordCount(post.content).toLocaleString()} words</span>
-            <span className="article-meta-dot">·</span>
+            <span className="article-meta-dot" aria-hidden="true">·</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="article-meta-icon">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />

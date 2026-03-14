@@ -130,43 +130,51 @@ export function SkillEditor({ skills, onClose }: SkillEditorProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="skill-editor-title"
     >
       <motion.div
         className="inline-editor inline-editor-large"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.15 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="editor-title">Edit Skills</h3>
+        <h3 id="skill-editor-title" className="editor-title">Edit Skills</h3>
 
         <div className="editor-section">
           <div className="editor-section-header">
-            <label>Skills</label>
+            <span>Skills</span>
             <button type="button" onClick={addSkill} className="add-btn">
               + Add Skill
             </button>
           </div>
           {localSkills.map((skill, index) => (
-            <div key={skill._id} className="editor-item-card">
+            <div key={skill._id} className="editor-item-card" role="group" aria-label={`Skill ${index + 1}`}>
               <div className="editor-field">
-                <label>Title</label>
+                <label htmlFor={`skill-title-${index}`}>Title</label>
                 <input
+                  id={`skill-title-${index}`}
                   type="text"
                   value={skill.title}
                   onChange={(e) => handleChange(index, 'title', e.target.value)}
                   placeholder="Skill title"
+                  spellCheck="false"
+                  autoComplete="off"
                 />
               </div>
               <div className="editor-field">
-                <label>Content</label>
-                <div className="editor-formatting-toolbar">
+                <label htmlFor={`skill-content-${index}`}>Content</label>
+                <div className="editor-formatting-toolbar" role="toolbar" aria-label="Text formatting">
                   <button
                     type="button"
                     onClick={() => insertFormatting(skill._id, index, 'bold')}
                     className="formatting-btn"
-                    title="Bold"
+                    aria-label="Bold"
                   >
                     <strong>B</strong>
                   </button>
@@ -174,7 +182,7 @@ export function SkillEditor({ skills, onClose }: SkillEditorProps) {
                     type="button"
                     onClick={() => insertFormatting(skill._id, index, 'italic')}
                     className="formatting-btn"
-                    title="Italic"
+                    aria-label="Italic"
                   >
                     <em>I</em>
                   </button>
@@ -182,23 +190,26 @@ export function SkillEditor({ skills, onClose }: SkillEditorProps) {
                     type="button"
                     onClick={() => insertFormatting(skill._id, index, 'bullet')}
                     className="formatting-btn"
-                    title="Bullet List"
+                    aria-label="Bullet list"
                   >
                     •
                   </button>
                 </div>
                 <textarea
+                  id={`skill-content-${index}`}
                   ref={(el) => { textareaRefs.current[skill._id] = el }}
                   value={skill.content}
                   onChange={(e) => handleChange(index, 'content', e.target.value)}
                   placeholder="Skill description (supports HTML: <strong>, <em>, <ul><li>)"
                   rows={4}
+                  spellCheck="true"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => removeSkill(index)}
                 className="remove-item-btn"
+                aria-label={`Remove skill ${index + 1}`}
               >
                 Remove
               </button>
@@ -210,7 +221,7 @@ export function SkillEditor({ skills, onClose }: SkillEditorProps) {
           <button onClick={onClose} className="cancel-btn" disabled={saving}>
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="save-btn">
+          <button onClick={handleSave} disabled={saving} className="save-btn" aria-busy={saving}>
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>

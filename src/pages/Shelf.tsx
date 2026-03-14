@@ -656,6 +656,9 @@ export default function Shelf() {
                     value={uploadCaption}
                     onChange={(e) => setUploadCaption(e.target.value)}
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                    aria-label="Image caption"
+                    spellCheck="true"
+                    autoComplete="off"
                   />
                 </>
               )}
@@ -668,6 +671,8 @@ export default function Shelf() {
                     onChange={(e) => setQuoteText(e.target.value)}
                     rows={4}
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                    aria-label="Quote text"
+                    spellCheck="true"
                   />
                   <input
                     type="text"
@@ -675,6 +680,9 @@ export default function Shelf() {
                     value={quoteAuthor}
                     onChange={(e) => setQuoteAuthor(e.target.value)}
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                    aria-label="Quote author"
+                    spellCheck="false"
+                    autoComplete="off"
                   />
                   <input
                     type="text"
@@ -682,6 +690,9 @@ export default function Shelf() {
                     value={quoteSource}
                     onChange={(e) => setQuoteSource(e.target.value)}
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                    aria-label="Quote source"
+                    spellCheck="false"
+                    autoComplete="off"
                   />
                   <div className="flex flex-wrap gap-2">
                     {BACKGROUND_COLORS.map((color) => (
@@ -690,7 +701,8 @@ export default function Shelf() {
                         className={`h-8 w-8 rounded-full border-2 transition-transform ${backgroundColor === color.value ? 'scale-110 border-primary' : 'border-transparent'}`}
                         style={{ backgroundColor: color.value || 'var(--accent)' }}
                         onClick={() => { haptics.selection(); setBackgroundColor(color.value) }}
-                        title={color.name}
+                        aria-label={`${color.name} background`}
+                        aria-pressed={backgroundColor === color.value}
                       />
                     ))}
                   </div>
@@ -705,6 +717,9 @@ export default function Shelf() {
                     value={textLabel}
                     onChange={(e) => setTextLabel(e.target.value)}
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                    aria-label="Text label"
+                    spellCheck="false"
+                    autoComplete="off"
                   />
                   <textarea
                     placeholder="Enter your text..."
@@ -712,6 +727,8 @@ export default function Shelf() {
                     onChange={(e) => setTextContent(e.target.value)}
                     rows={3}
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                    aria-label="Text content"
+                    spellCheck="true"
                   />
                   <div className="flex flex-wrap gap-2">
                     {BACKGROUND_COLORS.map((color) => (
@@ -720,7 +737,8 @@ export default function Shelf() {
                         className={`h-8 w-8 rounded-full border-2 transition-transform ${backgroundColor === color.value ? 'scale-110 border-primary' : 'border-transparent'}`}
                         style={{ backgroundColor: color.value || 'var(--accent)' }}
                         onClick={() => { haptics.selection(); setBackgroundColor(color.value) }}
-                        title={color.name}
+                        aria-label={`${color.name} background`}
+                        aria-pressed={backgroundColor === color.value}
                       />
                     ))}
                   </div>
@@ -816,7 +834,8 @@ export default function Shelf() {
                         className={`h-8 w-8 rounded-full border-2 transition-transform ${editBackgroundColor === color.value ? 'scale-110 border-primary' : 'border-transparent'}`}
                         style={{ backgroundColor: color.value || 'var(--accent)' }}
                         onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
-                        title={color.name}
+                        aria-label={`${color.name} background`}
+                        aria-pressed={backgroundColor === color.value}
                       />
                     ))}
                   </div>
@@ -846,7 +865,8 @@ export default function Shelf() {
                         className={`h-8 w-8 rounded-full border-2 transition-transform ${editBackgroundColor === color.value ? 'scale-110 border-primary' : 'border-transparent'}`}
                         style={{ backgroundColor: color.value || 'var(--accent)' }}
                         onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
-                        title={color.name}
+                        aria-label={`${color.name} background`}
+                        aria-pressed={backgroundColor === color.value}
                       />
                     ))}
                   </div>

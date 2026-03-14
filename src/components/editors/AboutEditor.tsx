@@ -55,20 +55,25 @@ export function AboutEditor({ about, onClose }: AboutEditorProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="about-editor-title"
     >
       <motion.div
         className="inline-editor inline-editor-large"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.15 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="editor-title">Edit About Section</h3>
+        <h3 id="about-editor-title" className="editor-title">Edit About Section</h3>
 
         <div className="editor-section">
           <div className="editor-section-header">
-            <label>Bio Paragraphs</label>
+            <span id="bio-paragraphs-label">Bio Paragraphs</span>
             <button type="button" onClick={addBioParagraph} className="add-btn">
               + Add Paragraph
             </button>
@@ -80,12 +85,15 @@ export function AboutEditor({ about, onClose }: AboutEditorProps) {
                 onChange={(e) => handleBioChange(index, e.target.value)}
                 placeholder="Enter paragraph text (supports HTML tags like <kbd>, <em>)"
                 rows={3}
+                aria-label={`Bio paragraph ${index + 1}`}
+                spellCheck="true"
               />
               {bio.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeBioParagraph(index)}
                   className="remove-btn"
+                  aria-label={`Remove paragraph ${index + 1}`}
                 >
                   ×
                 </button>
@@ -98,7 +106,7 @@ export function AboutEditor({ about, onClose }: AboutEditorProps) {
           <button onClick={onClose} className="cancel-btn" disabled={saving}>
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="save-btn">
+          <button onClick={handleSave} disabled={saving} className="save-btn" aria-busy={saving}>
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>

@@ -92,14 +92,14 @@ export default function BlogList() {
           <button
             className="theme-toggle"
             onClick={() => { haptics.selection(); toggle() }}
-            aria-label="Toggle theme"
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
           >
             {theme === 'light' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <circle cx="12" cy="12" r="5" />
                 <line x1="12" y1="1" x2="12" y2="3" />
                 <line x1="12" y1="21" x2="12" y2="23" />
@@ -114,7 +114,7 @@ export default function BlogList() {
           </button>
           <SignedIn>
             <Link to="/blog/new" className="add-post-btn" aria-label="New post">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
@@ -130,24 +130,28 @@ export default function BlogList() {
       {/* Search Bar and View Toggle */}
       <div className="blog-search-bar">
         <div className="blog-search-input">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="11" cy="11" r="8" />
             <path d="M21 21l-4.35-4.35" />
           </svg>
           <input
-            type="text"
+            type="search"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Search posts"
+            spellCheck="false"
+            autoComplete="off"
           />
         </div>
-        <div className="blog-view-toggle">
+        <div className="blog-view-toggle" role="group" aria-label="View mode">
           <button
             className={`view-toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
             onClick={() => { haptics.selection(); setViewMode('card') }}
             aria-label="Card view"
+            aria-pressed={viewMode === 'card'}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7" />
               <rect x="14" y="3" width="7" height="7" />
               <rect x="3" y="14" width="7" height="7" />
@@ -158,8 +162,9 @@ export default function BlogList() {
             className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
             onClick={() => { haptics.selection(); setViewMode('list') }}
             aria-label="List view"
+            aria-pressed={viewMode === 'list'}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />

@@ -28,15 +28,23 @@ function LoginModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="login-modal-overlay" onClick={onClose}>
+    <div
+      className="login-modal-overlay"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="login-modal-title"
+    >
       <motion.div
         className="login-modal"
         onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.15 }}
       >
         <form onSubmit={handleSubmit}>
+          <span id="login-modal-title" className="sr-only">Login</span>
           <input
             type="password"
             placeholder="Password"
@@ -45,8 +53,14 @@ function LoginModal({ onClose }: { onClose: () => void }) {
             autoFocus
             className={error ? 'error' : ''}
             disabled={loading}
+            required
+            spellCheck="false"
+            autoComplete="current-password"
+            aria-invalid={error}
+            aria-describedby={error ? 'login-error' : undefined}
           />
-          <button type="submit" disabled={loading}>
+          {error && <span id="login-error" className="sr-only">Invalid password</span>}
+          <button type="submit" disabled={loading} aria-busy={loading}>
             {loading ? '...' : 'Login'}
           </button>
         </form>
@@ -130,10 +144,11 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
                 <motion.button
                   className={`edit-mode-btn ${editModeContext.isEditMode ? 'active' : ''}`}
                   onClick={handleToggleEditMode}
-                  whileTap={{ scale: 0.95 }}
-                  title={editModeContext.isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
+                  whileTap={{ scale: 0.96 }}
+                  aria-label={editModeContext.isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
+                  aria-pressed={editModeContext.isEditMode}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
@@ -141,10 +156,10 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
                 <motion.button
                   className="logout-btn-small"
                   onClick={handleLogout}
-                  whileTap={{ scale: 0.95 }}
-                  title="Logout"
+                  whileTap={{ scale: 0.96 }}
+                  aria-label="Logout"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <polyline points="16 17 21 12 16 7" />
                     <line x1="21" y1="12" x2="9" y2="12" />
@@ -158,7 +173,7 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
               onClick={scrollToTop}
               aria-label="Back to top"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M12 19V5M5 12l7-7 7 7" />
               </svg>
             </button>
