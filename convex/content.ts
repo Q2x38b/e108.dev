@@ -2,6 +2,21 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth } from "./auth";
 
+// ===== COMBINED HOMEPAGE DATA (single round-trip) =====
+export const getHomepageData = query({
+  handler: async (ctx) => {
+    const [profile, about, skills, projects, experiences, footer] = await Promise.all([
+      ctx.db.query("profile").first(),
+      ctx.db.query("about").first(),
+      ctx.db.query("skills").withIndex("by_order").collect(),
+      ctx.db.query("projects").withIndex("by_order").collect(),
+      ctx.db.query("experiences").withIndex("by_order").collect(),
+      ctx.db.query("footer").first(),
+    ]);
+    return { profile, about, skills, projects, experiences, footer };
+  },
+});
+
 // ===== PROFILE =====
 export const getProfile = query({
   handler: async (ctx) => {

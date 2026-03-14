@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useSearchParams, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { useQuery, useConvex } from 'convex/react'
 import { api } from '../../convex/_generated/api'
@@ -10,17 +10,39 @@ import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEdito
 import { useHaptics } from '../hooks/useHaptics'
 import { LatencyChart } from '../components/LatencyChart'
 
-// Animation variants
+// Animation variants - simple opacity fade
 const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.6, ease: 'easeOut' }
+  }
 }
 
 const stagger = {
+  hidden: { opacity: 0 },
   visible: {
+    opacity: 1,
     transition: {
-      staggerChildren: 0.1
+      staggerChildren: 0.08,
+      delayChildren: 0.04
     }
+  }
+}
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.5, ease: 'easeOut' }
+  }
+}
+
+const lineItem = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.5, ease: 'easeOut' }
   }
 }
 
@@ -216,9 +238,9 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
         {isOpen && (
           <motion.div
             className="theme-dropdown-menu"
-            initial={{ opacity: 0, y: -8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            initial={{ opacity: 0, y: -8, scale: 0.96, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
+            exit={{ opacity: 0, y: -8, scale: 0.96, x: "-50%" }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
           >
             {options.map((option) => (
@@ -270,7 +292,7 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
       className="header"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
     >
       <div className="header-left">
         <img
@@ -391,7 +413,6 @@ function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
         animate="visible"
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <h2 className="section-title">About</h2>
         <div className="bio">
           {about.bio.map((paragraph, index) => (
             <p key={index}>{renderBio(paragraph)}</p>
@@ -627,12 +648,25 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
     }
   }, [selectedId])
 
+  // Group projects by year
+  const projectsByYear = projects.reduce((acc, project) => {
+    const year = project.year
+    if (!acc[year]) {
+      acc[year] = []
+    }
+    acc[year].push(project)
+    return acc
+  }, {} as Record<string, ProjectData[]>)
+
+  // Sort years in descending order (most recent first)
+  const sortedYears = Object.keys(projectsByYear).sort((a, b) => parseInt(b) - parseInt(a))
+
   return (
     <>
       <EditableSection sectionId="work" onEdit={onEdit}>
         <motion.section
           id="work"
-          className="section"
+          className="section work-section"
           variants={stagger}
           initial="hidden"
           animate="visible"
@@ -640,26 +674,30 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
           <motion.h2
             className="section-title"
             variants={fadeInUp}
-            transition={{ duration: 0.5, delay: 0.3 }}
           >
             Work
           </motion.h2>
           <LayoutGroup>
-            <div className="work-list">
-              {projects.map((project, index) => (
+            <div className="work-table">
+              {sortedYears.map((year) => (
                 <motion.div
-                  key={project._id}
-                  className="work-item"
+                  key={year}
+                  className="work-year-group"
                   variants={fadeInUp}
-                  transition={{ duration: 0.4, delay: 0.35 + index * 0.05 }}
-                  onClick={() => { haptics.soft(); setSelectedId(project.name) }}
                 >
-                  <div className="work-info">
-                    <span className="work-name">{project.name}</span>
-                    <span className="work-description">{project.description}</span>
-                  </div>
-                  <div className="work-meta">
-                    <span className="work-year">{project.year}</span>
+                  <div className="work-year-label">{year}</div>
+                  <div className="work-year-entries">
+                    {projectsByYear[year].map((project) => (
+                      <motion.button
+                        key={project._id}
+                        className="work-entry"
+                        variants={fadeInUp}
+                        onClick={() => { haptics.soft(); setSelectedId(project.name) }}
+                      >
+                        <span className="work-entry-name">{project.name}</span>
+                        <span className="work-entry-date">{project.year}</span>
+                      </motion.button>
+                    ))}
                   </div>
                 </motion.div>
               ))}
@@ -843,10 +881,8 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
-  const [showTooltip, setShowTooltip] = useState(false)
   const { isAuthenticated, logout } = useAuth()
   const { isEditMode, toggleEditMode } = useEditMode()
-  const navigate = useNavigate()
   const haptics = useHaptics()
 
   useEffect(() => {
@@ -893,7 +929,7 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
         className="footer"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.7 }}
+        transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
       >
         {/* Desktop: quote at top, Mobile: quote in top row */}
         <div className="footer-quote-row">
@@ -912,36 +948,6 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
           </div>
           <div className="footer-right">
-            <div
-              className="concise-btn-wrapper"
-              onMouseEnter={() => setShowTooltip(true)}
-              onMouseLeave={() => setShowTooltip(false)}
-            >
-              <motion.button
-                className="concise-view-btn"
-                onClick={() => { haptics.soft(); navigate('/?concise=t') }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="Quick View"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                </svg>
-              </motion.button>
-              <AnimatePresence>
-                {showTooltip && (
-                  <motion.div
-                    className="concise-tooltip"
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 4 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    Quick View
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
             <span className="footer-time">{formatTime(time)}</span>
 
             <SignedIn>
@@ -1002,9 +1008,9 @@ function EditModeIndicator() {
   return (
     <motion.div
       className="edit-mode-indicator"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
     >
       Edit Mode Active
     </motion.div>
@@ -1077,94 +1083,10 @@ function LoadingSkeleton() {
   )
 }
 
-// Concise view - minimal condensed view with profile, bio, and links
-function ConciseView({ profile, about, theme, preference, setPreference }: {
-  profile: ProfileData
-  about: AboutData
-  theme: ResolvedTheme
-  preference: ThemePreference
-  setPreference: (theme: ThemePreference) => void
-}) {
-  const navigate = useNavigate()
-  const haptics = useHaptics()
-
-  return (
-    <div className="concise-container">
-      <div className="concise-header">
-        <button
-          className="concise-back-btn"
-          onClick={() => { haptics.soft(); navigate('/') }}
-          aria-label="Back to main view"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-        </button>
-        <ThemeDropdown
-          preference={preference}
-          setPreference={setPreference}
-          resolvedTheme={theme}
-        />
-      </div>
-      <motion.div
-        className="concise-content"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="concise-profile">
-          <img src={profile.imageUrl} alt={profile.name} className="concise-avatar" />
-          <h1 className="concise-name">{profile.name}</h1>
-          <p className="concise-title">{profile.title}</p>
-        </div>
-
-        {about.bio.length > 0 && (
-          <div className="concise-bio bio" dangerouslySetInnerHTML={{ __html: about.bio[0] }} />
-        )}
-
-        <div className="concise-links">
-          {socialLinks.map((link) => (
-            <a
-              key={link.platform}
-              href={link.url}
-              className="concise-link-icon"
-              target={link.url.startsWith('mailto:') ? undefined : '_blank'}
-              rel={link.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
-              title={link.label}
-            >
-              {link.platform === 'github' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-                </svg>
-              )}
-              {link.platform === 'linkedin' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                  <rect x="2" y="9" width="4" height="12" />
-                  <circle cx="4" cy="4" r="2" />
-                </svg>
-              )}
-              {link.platform === 'email' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-              )}
-            </a>
-          ))}
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
 // Main content component (wrapped with EditModeProvider)
 function HomeContent() {
   const { theme, preference, setPreference } = useTheme()
   const { setEditingSection } = useEditMode()
-  const [searchParams] = useSearchParams()
-  const isConciseView = searchParams.get('concise') === 't'
 
   // Fetch all content from Convex
   const profile = useQuery(api.content.getProfile)
@@ -1190,11 +1112,6 @@ function HomeContent() {
   // If no data exists in Convex, show loading (data should be seeded)
   if (!profile || !about || !footer) {
     return <LoadingSkeleton />
-  }
-
-  // Show concise view if URL param is set
-  if (isConciseView) {
-    return <ConciseView profile={profile} about={about} theme={theme} preference={preference} setPreference={setPreference} />
   }
 
   // Use data from Convex directly
