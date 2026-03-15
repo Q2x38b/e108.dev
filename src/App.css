@@ -762,7 +762,7 @@
 .experience-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   margin-top: -4px;
 }
 
@@ -773,11 +773,13 @@
 }
 
 .experience-company {
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: .875rem;
+  font-weight: 460;
   color: var(--text);
   white-space: nowrap;
-  min-width: 140px;
+  min-width: 120px;
+  line-height: 1.25rem;
+  letter-spacing: -.00563rem;
 }
 
 .experience-line {
@@ -788,14 +790,18 @@
 }
 
 .experience-role {
-  font-size: 0.9rem;
+  font-size: .875rem;
+  font-weight: 460;
   color: var(--text-light);
   white-space: nowrap;
   text-align: right;
+  line-height: 1.25rem;
+  letter-spacing: -.00563rem;
 }
 
 .experience-date {
-  font-size: 0.9rem;
+  font-size: .875rem;
+  font-weight: 460;
   color: var(--text-light);
   white-space: nowrap;
   text-align: right;
@@ -804,6 +810,8 @@
   align-items: center;
   justify-content: flex-end;
   flex-shrink: 0;
+  line-height: 1.25rem;
+  letter-spacing: -.00563rem;
 }
 
 .blink-cursor {
@@ -1147,14 +1155,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
+  padding: 12px 0;
   background: none;
   border: none;
   cursor: pointer;
   text-align: left;
   color: var(--text);
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: .875rem;
+  font-weight: 460;
+  line-height: 1.25rem;
+  letter-spacing: -.00563rem;
   transition: color 0.2s ease;
 }
 
@@ -1182,8 +1192,8 @@
 
 .accordion-icon {
   position: relative;
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   color: var(--text-tertiary);
   transition: color 0.2s ease;
 }
@@ -1196,7 +1206,7 @@
 }
 
 .accordion-icon-horizontal {
-  width: 10px;
+  width: 8px;
   height: 1.5px;
   top: 50%;
   left: 0;
@@ -1205,7 +1215,7 @@
 
 .accordion-icon-vertical {
   width: 1.5px;
-  height: 10px;
+  height: 8px;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
@@ -1217,14 +1227,16 @@
 }
 
 .accordion-content {
-  padding: 8px 0 16px;
-  font-size: 0.9rem;
+  padding: 4px 0 12px;
+  font-size: .875rem;
+  font-weight: 460;
   color: var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.5;
+  letter-spacing: -.00563rem;
 }
 
 .accordion-content p {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .accordion-content p:first-child {
@@ -1239,7 +1251,7 @@
 }
 
 .accordion-content li {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   padding: 0;
 }
 
