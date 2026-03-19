@@ -496,6 +496,26 @@
   color: #e5e5e5;
 }
 
+.work-entry-date-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.work-entry-external-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.work-entry-external:hover .work-entry-external-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 .work-entry-date {
   font-size: .875rem;
   font-weight: 460;
@@ -528,13 +548,18 @@
 @media (hover: hover) {
   .work-table:hover .work-entry-name,
   .work-table:hover .work-entry-date,
-  .work-table:hover .work-entry-description {
+  .work-table:hover .work-entry-description,
+  .work-table:hover .work-entry-external-icon {
     opacity: 0.5;
   }
 
   .work-table:hover .work-entry:hover .work-entry-name,
   .work-table:hover .work-entry:hover .work-entry-date,
   .work-table:hover .work-entry:hover .work-entry-description {
+    opacity: 1;
+  }
+
+  .work-table:hover .work-entry-external:hover .work-entry-external-icon {
     opacity: 1;
   }
 }

@@ -633,7 +633,9 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                     {projectsByYear[year].map((project) => {
                       const hasDetails = project.details && project.details.trim() !== ''
                       const primaryLink = project.url || (project.links && project.links.length > 0 ? project.links[0].url : null)
-                      const shouldLinkDirectly = !hasDetails && primaryLink
+                      // Only treat as external link if URL is valid (starts with http/https)
+                      const isValidExternalUrl = primaryLink && (primaryLink.startsWith('http://') || primaryLink.startsWith('https://'))
+                      const shouldLinkDirectly = !hasDetails && isValidExternalUrl
 
                       if (shouldLinkDirectly) {
                         return (
@@ -642,14 +644,21 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                             href={primaryLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="work-entry"
+                            className="work-entry work-entry-external"
                             onClick={() => haptics.soft()}
                           >
                             <span className="work-entry-name">{project.name}</span>
                             {project.description && (
                               <span className="work-entry-description">{project.description}</span>
                             )}
-                            <span className="work-entry-date">{project.year}</span>
+                            <span className="work-entry-date-wrapper">
+                              <span className="work-entry-date">{project.year}</span>
+                              <svg className="work-entry-external-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                <polyline points="15 3 21 3 21 9" />
+                                <line x1="10" y1="14" x2="21" y2="3" />
+                              </svg>
+                            </span>
                           </a>
                         )
                       }
