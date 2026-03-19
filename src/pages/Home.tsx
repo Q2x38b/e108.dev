@@ -214,10 +214,11 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
         {isOpen && (
           <motion.div
             className="theme-dropdown-menu"
-            initial={{ opacity: 0, y: -8, scale: 0.96, x: "-50%" }}
+            style={{ transformOrigin: 'top center' }}
+            initial={{ opacity: 0, y: -4, scale: 0.95, x: "-50%" }}
             animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
-            exit={{ opacity: 0, y: -8, scale: 0.96, x: "-50%" }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
+            exit={{ opacity: 0, y: -4, scale: 0.95, x: "-50%" }}
+            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
           >
             {options.map((option) => (
               <button
@@ -324,7 +325,7 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
           >
             <Link to="/blog" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Writing</Link>
             <Link to="/shelf" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)} onMouseEnter={prefetchShelf}>Shelf</Link>
@@ -505,16 +506,19 @@ function ImageCarousel({ images }: { images: string[] }) {
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 100 : -100,
-      opacity: 0
+      x: direction > 0 ? 60 : -60,
+      opacity: 0,
+      scale: 0.98
     }),
     center: {
       x: 0,
-      opacity: 1
+      opacity: 1,
+      scale: 1
     },
     exit: (direction: number) => ({
-      x: direction < 0 ? 100 : -100,
-      opacity: 0
+      x: direction < 0 ? 60 : -60,
+      opacity: 0,
+      scale: 0.98
     })
   }
 
@@ -535,7 +539,7 @@ function ImageCarousel({ images }: { images: string[] }) {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             className="image-carousel-image"
           />
         </AnimatePresence>
@@ -679,15 +683,15 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             onClick={() => setSelectedId(null)}
           >
             <motion.div
               className={`work-modal ${selectedProject.images && selectedProject.images.length > 0 ? 'work-modal-with-images' : ''}`}
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -803,9 +807,10 @@ function LoginModal({ onClose }: { onClose: () => void }) {
       <motion.div
         className="login-modal"
         onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
       >
         <form onSubmit={handleSubmit}>
           <input
@@ -952,9 +957,10 @@ function EditModeIndicator() {
   return (
     <motion.div
       className="edit-mode-indicator"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
     >
       Edit Mode Active
     </motion.div>
