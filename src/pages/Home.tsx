@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, animate, type PanInfo } from 'framer-motion'
 import { useQuery, useConvex } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
@@ -281,30 +281,25 @@ function Header({ preference, setPreference, location, profileImageUrl, profileN
   // Draggable profile image state
   const dragX = useMotionValue(0)
   const dragY = useMotionValue(0)
-  const springX = useSpring(dragX, { stiffness: 300, damping: 25 })
-  const springY = useSpring(dragY, { stiffness: 300, damping: 25 })
   const dragRotate = useTransform(dragX, [-200, 200], [-25, 25])
-  const dragScale = useTransform(
-    [dragX, dragY],
-    ([x, y]: number[]) => {
-      const distance = Math.sqrt(x * x + y * y)
-      return Math.max(0.85, 1 - distance / 600)
-    }
-  )
 
   const handleProfileDragStart = () => {
     setIsProfileDragging(true)
     haptics.soft()
   }
 
+  const handleProfileDrag = (_: unknown, info: PanInfo) => {
+    dragX.set(info.offset.x)
+    dragY.set(info.offset.y)
+  }
+
   const handleProfileDragEnd = () => {
     setIsProfileDragging(false)
-    // Close menu after dragging ends
     haptics.soft()
-    setProfileExpanded(false)
-    // Reset position with spring animation
-    dragX.set(0)
-    dragY.set(0)
+    // Magnetic snap-back with bouncy spring animation
+    const springConfig = { type: 'spring' as const, stiffness: 150, damping: 12, mass: 1.5 }
+    animate(dragX, 0, springConfig)
+    animate(dragY, 0, springConfig)
   }
 
   const scrollToSection = (id: string) => {
@@ -331,17 +326,18 @@ function Header({ preference, setPreference, location, profileImageUrl, profileN
       // Reset drag position immediately when modal opens
       dragX.jump(0)
       dragY.jump(0)
-      springX.jump(0)
-      springY.jump(0)
     } else {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
+      // Also reset when closing to ensure clean state for next open
+      dragX.jump(0)
+      dragY.jump(0)
     }
     return () => {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
     }
-  }, [profileExpanded, dragX, dragY, springX, springY])
+  }, [profileExpanded])
 
   return (
     <>
@@ -369,17 +365,19 @@ function Header({ preference, setPreference, location, profileImageUrl, profileN
         </EditableSection>
 
         <nav className="header-nav">
-          <Link to="/blog" className="header-nav-btn" aria-label="Writing">
+          <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing">
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
               <path d="M13 21h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
             </svg>
+            <div className="nav-tooltip">Writing</div>
           </Link>
-          <Link to="/shelf" className="header-nav-btn" aria-label="Shelf" onMouseEnter={prefetchShelf}>
+          <Link to="/shelf" className="header-nav-btn nav-tooltip-btn" aria-label="Shelf" onMouseEnter={prefetchShelf}>
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
               <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
             </svg>
+            <div className="nav-tooltip">Shelf</div>
           </Link>
           <button className="header-nav-btn location-btn" aria-label="Location">
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
@@ -423,19 +421,19 @@ function Header({ preference, setPreference, location, profileImageUrl, profileN
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
               drag
-              dragConstraints={false}
-              dragElastic={0.1}
+              dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
+              dragElastic={1}
               style={{
-                x: springX,
-                y: springY,
+                x: dragX,
+                y: dragY,
                 rotate: dragRotate,
-                scale: dragScale,
                 cursor: 'grab',
                 pointerEvents: 'auto',
                 zIndex: isProfileDragging ? 10 : 1,
               }}
               whileDrag={{ cursor: 'grabbing' }}
               onDragStart={handleProfileDragStart}
+              onDrag={handleProfileDrag}
               onDragEnd={handleProfileDragEnd}
               whileTap={{ scale: 0.95 }}
             >
@@ -1198,9 +1196,11 @@ function MobileScrollIndicator() {
   const haptics = useHaptics()
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastSectionRef = useRef('Top')
+  const targetScrollRef = useRef<number | null>(null)
+  const animationFrameRef = useRef<number | null>(null)
 
   // Calculate scroll progress and current section
-  const updateScrollState = useCallback(() => {
+  const updateScrollState = useCallback((triggerHaptic = true) => {
     const scrollTop = window.scrollY
     const docHeight = document.documentElement.scrollHeight - window.innerHeight
     const progress = Math.min(Math.max(scrollTop / docHeight, 0), 1)
@@ -1219,8 +1219,8 @@ function MobileScrollIndicator() {
       }
     }
 
-    // Trigger haptic when section changes
-    if (current !== lastSectionRef.current) {
+    // Trigger haptic when section changes (both during scroll and drag)
+    if (current !== lastSectionRef.current && triggerHaptic) {
       haptics.selection()
       lastSectionRef.current = current
     }
@@ -1240,7 +1240,7 @@ function MobileScrollIndicator() {
     if (!isDragging) {
       hideTimeoutRef.current = setTimeout(() => {
         setIsVisible(false)
-      }, 3500)
+      }, 2500)
     }
   }, [isDragging, updateScrollState])
 
@@ -1256,6 +1256,9 @@ function MobileScrollIndicator() {
       window.removeEventListener('scroll', handleScroll)
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current)
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
       }
     }
   }, [handleScroll, updateScrollState])
@@ -1297,7 +1300,7 @@ function MobileScrollIndicator() {
     }
   }
 
-  // Handle drag move - maps track position directly to scroll position
+  // Handle drag move - maps track position to scroll with smooth lerping
   const handleDragMove = useCallback((clientY: number) => {
     if (!isDragging || !trackRef.current) return
 
@@ -1308,24 +1311,60 @@ function MobileScrollIndicator() {
 
     const docHeight = document.documentElement.scrollHeight - window.innerHeight
     const targetScroll = progress * docHeight
+    targetScrollRef.current = targetScroll
 
-    // Temporarily disable smooth scroll and set directly
-    document.documentElement.style.scrollBehavior = 'auto'
-    window.scrollTo(0, targetScroll)
-    // Re-enable after a frame
-    requestAnimationFrame(() => {
-      document.documentElement.style.scrollBehavior = ''
-    })
-  }, [isDragging])
+    // Smooth scroll using lerping
+    const smoothScroll = () => {
+      if (targetScrollRef.current === null) return
+
+      const currentScroll = window.scrollY
+      const target = targetScrollRef.current
+      const diff = target - currentScroll
+
+      // Lerp factor - higher = faster, lower = smoother
+      const lerpFactor = 0.25
+      const newScroll = currentScroll + diff * lerpFactor
+
+      // If close enough, snap to target
+      if (Math.abs(diff) < 1) {
+        window.scrollTo(0, target)
+        targetScrollRef.current = null
+        return
+      }
+
+      window.scrollTo(0, newScroll)
+
+      // Update section state after scroll
+      updateScrollState(true)
+
+      // Continue animation if still dragging
+      if (isDragging) {
+        animationFrameRef.current = requestAnimationFrame(smoothScroll)
+      }
+    }
+
+    // Cancel any existing animation and start new one
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+    }
+    animationFrameRef.current = requestAnimationFrame(smoothScroll)
+  }, [isDragging, updateScrollState])
 
   // Handle drag end
   const handleDragEnd = () => {
     setIsDragging(false)
     haptics.soft()
 
+    // Clean up animation frame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+    targetScrollRef.current = null
+
     hideTimeoutRef.current = setTimeout(() => {
       setIsVisible(false)
-    }, 3500)
+    }, 2500)
   }
 
   // Touch and mouse event handlers
@@ -1388,15 +1427,19 @@ function MobileScrollIndicator() {
             onTouchStart={handleDragStart}
             onMouseDown={handleDragStart}
           >
-            {/* Thumb container */}
+            {/* Thumb container - slides left when dragging */}
             <div
-              className="mobile-scroll-thumb"
+              className={`mobile-scroll-thumb ${isDragging ? 'dragging' : ''}`}
               style={{ top: `${scrollProgress * 100}%` }}
             >
               <div className="mobile-scroll-label-wrapper">
-                <div className="mobile-scroll-label">
+                <motion.div
+                  className="mobile-scroll-label"
+                  layout
+                  transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                >
                   {currentSection}
-                </div>
+                </motion.div>
               </div>
               {/* Small bar indicator */}
               <div className="mobile-scroll-thumb-indicator" />
