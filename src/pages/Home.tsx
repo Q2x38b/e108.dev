@@ -117,13 +117,23 @@ export function useTheme() {
 }
 
 // Theme dropdown component
-function ThemeDropdown({ preference, setPreference }: {
+function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
   preference: ThemePreference
   setPreference: (theme: ThemePreference) => void
+  resolvedTheme: 'light' | 'dark'
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const haptics = useHaptics()
+
+  // Check for mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 520)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -183,6 +193,38 @@ function ThemeDropdown({ preference, setPreference }: {
 
   const currentIcon = preference === 'system' ? monitorIcon : preference === 'dark' ? moonIcon : sunIcon
 
+  // Mobile: simple toggle between light and dark
+  const handleMobileToggle = () => {
+    haptics.soft()
+    // Toggle based on resolved theme (what's actually showing)
+    setPreference(resolvedTheme === 'light' ? 'dark' : 'light')
+  }
+
+  // Mobile: render simple toggle
+  if (isMobile) {
+    return (
+      <button
+        className="theme-toggle"
+        onClick={handleMobileToggle}
+        aria-label={`Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} theme`}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={resolvedTheme}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            {resolvedTheme === 'dark' ? moonIcon : sunIcon}
+          </motion.span>
+        </AnimatePresence>
+      </button>
+    )
+  }
+
+  // Desktop: dropdown with all options
   return (
     <div className="theme-dropdown" ref={dropdownRef}>
       <button
@@ -264,9 +306,10 @@ const profileExpandLinks = [
   )}
 ]
 
-function Header({ preference, setPreference, location, profileImageUrl, profileName, profileTitle, onEditProfile }: {
+function Header({ preference, setPreference, resolvedTheme, location, profileImageUrl, profileName, profileTitle, onEditProfile }: {
   preference: ThemePreference
   setPreference: (theme: ThemePreference) => void
+  resolvedTheme: 'light' | 'dark'
   location: string
   profileImageUrl: string
   profileName: string
@@ -390,6 +433,7 @@ function Header({ preference, setPreference, location, profileImageUrl, profileN
           <ThemeDropdown
             preference={preference}
             setPreference={setPreference}
+            resolvedTheme={resolvedTheme}
           />
         </nav>
       </div>
@@ -1201,7 +1245,8 @@ function MobileScrollIndicator() {
   const updateScrollState = useCallback(() => {
     const scrollTop = window.scrollY
     const docHeight = document.documentElement.scrollHeight - window.innerHeight
-    const progress = Math.min(Math.max(scrollTop / docHeight, 0), 1)
+    // Avoid division by zero and clamp between 0 and 1
+    const progress = docHeight > 0 ? Math.min(Math.max(scrollTop / docHeight, 0), 1) : 0
     setScrollProgress(progress)
 
     // Determine current section based on scroll position
@@ -1389,7 +1434,7 @@ function MobileScrollIndicator() {
             {/* Thumb container - slides left when dragging */}
             <div
               className={`mobile-scroll-thumb ${isDragging ? 'dragging' : ''}`}
-              style={{ top: `${scrollProgress * 100}%` }}
+              style={{ top: `clamp(0%, ${scrollProgress * 100}%, 100%)` }}
             >
               <div className="mobile-scroll-label-wrapper">
                 <motion.div
@@ -1478,7 +1523,7 @@ function LoadingSkeleton() {
 
 // Main content component (wrapped with EditModeProvider)
 function HomeContent() {
-  const { preference, setPreference } = useTheme()
+  const { theme: resolvedTheme, preference, setPreference } = useTheme()
   const { setEditingSection } = useEditMode()
 
   // Fetch all content from Convex
@@ -1527,6 +1572,7 @@ function HomeContent() {
       <Header
         preference={preference}
         setPreference={setPreference}
+        resolvedTheme={resolvedTheme}
         location={profileData.location}
         profileImageUrl={profileData.imageUrl}
         profileName={profileData.name}
