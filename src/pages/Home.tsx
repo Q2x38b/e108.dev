@@ -1194,10 +1194,8 @@ function MobileScrollIndicator() {
   const [isVisible, setIsVisible] = useState(false)
   const trackRef = useRef<HTMLDivElement>(null)
   const haptics = useHaptics()
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSectionRef = useRef('Top')
-  const targetScrollRef = useRef<number | null>(null)
-  const animationFrameRef = useRef<number | null>(null)
 
   // Calculate scroll progress and current section
   const updateScrollState = useCallback((triggerHaptic = true) => {
@@ -1257,9 +1255,6 @@ function MobileScrollIndicator() {
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current)
       }
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
     }
   }, [handleScroll, updateScrollState])
 
@@ -1300,7 +1295,7 @@ function MobileScrollIndicator() {
     }
   }
 
-  // Handle drag move - maps track position to scroll with smooth lerping
+  // Handle drag move - maps track position directly to scroll position
   const handleDragMove = useCallback((clientY: number) => {
     if (!isDragging || !trackRef.current) return
 
@@ -1311,56 +1306,15 @@ function MobileScrollIndicator() {
 
     const docHeight = document.documentElement.scrollHeight - window.innerHeight
     const targetScroll = progress * docHeight
-    targetScrollRef.current = targetScroll
 
-    // Smooth scroll using lerping
-    const smoothScroll = () => {
-      if (targetScrollRef.current === null) return
-
-      const currentScroll = window.scrollY
-      const target = targetScrollRef.current
-      const diff = target - currentScroll
-
-      // Lerp factor - higher = faster, lower = smoother
-      const lerpFactor = 0.25
-      const newScroll = currentScroll + diff * lerpFactor
-
-      // If close enough, snap to target
-      if (Math.abs(diff) < 1) {
-        window.scrollTo(0, target)
-        targetScrollRef.current = null
-        return
-      }
-
-      window.scrollTo(0, newScroll)
-
-      // Update section state after scroll
-      updateScrollState(true)
-
-      // Continue animation if still dragging
-      if (isDragging) {
-        animationFrameRef.current = requestAnimationFrame(smoothScroll)
-      }
-    }
-
-    // Cancel any existing animation and start new one
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current)
-    }
-    animationFrameRef.current = requestAnimationFrame(smoothScroll)
+    window.scrollTo(0, targetScroll)
+    updateScrollState(true)
   }, [isDragging, updateScrollState])
 
   // Handle drag end
   const handleDragEnd = () => {
     setIsDragging(false)
     haptics.soft()
-
-    // Clean up animation frame
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current)
-      animationFrameRef.current = null
-    }
-    targetScrollRef.current = null
 
     hideTimeoutRef.current = setTimeout(() => {
       setIsVisible(false)
