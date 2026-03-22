@@ -117,10 +117,9 @@ export function useTheme() {
 }
 
 // Theme dropdown component
-function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
+function ThemeDropdown({ preference, setPreference }: {
   preference: ThemePreference
   setPreference: (theme: ThemePreference) => void
-  resolvedTheme: ResolvedTheme
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
@@ -194,7 +193,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
-            key={resolvedTheme}
+            key={preference}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -265,12 +264,13 @@ const profileExpandLinks = [
   )}
 ]
 
-function Header({ theme, preference, setPreference, location, profileImageUrl }: {
-  theme: ResolvedTheme
+function Header({ preference, setPreference, location, profileImageUrl, profileName, profileTitle }: {
   preference: ThemePreference
   setPreference: (theme: ThemePreference) => void
   location: string
   profileImageUrl: string
+  profileName: string
+  profileTitle: string
 }) {
   const [profileExpanded, setProfileExpanded] = useState(false)
   const [isProfileDragging, setIsProfileDragging] = useState(false)
@@ -345,49 +345,52 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
   return (
     <>
     <header className="header stagger-in stagger-in-1">
-      <div className="header-left">
-        <button
-          className="header-profile-button"
-          onClick={handleProfileClick}
-          aria-label="View profile links"
-        >
-          <img
-            src={profileImageUrl}
-            alt="Profile"
-            className="header-profile-image"
-          />
-        </button>
-      </div>
+      {/* Profile image */}
+      <button
+        className="header-profile-button"
+        onClick={handleProfileClick}
+        aria-label="View profile links"
+      >
+        <img
+          src={profileImageUrl}
+          alt="Profile"
+          className="header-profile-image"
+        />
+      </button>
 
-      <div className="header-pill">
-        {/* Navigation icons */}
-        <Link to="/blog" className="header-pill-btn" aria-label="Writing">
-          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
-            <path d="M13 21h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
-          </svg>
-        </Link>
-        <Link to="/shelf" className="header-pill-btn" aria-label="Shelf" onMouseEnter={prefetchShelf}>
-          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-            <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
-            <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
-          </svg>
-        </Link>
-        <button className="header-pill-btn location-btn" aria-label="Location">
-          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-            <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0zm-8 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fillRule="evenodd" />
-          </svg>
-          <div className="location-tooltip">
-            {location}
-          </div>
-        </button>
-        <div className="header-pill-btn header-pill-btn-theme">
+      {/* Name row with nav on right */}
+      <div className="header-row">
+        <div className="header-identity">
+          <h1 className="header-name">{profileName}</h1>
+          <p className="header-title">{profileTitle}</p>
+        </div>
+
+        <nav className="header-nav">
+          <Link to="/blog" className="header-nav-btn" aria-label="Writing">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+              <path d="M13 21h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+            </svg>
+          </Link>
+          <Link to="/shelf" className="header-nav-btn" aria-label="Shelf" onMouseEnter={prefetchShelf}>
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+              <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+            </svg>
+          </Link>
+          <button className="header-nav-btn location-btn" aria-label="Location">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0zm-8 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fillRule="evenodd" />
+            </svg>
+            <div className="location-tooltip">
+              {location}
+            </div>
+          </button>
           <ThemeDropdown
             preference={preference}
             setPreference={setPreference}
-            resolvedTheme={theme}
           />
-        </div>
+        </nav>
       </div>
     </header>
 
@@ -1488,7 +1491,7 @@ function LoadingSkeleton() {
 
 // Main content component (wrapped with EditModeProvider)
 function HomeContent() {
-  const { theme, preference, setPreference } = useTheme()
+  const { preference, setPreference } = useTheme()
   const { setEditingSection } = useEditMode()
 
   // Fetch all content from Convex
@@ -1534,13 +1537,15 @@ function HomeContent() {
     <>
     <MobileScrollIndicator />
     <div className="container">
-      <Header theme={theme} preference={preference} setPreference={setPreference} location={profileData.location} profileImageUrl={profileData.imageUrl} />
-      <EditModeIndicator />
-
-      <Profile
-        profile={profileData}
-        onEdit={() => { setEditingProfile(true); setEditingSection('profile') }}
+      <Header
+        preference={preference}
+        setPreference={setPreference}
+        location={profileData.location}
+        profileImageUrl={profileData.imageUrl}
+        profileName={profileData.name}
+        profileTitle={profileData.title}
       />
+      <EditModeIndicator />
       <About
         about={aboutData}
         onEdit={() => { setEditingAbout(true); setEditingSection('about') }}
