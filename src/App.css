@@ -550,7 +550,7 @@
   color: #111;
   font-size: .875rem;
   font-weight: 460;
-  line-height: 1.25rem;
+  line-height: 1.55rem;
   letter-spacing: -.00563rem;
   max-width: 70ch;
 }
@@ -688,7 +688,7 @@
   color: inherit;
   font-family: inherit;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-  transition: transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  transition: transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), border-color 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
 
@@ -706,7 +706,7 @@
   font-weight: 460;
   color: #111;
   letter-spacing: -.00563rem;
-  transition: opacity 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  transition: opacity 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), color 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -748,7 +748,7 @@
   color: rgba(0, 0, 0, 0.4);
   line-height: 1.25rem;
   letter-spacing: -.00563rem;
-  transition: opacity 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  transition: opacity 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), color 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   flex: 1;
   text-align: right;
   padding: 0 12px;
@@ -763,21 +763,11 @@
 }
 
 @media (hover: hover) {
-  .work-table:hover .work-entry-name,
-  .work-table:hover .work-entry-date,
-  .work-table:hover .work-entry-description,
-  .work-table:hover .work-entry-external-icon {
-    opacity: 0.5;
-  }
-
-  .work-table:hover .work-entry:hover .work-entry-name,
-  .work-table:hover .work-entry:hover .work-entry-date,
-  .work-table:hover .work-entry:hover .work-entry-description {
-    opacity: 1;
-  }
-
-  .work-table:hover .work-entry-external:hover .work-entry-external-icon {
-    opacity: 1;
+  .work-table:has(.work-entry:hover) .work-entry:not(:hover) .work-entry-name,
+  .work-table:has(.work-entry:hover) .work-entry:not(:hover) .work-entry-date,
+  .work-table:has(.work-entry:hover) .work-entry:not(:hover) .work-entry-description,
+  .work-table:has(.work-entry:hover) .work-entry:not(:hover) .work-entry-external-icon {
+    opacity: 0.4;
   }
 }
 

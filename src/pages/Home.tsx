@@ -136,31 +136,30 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Theme icons
+  // Theme icons (filled)
   const monitorIcon = (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect width="20" height="14" x="2" y="3" rx="2" />
-      <line x1="8" x2="16" y1="21" y2="21" />
-      <line x1="12" x2="12" y1="17" y2="21" />
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M4 3h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+      <path d="M8 21h8M12 17v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
     </svg>
   )
 
   const sunIcon = (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2" />
-      <path d="M12 20v2" />
-      <path d="m4.93 4.93 1.41 1.41" />
-      <path d="m17.66 17.66 1.41 1.41" />
-      <path d="M2 12h2" />
-      <path d="M20 12h2" />
-      <path d="m6.34 17.66-1.41 1.41" />
-      <path d="m19.07 4.93-1.41 1.41" />
+      <path d="M12 2v2" fill="none" />
+      <path d="M12 20v2" fill="none" />
+      <path d="m4.93 4.93 1.41 1.41" fill="none" />
+      <path d="m17.66 17.66 1.41 1.41" fill="none" />
+      <path d="M2 12h2" fill="none" />
+      <path d="M20 12h2" fill="none" />
+      <path d="m6.34 17.66-1.41 1.41" fill="none" />
+      <path d="m19.07 4.93-1.41 1.41" fill="none" />
     </svg>
   )
 
   const moonIcon = (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
       <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />
     </svg>
   )
@@ -183,7 +182,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
     }
   ]
 
-  const currentIcon = monitorIcon
+  const currentIcon = preference === 'system' ? monitorIcon : preference === 'dark' ? moonIcon : sunIcon
 
   return (
     <div className="theme-dropdown" ref={dropdownRef}>
@@ -193,7 +192,18 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
         aria-label="Change theme"
         aria-expanded={isOpen}
       >
-        {currentIcon}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={resolvedTheme}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            {currentIcon}
+          </motion.span>
+        </AnimatePresence>
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -314,7 +324,9 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
   // Lock body scroll when modal is open and reset drag position
   useEffect(() => {
     if (profileExpanded) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
       document.body.style.overflow = 'hidden'
+      document.body.style.paddingRight = `${scrollbarWidth}px`
       // Reset drag position immediately when modal opens
       dragX.jump(0)
       dragY.jump(0)
@@ -322,9 +334,11 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
       springY.jump(0)
     } else {
       document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
     }
     return () => {
       document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
     }
   }, [profileExpanded, dragX, dragY, springX, springY])
 
@@ -348,21 +362,20 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
       <div className="header-pill">
         {/* Navigation icons */}
         <Link to="/blog" className="header-pill-btn" aria-label="Writing">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M13 21h8" />
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
             <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+            <path d="M13 21h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
           </svg>
         </Link>
         <Link to="/shelf" className="header-pill-btn" aria-label="Shelf" onMouseEnter={prefetchShelf}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+            <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
           </svg>
         </Link>
         <button className="header-pill-btn location-btn" aria-label="Location">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 0 1-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0 1 12 0" />
-            <circle cx="12" cy="8" r="2" />
-            <path d="M8.714 14h-3.71a1 1 0 0 0-.948.683l-2.004 6A1 1 0 0 0 3 22h18a1 1 0 0 0 .948-1.316l-2-6a1 1 0 0 0-.949-.684h-3.712" />
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0zm-8 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fillRule="evenodd" />
           </svg>
           <div className="location-tooltip">
             {location}
@@ -722,12 +735,16 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
 
   useEffect(() => {
     if (selectedId) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
       document.body.style.overflow = 'hidden'
+      document.body.style.paddingRight = `${scrollbarWidth}px`
     } else {
       document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
     }
     return () => {
       document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
     }
   }, [selectedId])
 
