@@ -529,20 +529,18 @@
   border-radius: 6px;
   color: var(--text-tertiary);
   transition: background-color 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), color 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-  position: relative;
 }
 
-/* Mobile: expanded invisible touch targets */
+/* Mobile: larger touch targets */
 @media (max-width: 520px) {
-  .theme-dropdown-item::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  .theme-dropdown-menu {
+    padding: 8px;
+    gap: 0;
+  }
+
+  .theme-dropdown-item {
     width: 44px;
     height: 44px;
-    z-index: 10;
   }
 }
 

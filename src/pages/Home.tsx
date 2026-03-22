@@ -1198,7 +1198,7 @@ function MobileScrollIndicator() {
   const lastSectionRef = useRef('Top')
 
   // Calculate scroll progress and current section
-  const updateScrollState = useCallback((triggerHaptic = true) => {
+  const updateScrollState = useCallback(() => {
     const scrollTop = window.scrollY
     const docHeight = document.documentElement.scrollHeight - window.innerHeight
     const progress = Math.min(Math.max(scrollTop / docHeight, 0), 1)
@@ -1217,8 +1217,8 @@ function MobileScrollIndicator() {
       }
     }
 
-    // Trigger haptic when section changes (both during scroll and drag)
-    if (current !== lastSectionRef.current && triggerHaptic) {
+    // Trigger haptic when section changes
+    if (current !== lastSectionRef.current) {
       haptics.selection()
       lastSectionRef.current = current
     }
@@ -1307,9 +1307,14 @@ function MobileScrollIndicator() {
     const docHeight = document.documentElement.scrollHeight - window.innerHeight
     const targetScroll = progress * docHeight
 
+    // Temporarily disable smooth scroll and set directly
+    document.documentElement.style.scrollBehavior = 'auto'
     window.scrollTo(0, targetScroll)
-    updateScrollState(true)
-  }, [isDragging, updateScrollState])
+    // Re-enable after a frame
+    requestAnimationFrame(() => {
+      document.documentElement.style.scrollBehavior = ''
+    })
+  }, [isDragging])
 
   // Handle drag end
   const handleDragEnd = () => {
