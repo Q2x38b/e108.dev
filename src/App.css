@@ -340,6 +340,46 @@
   height: 16px;
 }
 
+/* Command chip button */
+.header-cmd-chip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 22px;
+  padding: 0 6px 0 5px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  font-size: 0.65rem;
+  font-weight: 500;
+  font-family: inherit;
+  transition: color 0.15s var(--ease-out), background 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-cmd-chip svg {
+  width: 11px;
+  height: 11px;
+}
+
+.header-cmd-chip-key {
+  letter-spacing: 0;
+}
+
+.header-cmd-chip:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  .header-cmd-chip:hover {
+    color: var(--text-secondary);
+    background: var(--hover-bg);
+    border-color: var(--text-tertiary);
+  }
+}
+
 /* Location tooltip */
 .location-btn {
   position: relative;
@@ -1467,11 +1507,7 @@
   font-weight: 460;
   line-height: 1.25rem;
   letter-spacing: -.00563rem;
-  transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-}
-
-.accordion-header:active {
-  transform: scale(0.99);
+  transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -2379,6 +2415,11 @@
   .nav-desktop {
     display: flex;
     gap: 16px;
+  }
+
+  /* Hide command chip on mobile */
+  .header-cmd-chip {
+    display: none;
   }
 
   /* Footer mobile adjustments */

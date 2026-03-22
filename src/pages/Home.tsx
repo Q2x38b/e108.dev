@@ -264,13 +264,14 @@ const profileExpandLinks = [
   )}
 ]
 
-function Header({ preference, setPreference, location, profileImageUrl, profileName, profileTitle }: {
+function Header({ preference, setPreference, location, profileImageUrl, profileName, profileTitle, onEditProfile }: {
   preference: ThemePreference
   setPreference: (theme: ThemePreference) => void
   location: string
   profileImageUrl: string
   profileName: string
   profileTitle: string
+  onEditProfile: () => void
 }) {
   const [profileExpanded, setProfileExpanded] = useState(false)
   const [isProfileDragging, setIsProfileDragging] = useState(false)
@@ -360,10 +361,12 @@ function Header({ preference, setPreference, location, profileImageUrl, profileN
 
       {/* Name row with nav on right */}
       <div className="header-row">
-        <div className="header-identity">
-          <h1 className="header-name">{profileName}</h1>
-          <p className="header-title">{profileTitle}</p>
-        </div>
+        <EditableSection sectionId="profile" onEdit={onEditProfile}>
+          <div className="header-identity">
+            <h1 className="header-name">{profileName}</h1>
+            <p className="header-title">{profileTitle}</p>
+          </div>
+        </EditableSection>
 
         <nav className="header-nav">
           <Link to="/blog" className="header-nav-btn" aria-label="Writing">
@@ -477,24 +480,6 @@ function Header({ preference, setPreference, location, profileImageUrl, profileN
       )}
     </AnimatePresence>
     </>
-  )
-}
-
-interface ProfileData {
-  name: string
-  title: string
-  imageUrl: string
-  location: string
-}
-
-function Profile({ profile, onEdit }: { profile: ProfileData; onEdit: () => void }) {
-  return (
-    <EditableSection sectionId="profile" onEdit={onEdit}>
-      <section className="profile stagger-in stagger-in-2">
-        <h1 className="profile-name">{profile.name}</h1>
-        <p className="profile-title">{profile.title}</p>
-      </section>
-    </EditableSection>
   )
 }
 
@@ -1544,6 +1529,7 @@ function HomeContent() {
         profileImageUrl={profileData.imageUrl}
         profileName={profileData.name}
         profileTitle={profileData.title}
+        onEditProfile={() => { setEditingProfile(true); setEditingSection('profile') }}
       />
       <EditModeIndicator />
       <About
