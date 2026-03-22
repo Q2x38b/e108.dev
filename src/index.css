@@ -122,6 +122,7 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: 5.25rem;
   overflow-anchor: none;
+  overflow-x: hidden;
   scrollbar-gutter: stable;
 }
 
@@ -130,6 +131,7 @@ body {
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
+  overflow-x: hidden;
   overflow-y: scroll;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

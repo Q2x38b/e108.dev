@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Liveline } from 'liveline'
 
 interface LivelinePoint {
   time: number  // Unix timestamp in SECONDS
   value: number
 }
 
-function useThemeMode(): 'light' | 'dark' {
+export function useThemeMode(): 'light' | 'dark' {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof document !== 'undefined') {
       return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
@@ -32,11 +30,17 @@ function useThemeMode(): 'light' | 'dark' {
   return theme
 }
 
-export function LatencyChart() {
+// Get color based on latency
+function getColor(latency: number): string {
+  if (latency < 120) return '#22c55e' // green
+  if (latency < 200) return '#f59e0b' // amber/orange
+  return '#ef4444' // red
+}
+
+export function useLatency() {
   const [data, setData] = useState<LivelinePoint[]>([])
   const [currentLatency, setCurrentLatency] = useState<number>(0)
   const intervalRef = useRef<number | null>(null)
-  const theme = useThemeMode()
 
   useEffect(() => {
     const measureLatency = async () => {
@@ -78,51 +82,7 @@ export function LatencyChart() {
     }
   }, [])
 
-  // Get color based on latency
-  const getColor = (latency: number): string => {
-    if (latency < 120) return '#22c55e' // green
-    if (latency < 200) return '#f59e0b' // amber/orange
-    return '#ef4444' // red
-  }
-
   const color = currentLatency > 0 ? getColor(currentLatency) : '#f59e0b'
 
-  return (
-    <motion.section
-      className="latency-section"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-    >
-      <motion.div
-        className="latency-chart-container"
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
-      >
-        {data.length > 0 && (
-          <Liveline
-            data={data}
-            value={currentLatency}
-            color={color}
-            theme={theme}
-            grid={true}
-            badge={true}
-            fill={true}
-            pulse={true}
-            scrub={true}
-            momentum={false}
-            showValue={false}
-            window={60}
-            lerpSpeed={0.15}
-            formatValue={(v: number) => `${Math.round(v)}ms`}
-            formatTime={(t: number) => {
-              const date = new Date(t * 1000)
-              return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-            }}
-          />
-        )}
-      </motion.div>
-    </motion.section>
-  )
+  return { data, currentLatency, color }
 }

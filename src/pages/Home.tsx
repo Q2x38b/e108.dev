@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
+import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, useSpring } from 'framer-motion'
 import { useQuery, useConvex } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
@@ -8,7 +8,8 @@ import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
 import { EditableSection } from '../components/EditableSection'
 import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
-import { LatencyChart } from '../components/LatencyChart'
+import { useLatency, useThemeMode } from '../components/LatencyChart'
+import { Liveline } from 'liveline'
 
 // Navigation links
 const navLinks: string[] = []
@@ -135,86 +136,69 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Theme icons
+  const monitorIcon = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="14" x="2" y="3" rx="2" />
+      <line x1="8" x2="16" y1="21" y2="21" />
+      <line x1="12" x2="12" y1="17" y2="21" />
+    </svg>
+  )
+
+  const sunIcon = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="m6.34 17.66-1.41 1.41" />
+      <path d="m19.07 4.93-1.41 1.41" />
+    </svg>
+  )
+
+  const moonIcon = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />
+    </svg>
+  )
+
   const options: { value: ThemePreference; label: string; icon: React.ReactNode }[] = [
     {
       value: 'light',
       label: 'Light',
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="5" />
-          <line x1="12" y1="1" x2="12" y2="3" />
-          <line x1="12" y1="21" x2="12" y2="23" />
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-          <line x1="1" y1="12" x2="3" y2="12" />
-          <line x1="21" y1="12" x2="23" y2="12" />
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-        </svg>
-      )
+      icon: sunIcon
     },
     {
       value: 'system',
       label: 'System',
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-          <line x1="8" y1="21" x2="16" y2="21" />
-          <line x1="12" y1="17" x2="12" y2="21" />
-        </svg>
-      )
+      icon: monitorIcon
     },
     {
       value: 'dark',
       label: 'Dark',
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-      )
+      icon: moonIcon
     }
   ]
 
-  const currentIcon = preference === 'system' ? (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-      <line x1="8" y1="21" x2="16" y2="21" />
-      <line x1="12" y1="17" x2="12" y2="21" />
-    </svg>
-  ) : preference === 'dark' ? (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  ) : (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" />
-      <line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-  )
+  const currentIcon = monitorIcon
 
   return (
     <div className="theme-dropdown" ref={dropdownRef}>
-      <motion.button
+      <button
         className="theme-toggle"
         onClick={() => { haptics.soft(); setIsOpen(!isOpen) }}
-        whileTap={{ scale: 0.95 }}
         aria-label="Change theme"
         aria-expanded={isOpen}
       >
         {currentIcon}
-      </motion.button>
+      </button>
       <AnimatePresence>
         {isOpen && (
           <motion.div
             className="theme-dropdown-menu"
-            style={{ transformOrigin: 'top center' }}
             initial={{ opacity: 0, y: -4, scale: 0.95, x: "-50%" }}
             animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
             exit={{ opacity: 0, y: -4, scale: 0.95, x: "-50%" }}
@@ -243,6 +227,34 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
 }
 
 // Components
+// Profile expansion modal links (matches socialLinks)
+const profileExpandLinks = [
+  { platform: 'github', url: 'https://github.com/Q2x38b', label: 'GitHub', icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+    </svg>
+  )},
+  { platform: 'x', url: 'https://x.com/q2x38b', label: 'Twitter', icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
+      <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+    </svg>
+  )},
+  { platform: 'linkedin', url: 'https://linkedin.com/in/ethan-jerla-1b0901364', label: 'LinkedIn', icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect x="2" y="9" width="4" height="12" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  )},
+  { platform: 'email', url: 'mailto:hello@e108.dev', label: 'Email', icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  )}
+]
+
 function Header({ theme, preference, setPreference, location, profileImageUrl }: {
   theme: ResolvedTheme
   preference: ThemePreference
@@ -250,14 +262,43 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
   location: string
   profileImageUrl: string
 }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [profileExpanded, setProfileExpanded] = useState(false)
+  const [isProfileDragging, setIsProfileDragging] = useState(false)
   const convex = useConvex()
   const haptics = useHaptics()
+
+  // Draggable profile image state
+  const dragX = useMotionValue(0)
+  const dragY = useMotionValue(0)
+  const springX = useSpring(dragX, { stiffness: 300, damping: 25 })
+  const springY = useSpring(dragY, { stiffness: 300, damping: 25 })
+  const dragRotate = useTransform(dragX, [-200, 200], [-25, 25])
+  const dragScale = useTransform(
+    [dragX, dragY],
+    ([x, y]: number[]) => {
+      const distance = Math.sqrt(x * x + y * y)
+      return Math.max(0.85, 1 - distance / 600)
+    }
+  )
+
+  const handleProfileDragStart = () => {
+    setIsProfileDragging(true)
+    haptics.soft()
+  }
+
+  const handleProfileDragEnd = () => {
+    setIsProfileDragging(false)
+    // Close menu after dragging ends
+    haptics.soft()
+    setProfileExpanded(false)
+    // Reset position with spring animation
+    dragX.set(0)
+    dragY.set(0)
+  }
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id.toLowerCase())
     element?.scrollIntoView({ behavior: 'smooth' })
-    setMobileMenuOpen(false)
   }
 
   const prefetchShelf = () => {
@@ -265,74 +306,161 @@ function Header({ theme, preference, setPreference, location, profileImageUrl }:
     convex.query(api.shelf.list, {})
   }
 
+  const handleProfileClick = () => {
+    haptics.soft()
+    setProfileExpanded(true)
+  }
+
+  // Lock body scroll when modal is open and reset drag position
+  useEffect(() => {
+    if (profileExpanded) {
+      document.body.style.overflow = 'hidden'
+      // Reset drag position immediately when modal opens
+      dragX.jump(0)
+      dragY.jump(0)
+      springX.jump(0)
+      springY.jump(0)
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [profileExpanded, dragX, dragY, springX, springY])
+
   return (
+    <>
     <header className="header stagger-in stagger-in-1">
       <div className="header-left">
-        <img
-          src={profileImageUrl}
-          alt="Profile"
-          className="header-profile-image"
-        />
-        {/* Desktop navigation */}
-        <nav className="nav nav-desktop">
-          <Link to="/blog" className="nav-link" data-text="Writing">Writing</Link>
-          <Link to="/shelf" className="nav-link" data-text="Shelf" onMouseEnter={prefetchShelf}>Shelf</Link>
-        </nav>
+        <button
+          className="header-profile-button"
+          onClick={handleProfileClick}
+          aria-label="View profile links"
+        >
+          <img
+            src={profileImageUrl}
+            alt="Profile"
+            className="header-profile-image"
+          />
+        </button>
       </div>
 
-      {/* Mobile menu toggle */}
-      <button
-        className="mobile-menu-toggle"
-        onClick={() => { haptics.soft(); setMobileMenuOpen(!mobileMenuOpen) }}
-        aria-label="Toggle menu"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          {mobileMenuOpen ? (
-            <>
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </>
-          ) : (
-            <>
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </>
-          )}
-        </svg>
-      </button>
-
-      <div className="header-right">
-        <div className="location">
-          <svg className="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
+      <div className="header-pill">
+        {/* Navigation icons */}
+        <Link to="/blog" className="header-pill-btn" aria-label="Writing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M13 21h8" />
+            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
           </svg>
-          {location}
+        </Link>
+        <Link to="/shelf" className="header-pill-btn" aria-label="Shelf" onMouseEnter={prefetchShelf}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
+          </svg>
+        </Link>
+        <button className="header-pill-btn location-btn" aria-label="Location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 0 1-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0 1 12 0" />
+            <circle cx="12" cy="8" r="2" />
+            <path d="M8.714 14h-3.71a1 1 0 0 0-.948.683l-2.004 6A1 1 0 0 0 3 22h18a1 1 0 0 0 .948-1.316l-2-6a1 1 0 0 0-.949-.684h-3.712" />
+          </svg>
+          <div className="location-tooltip">
+            {location}
+          </div>
+        </button>
+        <div className="header-pill-btn header-pill-btn-theme">
+          <ThemeDropdown
+            preference={preference}
+            setPreference={setPreference}
+            resolvedTheme={theme}
+          />
         </div>
-        <ThemeDropdown
-          preference={preference}
-          setPreference={setPreference}
-          resolvedTheme={theme}
-        />
       </div>
-
-      {/* Mobile navigation dropdown */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.nav
-            className="nav-mobile"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-          >
-            <Link to="/blog" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)}>Writing</Link>
-            <Link to="/shelf" className="nav-link-mobile" onClick={() => setMobileMenuOpen(false)} onMouseEnter={prefetchShelf}>Shelf</Link>
-          </motion.nav>
-        )}
-      </AnimatePresence>
     </header>
+
+    {/* Profile Expansion Modal */}
+    <AnimatePresence>
+      {profileExpanded && (
+        <motion.div
+          className="profile-expand-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+          onClick={() => !isProfileDragging && setProfileExpanded(false)}
+        >
+          <motion.div
+            className="profile-expand-content"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            style={{ pointerEvents: isProfileDragging ? 'none' : 'auto' }}
+          >
+            <motion.div
+              className="profile-expand-image-wrapper"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
+              drag
+              dragConstraints={false}
+              dragElastic={0.1}
+              style={{
+                x: springX,
+                y: springY,
+                rotate: dragRotate,
+                scale: dragScale,
+                cursor: 'grab',
+                pointerEvents: 'auto',
+                zIndex: isProfileDragging ? 10 : 1,
+              }}
+              whileDrag={{ cursor: 'grabbing' }}
+              onDragStart={handleProfileDragStart}
+              onDragEnd={handleProfileDragEnd}
+              whileTap={{ scale: 0.95 }}
+            >
+              <img
+                src={profileImageUrl}
+                alt="Profile"
+                className="profile-expand-image"
+                draggable={false}
+              />
+            </motion.div>
+            <motion.div
+              className="profile-expand-links"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{
+                opacity: isProfileDragging ? 0 : 1,
+                y: isProfileDragging ? 30 : 0,
+                scale: isProfileDragging ? 0.9 : 1
+              }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            >
+              {profileExpandLinks.map((link, index) => (
+                <motion.a
+                  key={link.platform}
+                  href={link.url}
+                  className="profile-expand-link"
+                  target={link.url.startsWith('mailto:') ? undefined : '_blank'}
+                  rel={link.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: 0.15 + index * 0.05, ease: [0.23, 1, 0.32, 1] }}
+                  onClick={() => haptics.selection()}
+                >
+                  <span className="profile-expand-link-icon">
+                    {link.icon}
+                  </span>
+                  <span className="profile-expand-link-label">{link.label}</span>
+                </motion.a>
+              ))}
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   )
 }
 
@@ -844,9 +972,13 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
+  const [showGraph, setShowGraph] = useState(false)
   const { isAuthenticated, logout } = useAuth()
   const { isEditMode, toggleEditMode } = useEditMode()
   const haptics = useHaptics()
+  const { data, currentLatency, color } = useLatency()
+  const theme = useThemeMode()
+  const pingRef = React.useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -861,6 +993,18 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
     const resetTimer = setTimeout(() => setClickCount(0), 2000)
     return () => clearTimeout(resetTimer)
   }, [clickCount, isAuthenticated])
+
+  // Close ping popover on outside click
+  useEffect(() => {
+    if (!showGraph) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (pingRef.current && !pingRef.current.contains(e.target as Node)) {
+        setShowGraph(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showGraph])
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
@@ -886,6 +1030,11 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
     toggleEditMode()
   }
 
+  const handlePingClick = () => {
+    haptics.soft()
+    setShowGraph(prev => !prev)
+  }
+
   return (
     <>
       <footer className="footer stagger-in stagger-in-8">
@@ -906,6 +1055,55 @@ function Footer({ copyrightYear }: { copyrightYear: string }) {
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
           </div>
           <div className="footer-right">
+            <div className="footer-ping-wrapper" ref={pingRef}>
+              <button
+                className="footer-ping"
+                onClick={handlePingClick}
+                aria-label={`Latency: ${currentLatency}ms. Click to ${showGraph ? 'hide' : 'show'} graph.`}
+                aria-expanded={showGraph}
+              >
+                <span className="footer-ping-dot" style={{ backgroundColor: color }} />
+                <span className="footer-ping-value">
+                  {currentLatency > 0 ? `${currentLatency}ms` : '...'}
+                </span>
+              </button>
+
+              <AnimatePresence>
+                {showGraph && (
+                  <motion.div
+                    className="footer-ping-popover"
+                    initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                  >
+                    {data.length > 0 && (
+                      <Liveline
+                        data={data}
+                        value={currentLatency}
+                        color={color}
+                        theme={theme}
+                        grid={true}
+                        badge={true}
+                        fill={true}
+                        pulse={true}
+                        scrub={true}
+                        momentum={false}
+                        showValue={false}
+                        window={30}
+                        lerpSpeed={0.15}
+                        formatValue={(v: number) => `${Math.round(v)}ms`}
+                        formatTime={(t: number) => {
+                          const date = new Date(t * 1000)
+                          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                        }}
+                      />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <span className="footer-time">{formatTime(time)}</span>
 
             <SignedIn>
@@ -973,6 +1171,235 @@ function EditModeIndicator() {
     >
       Edit Mode Active
     </motion.div>
+  )
+}
+
+// Section definitions for mobile scroll indicator
+const sections = [
+  { id: 'top', label: 'Top' },
+  { id: 'about', label: 'About' },
+  { id: 'work', label: 'Work' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'skills', label: 'Skills' },
+]
+
+// Mobile scroll indicator component
+function MobileScrollIndicator() {
+  const [currentSection, setCurrentSection] = useState('Top')
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const haptics = useHaptics()
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastSectionRef = useRef('Top')
+
+  // Calculate scroll progress and current section
+  const updateScrollState = useCallback(() => {
+    const scrollTop = window.scrollY
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight
+    const progress = Math.min(Math.max(scrollTop / docHeight, 0), 1)
+    setScrollProgress(progress)
+
+    // Determine current section based on scroll position
+    let current = 'Top'
+    for (const section of sections) {
+      if (section.id === 'top') continue
+      const element = document.getElementById(section.id)
+      if (element) {
+        const rect = element.getBoundingClientRect()
+        if (rect.top <= window.innerHeight * 0.4) {
+          current = section.label
+        }
+      }
+    }
+
+    // Trigger haptic when section changes
+    if (current !== lastSectionRef.current) {
+      haptics.selection()
+      lastSectionRef.current = current
+    }
+
+    setCurrentSection(current)
+  }, [haptics])
+
+  // Show indicator when scrolling
+  const handleScroll = useCallback(() => {
+    setIsVisible(true)
+    updateScrollState()
+
+    // Hide after delay if not dragging
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current)
+    }
+    if (!isDragging) {
+      hideTimeoutRef.current = setTimeout(() => {
+        setIsVisible(false)
+      }, 3500)
+    }
+  }, [isDragging, updateScrollState])
+
+  useEffect(() => {
+    // Check if mobile
+    const checkMobile = () => window.innerWidth <= 520
+    if (!checkMobile()) return
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    updateScrollState()
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current)
+      }
+    }
+  }, [handleScroll, updateScrollState])
+
+  // Hide scroll indicator when clicking anywhere else on the page
+  useEffect(() => {
+    const handleInteraction = (e: Event) => {
+      const target = e.target as HTMLElement
+      // Don't hide if clicking on the scroll indicator itself
+      if (target.closest('.mobile-scroll-indicator')) return
+
+      // Hide immediately when clicking buttons, dropdowns, or interactive elements
+      if (target.closest('button, a, input, select, [role="button"], .theme-dropdown')) {
+        setIsVisible(false)
+        if (hideTimeoutRef.current) {
+          clearTimeout(hideTimeoutRef.current)
+        }
+      }
+    }
+
+    window.addEventListener('touchstart', handleInteraction, { passive: true })
+    window.addEventListener('mousedown', handleInteraction)
+
+    return () => {
+      window.removeEventListener('touchstart', handleInteraction)
+      window.removeEventListener('mousedown', handleInteraction)
+    }
+  }, [])
+
+  // Handle drag start
+  const handleDragStart = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+    setIsVisible(true)
+    haptics.soft()
+
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current)
+    }
+  }
+
+  // Handle drag move - maps track position directly to scroll position
+  const handleDragMove = useCallback((clientY: number) => {
+    if (!isDragging || !trackRef.current) return
+
+    const track = trackRef.current
+    const rect = track.getBoundingClientRect()
+    const relativeY = clientY - rect.top
+    const progress = Math.min(Math.max(relativeY / rect.height, 0), 1)
+
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight
+    const targetScroll = progress * docHeight
+
+    // Temporarily disable smooth scroll and set directly
+    document.documentElement.style.scrollBehavior = 'auto'
+    window.scrollTo(0, targetScroll)
+    // Re-enable after a frame
+    requestAnimationFrame(() => {
+      document.documentElement.style.scrollBehavior = ''
+    })
+  }, [isDragging])
+
+  // Handle drag end
+  const handleDragEnd = () => {
+    setIsDragging(false)
+    haptics.soft()
+
+    hideTimeoutRef.current = setTimeout(() => {
+      setIsVisible(false)
+    }, 3500)
+  }
+
+  // Touch and mouse event handlers
+  useEffect(() => {
+    if (!isDragging) return
+
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault()
+      handleDragMove(e.touches[0].clientY)
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      handleDragMove(e.clientY)
+    }
+
+    const handleEnd = () => {
+      handleDragEnd()
+    }
+
+    window.addEventListener('touchmove', handleTouchMove, { passive: false })
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('touchend', handleEnd)
+    window.addEventListener('mouseup', handleEnd)
+
+    return () => {
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('touchend', handleEnd)
+      window.removeEventListener('mouseup', handleEnd)
+    }
+  }, [isDragging, handleDragMove])
+
+  // Only show on mobile
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 520)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  if (!isMobile) return null
+
+  const shouldShow = isVisible || isDragging
+
+  return (
+    <AnimatePresence>
+      {shouldShow && (
+        <motion.div
+          key="scroll-indicator"
+          className="mobile-scroll-indicator"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+        >
+          <div
+            className="mobile-scroll-track"
+            ref={trackRef}
+            onTouchStart={handleDragStart}
+            onMouseDown={handleDragStart}
+          >
+            {/* Thumb container */}
+            <div
+              className="mobile-scroll-thumb"
+              style={{ top: `${scrollProgress * 100}%` }}
+            >
+              <div className="mobile-scroll-label-wrapper">
+                <div className="mobile-scroll-label">
+                  {currentSection}
+                </div>
+              </div>
+              {/* Small bar indicator */}
+              <div className="mobile-scroll-thumb-indicator" />
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -1087,6 +1514,8 @@ function HomeContent() {
   }
 
   return (
+    <>
+    <MobileScrollIndicator />
     <div className="container">
       <Header theme={theme} preference={preference} setPreference={setPreference} location={profileData.location} profileImageUrl={profileData.imageUrl} />
       <EditModeIndicator />
@@ -1111,9 +1540,6 @@ function HomeContent() {
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
-      <div className="stagger-in stagger-in-7">
-        <LatencyChart />
-      </div>
       <Footer copyrightYear={footerData.copyrightYear} />
 
       {/* Editors */}
@@ -1150,6 +1576,7 @@ function HomeContent() {
         )}
       </AnimatePresence>
     </div>
+    </>
   )
 }
 

@@ -434,7 +434,7 @@ export default function Shelf() {
 
   return (
     <div className="blog-container shelf-container">
-      <header className="blog-header">
+      <header className="blog-header stagger-in stagger-in-1">
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-sep">/</span>
@@ -465,20 +465,15 @@ export default function Shelf() {
         </div>
       </header>
 
-      <motion.div
-        className="shelf-title-section"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="shelf-title-section stagger-in stagger-in-2">
         <h1 className="shelf-title">my shelf</h1>
         {isEditMode && (
           <p className="shelf-edit-hint">Drag items to reorder</p>
         )}
-      </motion.div>
+      </div>
 
       {/* Content */}
-      <main className="shelf-content">
+      <main className="shelf-content stagger-in stagger-in-3">
         {items === undefined ? (
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />

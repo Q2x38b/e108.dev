@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Liveline } from 'liveline'
 import { useAuth, SignedIn } from '../contexts/AuthContext'
 import { useEditMode } from '../contexts/EditModeContext'
 import { useHaptics } from '../hooks/useHaptics'
+import { useLatency, useThemeMode } from './LatencyChart'
 
 function LoginModal({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState('')
@@ -78,9 +80,13 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
+  const [showGraph, setShowGraph] = useState(false)
   const { isAuthenticated, logout } = useAuth()
   const editModeContext = useEditMode()
   const haptics = useHaptics()
+  const { data, currentLatency, color } = useLatency()
+  const theme = useThemeMode()
+  const pingRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -95,6 +101,18 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
     const resetTimer = setTimeout(() => setClickCount(0), 2000)
     return () => clearTimeout(resetTimer)
   }, [clickCount, isAuthenticated])
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!showGraph) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (pingRef.current && !pingRef.current.contains(e.target as Node)) {
+        setShowGraph(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showGraph])
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
@@ -120,6 +138,11 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
     editModeContext?.toggleEditMode()
   }
 
+  const handlePingClick = () => {
+    haptics.soft()
+    setShowGraph(prev => !prev)
+  }
+
   return (
     <>
       <footer className="footer">
@@ -137,6 +160,55 @@ export function Footer({ showEditControls = false, showSignature = true }: Foote
             <span className="footer-quote-inline">The only limit is yourself.</span>
           </div>
           <div className="footer-right">
+            <div className="footer-ping-wrapper" ref={pingRef}>
+              <button
+                className="footer-ping"
+                onClick={handlePingClick}
+                aria-label={`Latency: ${currentLatency}ms. Click to ${showGraph ? 'hide' : 'show'} graph.`}
+                aria-expanded={showGraph}
+              >
+                <span className="footer-ping-dot" style={{ backgroundColor: color }} />
+                <span className="footer-ping-value">
+                  {currentLatency > 0 ? `${currentLatency}ms` : '...'}
+                </span>
+              </button>
+
+              <AnimatePresence>
+                {showGraph && (
+                  <motion.div
+                    className="footer-ping-popover"
+                    initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                  >
+                    {data.length > 0 && (
+                      <Liveline
+                        data={data}
+                        value={currentLatency}
+                        color={color}
+                        theme={theme}
+                        grid={true}
+                        badge={true}
+                        fill={true}
+                        pulse={true}
+                        scrub={true}
+                        momentum={false}
+                        showValue={false}
+                        window={30}
+                        lerpSpeed={0.15}
+                        formatValue={(v: number) => `${Math.round(v)}ms`}
+                        formatTime={(t: number) => {
+                          const date = new Date(t * 1000)
+                          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                        }}
+                      />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <span className="footer-time">{formatTime(time)}</span>
 
             {showEditControls && editModeContext && (

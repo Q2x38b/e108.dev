@@ -51,7 +51,8 @@ function formatDateCompact(timestamp: number) {
 }
 
 export default function BlogList() {
-  const { theme, toggle } = useTheme()
+  // Initialize theme (ensures data-theme is set when landing directly on this page)
+  useTheme()
   const posts = useQuery(api.posts.list)
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [searchQuery, setSearchQuery] = useState('')
@@ -77,41 +78,13 @@ export default function BlogList() {
 
   return (
     <div className="blog-list-layout">
-      <motion.header
-        className="blog-header blog-list-header"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      <header className="blog-header blog-list-header stagger-in stagger-in-1">
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-current">Writing</span>
         </nav>
         <div className="header-right">
-          <button
-            className="theme-toggle"
-            onClick={() => { haptics.selection(); toggle() }}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
-          >
-            {theme === 'light' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-            )}
-          </button>
           <SignedIn>
             <Link to="/blog/new" className="add-post-btn" aria-label="New post">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -121,14 +94,14 @@ export default function BlogList() {
             </Link>
           </SignedIn>
         </div>
-      </motion.header>
+      </header>
 
-      <div className="blog-list-title">
+      <div className="blog-list-title stagger-in stagger-in-2">
         <h1 className="blog-title">Writing</h1>
       </div>
 
       {/* Search Bar and View Toggle */}
-      <div className="blog-search-bar">
+      <div className="blog-search-bar stagger-in stagger-in-3">
         <div className="blog-search-input">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="11" cy="11" r="8" />

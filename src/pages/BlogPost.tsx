@@ -907,7 +907,7 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
 export default function BlogPost() {
   const { shortId } = useParams<{ shortId: string }>()
   const navigate = useNavigate()
-  const { theme, toggle } = useTheme()
+  const { theme } = useTheme()
   const post = useQuery(api.posts.getByShortId, shortId ? { shortId } : 'skip')
   const allPosts = useQuery(api.posts.listWithViews)
   const deletePost = useMutation(api.posts.remove)
@@ -1083,7 +1083,7 @@ export default function BlogPost() {
         />
       )}
 
-      <header className="blog-header">
+      <header className="blog-header stagger-in stagger-in-1">
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-sep">/</span>
@@ -1091,40 +1091,9 @@ export default function BlogPost() {
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-current">Article</span>
         </nav>
-        <div className="header-right">
-          <button
-            className="theme-toggle"
-            onClick={() => { haptics.selection(); toggle() }}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
-          >
-            {theme === 'light' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-            )}
-          </button>
-        </div>
       </header>
 
-      <motion.article
-        className="blog-article"
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
+      <article className="blog-article stagger-in stagger-in-2">
         <header className="article-header-new">
           <h1 className="article-title-main">{post.title}</h1>
 
@@ -1282,7 +1251,7 @@ export default function BlogPost() {
           )}
         </div>
 
-      </motion.article>
+      </article>
 
       {/* More Articles Section */}
       {allPosts && (
