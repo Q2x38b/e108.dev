@@ -466,7 +466,11 @@ export default function Shelf() {
       </header>
 
       <div className="shelf-title-section stagger-in stagger-in-2">
-        <h1 className="shelf-title">my shelf</h1>
+        <div className="shelf-title-row">
+          <h1 className="shelf-title">shelf</h1>
+          <span className="shelf-title-divider">|</span>
+          <p className="shelf-title-definition">A collection of moments, ideas, and inspirations that have shaped my journey.</p>
+        </div>
         {isEditMode && (
           <p className="shelf-edit-hint">Drag items to reorder</p>
         )}
@@ -1039,10 +1043,8 @@ export default function Shelf() {
         )}
       </AnimatePresence>
 
-      {/* Description */}
-      <p className="shelf-description">
-        A collection of moments, ideas, and inspirations that have shaped my journey.
-      </p>
+      {/* Short divider before footer */}
+      <div className="shelf-footer-divider" />
 
       <Footer showSignature={false} />
     </div>
