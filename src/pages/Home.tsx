@@ -1,6 +1,24 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, animate, type PanInfo } from 'framer-motion'
+
+// Cursor origin helper for button hover animations
+function setCursorOrigin(el: HTMLElement, e: PointerEvent) {
+  const { clientX, clientY } = e
+  const { top, left } = el.getBoundingClientRect()
+  const x = clientX - left
+  const y = clientY - top
+  el.style.setProperty('--x', `${x}px`)
+  el.style.setProperty('--y', `${y}px`)
+  el.style.setProperty('--cursor-origin', `${x}px ${y}px`)
+}
+
+// Ref callback to attach cursor origin tracking
+function cursorOriginRef(el: HTMLElement | null) {
+  if (!el) return
+  el.addEventListener('pointerenter', (e) => setCursorOrigin(el, e))
+  el.addEventListener('pointerleave', (e) => setCursorOrigin(el, e))
+}
 import { useQuery, useConvex } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
@@ -207,6 +225,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
         className="theme-toggle"
         onClick={handleMobileToggle}
         aria-label={`Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} theme`}
+        ref={cursorOriginRef}
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
@@ -232,6 +251,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
         onClick={() => { haptics.soft(); setIsOpen(!isOpen) }}
         aria-label="Change theme"
         aria-expanded={isOpen}
+        ref={cursorOriginRef}
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
@@ -385,44 +405,38 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
   return (
     <>
     <header className="header stagger-in stagger-in-1">
-      {/* Profile image */}
-      <button
-        className="header-profile-button"
-        onClick={handleProfileClick}
-        aria-label="View profile links"
-      >
-        <img
-          src={profileImageUrl}
-          alt="Profile"
-          className="header-profile-image"
-        />
-      </button>
-
       {/* Name row with nav on right */}
       <div className="header-row">
         <EditableSection sectionId="profile" onEdit={onEditProfile}>
           <div className="header-identity">
-            <h1 className="header-name">{profileName}</h1>
+            <button
+              className="header-name-btn"
+              onClick={handleProfileClick}
+              aria-label="View profile links"
+              ref={cursorOriginRef}
+            >
+              <h1 className="header-name">{profileName}</h1>
+            </button>
             <p className="header-title">{profileTitle}</p>
           </div>
         </EditableSection>
 
         <nav className="header-nav">
-          <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing">
+          <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing" ref={cursorOriginRef}>
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
               <path d="M13 21h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
             </svg>
             <div className="nav-tooltip">Writing</div>
           </Link>
-          <Link to="/shelf" className="header-nav-btn nav-tooltip-btn" aria-label="Shelf" onMouseEnter={prefetchShelf}>
+          <Link to="/shelf" className="header-nav-btn nav-tooltip-btn" aria-label="Shelf" onMouseEnter={prefetchShelf} ref={cursorOriginRef}>
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
               <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
             </svg>
             <div className="nav-tooltip">Shelf</div>
           </Link>
-          <button className="header-nav-btn location-btn" aria-label="Location">
+          <button className="header-nav-btn location-btn" aria-label="Location" ref={cursorOriginRef}>
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0zm-8 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fillRule="evenodd" />
             </svg>
