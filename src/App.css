@@ -551,8 +551,8 @@
   bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%) scale(0.95);
-  background: var(--text);
-  color: var(--bg);
+  background: #2d2d2d;
+  color: #fdfdfc;
   font-size: 0.7rem;
   font-weight: 500;
   padding: 2px 8px;
@@ -562,6 +562,11 @@
   pointer-events: none;
   transition: opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
   z-index: 100;
+}
+
+[data-theme="dark"] .location-tooltip {
+  background: var(--text);
+  color: var(--bg);
 }
 
 .location-btn:hover .location-tooltip,
@@ -580,8 +585,8 @@
   bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%) scale(0.95);
-  background: var(--text);
-  color: var(--bg);
+  background: #2d2d2d;
+  color: #fdfdfc;
   font-size: 0.7rem;
   font-weight: 500;
   padding: 2px 8px;
@@ -591,6 +596,11 @@
   pointer-events: none;
   transition: opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
   z-index: 100;
+}
+
+[data-theme="dark"] .nav-tooltip {
+  background: var(--text);
+  color: var(--bg);
 }
 
 .nav-tooltip-btn:hover .nav-tooltip,

@@ -1131,18 +1131,16 @@ export default function BlogPost() {
                 </svg>
               </button>
               <button className={`share-btn-icon ${linkCopied ? 'copied' : ''}`} onClick={() => { haptics.soft(); setShowShareModal(true) }} aria-label="Share">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="7.25 5.75 10 3 12.75 5.75" />
+                  <line x1="10" y1="13" x2="10" y2="3" />
+                  <path d="m6,9.07c-1.216.268-2.168,1.277-2.328,2.557l-.25,2c-.224,1.791,1.172,3.372,2.977,3.372h7.203c1.804,0,3.201-1.582,2.977-3.372l-.25-2c-.16-1.281-1.113-2.289-2.328-2.557" />
                 </svg>
               </button>
               <div className="article-views-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="article-views-icon">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="article-views-icon">
+                  <path d="m3.361,11.314c-.481-.8-.481-1.829,0-2.629.962-1.714,3.175-4.686,6.639-4.686s5.677,2.971,6.639,4.686c.481.8.481,1.829,0,2.629-.962,1.714-3.175,4.686-6.639,4.686s-5.677-2.857-6.639-4.686Z" />
+                  <circle cx="10" cy="10" r="3" fill="currentColor" strokeWidth="0" />
                 </svg>
                 {viewCount || 0}
               </div>

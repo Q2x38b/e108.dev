@@ -172,16 +172,16 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
   )
 
   const sunIcon = (
-    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2" fill="none" />
-      <path d="M12 20v2" fill="none" />
-      <path d="m4.93 4.93 1.41 1.41" fill="none" />
-      <path d="m17.66 17.66 1.41 1.41" fill="none" />
-      <path d="M2 12h2" fill="none" />
-      <path d="M20 12h2" fill="none" />
-      <path d="m6.34 17.66-1.41 1.41" fill="none" />
-      <path d="m19.07 4.93-1.41 1.41" fill="none" />
+    <svg viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="4" strokeWidth="0" fill="currentColor" />
+      <line x1="10" y1="2" x2="10" y2="3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="15.657" y1="4.343" x2="14.596" y2="5.404" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="18" y1="10" x2="16.5" y2="10" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="15.657" y1="15.657" x2="14.596" y2="14.596" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="10" y1="18" x2="10" y2="16.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="4.343" y1="15.657" x2="5.404" y2="14.596" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="2" y1="10" x2="3.5" y2="10" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="4.343" y1="4.343" x2="5.404" y2="5.404" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
     </svg>
   )
 
@@ -423,9 +423,9 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
 
         <nav className="header-nav">
           <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing" ref={cursorOriginRef}>
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-              <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
-              <path d="M13 21h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+            <svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+              <line x1="17" y1="17" x2="12" y2="17" fill="none" />
+              <path d="m3,17l1-4.5L12.914,3.586c.781-.781,2.047-.781,2.828,0l.672.672c.781.781.781,2.047,0,2.828l-8.914,8.914-4.5,1Z" />
             </svg>
             <div className="nav-tooltip">Writing</div>
           </Link>
@@ -810,7 +810,12 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
       <EditableSection sectionId="work" onEdit={onEdit}>
         <section id="work" className="section work-section stagger-in stagger-in-4">
           <h2 className="section-title section-title-with-icon">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg>
+            <svg width="15" height="15" viewBox="0 0 20 20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+              <rect x="3" y="3" width="5" height="5" rx="1.5" ry="1.5" fill="none" />
+              <rect x="12" y="3" width="5" height="5" rx="1.5" ry="1.5" transform="translate(8.136 -8.642) rotate(45)" fill="currentColor" />
+              <rect x="3" y="12" width="5" height="5" rx="1.5" ry="1.5" fill="none" />
+              <rect x="12" y="12" width="5" height="5" rx="1.5" ry="1.5" fill="none" />
+            </svg>
             Work
           </h2>
           <LayoutGroup>
