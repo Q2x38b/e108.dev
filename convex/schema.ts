@@ -80,6 +80,7 @@ export default defineSchema({
     company: v.string(),
     role: v.string(),
     date: v.string(),
+    details: v.optional(v.string()), // Job description/details shown when accordion is expanded
     order: v.number(),
     updatedAt: v.number(),
   }).index("by_order", ["order"]),

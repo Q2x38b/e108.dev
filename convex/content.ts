@@ -287,6 +287,7 @@ export const updateExperience = mutation({
     company: v.string(),
     role: v.string(),
     date: v.string(),
+    details: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -297,6 +298,7 @@ export const updateExperience = mutation({
       company: args.company,
       role: args.role,
       date: args.date,
+      details: args.details ?? "",
       updatedAt: Date.now(),
     });
   },
@@ -308,6 +310,7 @@ export const createExperience = mutation({
     company: v.string(),
     role: v.string(),
     date: v.string(),
+    details: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -321,6 +324,7 @@ export const createExperience = mutation({
       company: args.company,
       role: args.role,
       date: args.date,
+      details: args.details ?? "",
       order: maxOrder + 1,
       updatedAt: Date.now(),
     });

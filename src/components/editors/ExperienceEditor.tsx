@@ -9,6 +9,7 @@ interface ExperienceData {
   company: string
   role: string
   date: string
+  details?: string
   order: number
 }
 
@@ -26,7 +27,7 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
   const [localExperiences, setLocalExperiences] = useState(experiences.map(e => ({ ...e, isNew: false })))
   const [saving, setSaving] = useState(false)
 
-  const handleChange = (index: number, field: 'company' | 'role' | 'date', value: string) => {
+  const handleChange = (index: number, field: 'company' | 'role' | 'date' | 'details', value: string) => {
     const updated = [...localExperiences]
     updated[index] = { ...updated[index], [field]: value }
     setLocalExperiences(updated)
@@ -38,6 +39,7 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
       company: '',
       role: '',
       date: '',
+      details: '',
       order: localExperiences.length,
       isNew: true
     }])
@@ -66,21 +68,24 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
             token: sessionToken,
             company: exp.company,
             role: exp.role,
-            date: exp.date
+            date: exp.date,
+            details: exp.details || ''
           })
         } else {
           const original = experiences.find(e => e._id === exp._id)
           if (original && (
             original.company !== exp.company ||
             original.role !== exp.role ||
-            original.date !== exp.date
+            original.date !== exp.date ||
+            (original.details || '') !== (exp.details || '')
           )) {
             await updateExperience({
               token: sessionToken,
               id: exp._id,
               company: exp.company,
               role: exp.role,
-              date: exp.date
+              date: exp.date,
+              details: exp.details || ''
             })
           }
         }
@@ -161,6 +166,17 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
                   placeholder="2024 - now (leave empty for blinking cursor)"
                   spellCheck="false"
                   autoComplete="off"
+                />
+              </div>
+              <div className="editor-field">
+                <label htmlFor={`exp-details-${index}`}>Details (shown when expanded)</label>
+                <textarea
+                  id={`exp-details-${index}`}
+                  value={exp.details || ''}
+                  onChange={(e) => handleChange(index, 'details', e.target.value)}
+                  placeholder="Describe your responsibilities, achievements, and projects (supports HTML: <strong>, <em>, <ul><li>)"
+                  rows={4}
+                  spellCheck="true"
                 />
               </div>
               <button

@@ -1259,7 +1259,7 @@ export default function BlogPost() {
         />
       )}
 
-      <Footer showSignature={false} />
+      <Footer showSignature={false} showQuote={false} />
 
       <AnimatePresence>
         {showAudioPlayer && (

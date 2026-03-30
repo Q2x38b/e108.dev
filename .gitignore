@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Agentation (local dev tool)
+.agentation
+.agentation.*
+agentation.config.*

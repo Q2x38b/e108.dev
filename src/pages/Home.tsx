@@ -26,8 +26,7 @@ import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
 import { EditableSection } from '../components/EditableSection'
 import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
-import { useLatency, useThemeMode } from '../components/LatencyChart'
-import { Liveline } from 'liveline'
+import { Footer } from '../components/Footer'
 
 // Navigation links
 const navLinks: string[] = []
@@ -83,6 +82,203 @@ function Accordion({ title, content, isOpen, onToggle, id }: {
         </div>
       </div>
     </div>
+  )
+}
+
+// Icons for accordion groups
+const AccordionIcons: { [key: string]: React.ReactNode } = {
+  default: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+  ),
+  code: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 18 22 12 16 6"/>
+      <polyline points="8 6 2 12 8 18"/>
+    </svg>
+  ),
+  design: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <circle cx="12" cy="12" r="6"/>
+      <circle cx="12" cy="12" r="2"/>
+    </svg>
+  ),
+  tools: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+    </svg>
+  ),
+  calendar: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+      <rect x="6" y="13" width="3" height="3" rx="0.5"/>
+      <rect x="10.5" y="13" width="3" height="3" rx="0.5"/>
+      <rect x="15" y="13" width="3" height="3" rx="0.5"/>
+    </svg>
+  ),
+  star: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+    </svg>
+  ),
+  shopping: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+  ),
+  warning: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  ),
+  folder: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+    </svg>
+  ),
+}
+
+// Chevron icon for accordion
+const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
+  <motion.svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    animate={{ rotate: isOpen ? 180 : 0 }}
+    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+  >
+    <polyline points="6 9 12 15 18 9"/>
+  </motion.svg>
+)
+
+// Single accordion item within a group
+interface AccordionItemData {
+  id: string
+  title: string
+  content: string
+  icon?: string
+}
+
+// Grouped accordion with liquid separation animation
+function AccordionGroup({
+  items,
+  openId,
+  onToggle
+}: {
+  items: AccordionItemData[]
+  openId: string | null
+  onToggle: (id: string) => void
+}) {
+  const haptics = useHaptics()
+
+  const handleToggle = (id: string) => {
+    haptics.soft()
+    onToggle(id)
+  }
+
+  // Find the index of the open item
+  const openIndex = openId ? items.findIndex(item => item.id === openId) : -1
+
+  // Split items into segments: before open, open item, after open
+  const segments: { type: 'group' | 'open', items: AccordionItemData[], startIndex: number }[] = []
+
+  if (openIndex === -1) {
+    // No item is open - all items in one group
+    segments.push({ type: 'group', items, startIndex: 0 })
+  } else {
+    // Items before the open one
+    if (openIndex > 0) {
+      segments.push({ type: 'group', items: items.slice(0, openIndex), startIndex: 0 })
+    }
+    // The open item
+    segments.push({ type: 'open', items: [items[openIndex]], startIndex: openIndex })
+    // Items after the open one
+    if (openIndex < items.length - 1) {
+      segments.push({ type: 'group', items: items.slice(openIndex + 1), startIndex: openIndex + 1 })
+    }
+  }
+
+  return (
+    <LayoutGroup>
+      <div className="accordion-group-container">
+        {segments.map((segment, segmentIndex) => (
+          <motion.div
+            key={`segment-${segment.startIndex}-${segment.type}`}
+            className={`accordion-group-box ${segment.type === 'open' ? 'accordion-group-box-open' : ''}`}
+            layout
+            transition={{
+              layout: { duration: 0.4, ease: [0.23, 1, 0.32, 1] }
+            }}
+          >
+            {segment.items.map((item, itemIndex) => {
+              const isOpen = item.id === openId
+              const isFirst = itemIndex === 0
+              const isLast = itemIndex === segment.items.length - 1
+
+              return (
+                <motion.div
+                  key={item.id}
+                  className={`accordion-group-item ${isOpen ? 'open' : ''} ${isFirst ? 'first' : ''} ${isLast ? 'last' : ''}`}
+                  layout
+                  transition={{
+                    layout: { duration: 0.4, ease: [0.23, 1, 0.32, 1] }
+                  }}
+                >
+                  <button
+                    className="accordion-group-header"
+                    onClick={() => handleToggle(item.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="accordion-group-icon" aria-hidden="true">
+                      {AccordionIcons[item.icon || 'default'] || AccordionIcons.default}
+                    </span>
+                    <span className="accordion-group-title">{item.title}</span>
+                    <span className="accordion-group-chevron">
+                      <ChevronIcon isOpen={isOpen} />
+                    </span>
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        className="accordion-group-content-wrapper"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{
+                          height: { duration: 0.4, ease: [0.23, 1, 0.32, 1] },
+                          opacity: { duration: 0.25, ease: [0.23, 1, 0.32, 1] }
+                        }}
+                      >
+                        <div
+                          className="accordion-group-content"
+                          dangerouslySetInnerHTML={{ __html: item.content }}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        ))}
+      </div>
+    </LayoutGroup>
   )
 }
 
@@ -230,10 +426,10 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
             key={resolvedTheme}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            initial={{ opacity: 0, scale: 0.5, rotate: -90 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.5, rotate: 90 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             {resolvedTheme === 'dark' ? moonIcon : sunIcon}
@@ -256,10 +452,10 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
             key={preference}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            initial={{ opacity: 0, scale: 0.5, rotate: -90 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.5, rotate: 90 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             {currentIcon}
@@ -319,9 +515,9 @@ const profileExpandLinks = [
     </svg>
   )},
   { platform: 'email', url: 'mailto:hello@e108.dev', label: 'Email', icon: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m3,7l6.504,3.716c.307.176.685.176.992,0l6.504-3.716" />
+      <rect x="3" y="4" width="14" height="12" rx="3" ry="3" />
     </svg>
   )}
 ]
@@ -614,25 +810,39 @@ interface SkillData {
 }
 
 function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [openId, setOpenId] = useState<string | null>(null)
+
+  // Assign icons based on skill title keywords
+  const getIconForSkill = (title: string): string => {
+    const lowerTitle = title.toLowerCase()
+    if (lowerTitle.includes('code') || lowerTitle.includes('programming') || lowerTitle.includes('development')) return 'code'
+    if (lowerTitle.includes('design') || lowerTitle.includes('ui') || lowerTitle.includes('ux')) return 'design'
+    if (lowerTitle.includes('tool') || lowerTitle.includes('workflow')) return 'tools'
+    if (lowerTitle.includes('schedule') || lowerTitle.includes('plan') || lowerTitle.includes('time')) return 'calendar'
+    return 'default'
+  }
+
+  // Convert skills to accordion items
+  const accordionItems: AccordionItemData[] = skills.map(skill => ({
+    id: skill._id,
+    title: skill.title,
+    content: skill.content || '',
+    icon: getIconForSkill(skill.title)
+  }))
+
+  const handleToggle = (id: string) => {
+    setOpenId(openId === id ? null : id)
+  }
 
   return (
     <EditableSection sectionId="skills" onEdit={onEdit}>
       <section id="skills" className="section stagger-in stagger-in-6">
         <h2 className="section-title">Skills</h2>
-        <div className="accordion-list">
-          {skills.map((skill, index) => (
-            <div key={skill._id}>
-              <Accordion
-                id={skill._id}
-                title={skill.title}
-                content={skill.content}
-                isOpen={openIndex === index}
-                onToggle={() => setOpenIndex(openIndex === index ? null : index)}
-              />
-            </div>
-          ))}
-        </div>
+        <AccordionGroup
+          items={accordionItems}
+          openId={openId}
+          onToggle={handleToggle}
+        />
       </section>
     </EditableSection>
   )
@@ -661,7 +871,28 @@ function ImageCarousel({ images }: { images: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]))
   const haptics = useHaptics()
+
+  // Preload adjacent images
+  useEffect(() => {
+    if (!images || images.length <= 1) return
+
+    const toPreload = [
+      (currentIndex + 1) % images.length,
+      (currentIndex - 1 + images.length) % images.length
+    ]
+
+    toPreload.forEach(idx => {
+      if (!loadedImages.has(idx)) {
+        const img = new Image()
+        img.src = images[idx]
+        img.onload = () => {
+          setLoadedImages(prev => new Set([...prev, idx]))
+        }
+      }
+    })
+  }, [currentIndex, images, loadedImages])
 
   // Autoplay every 5 seconds
   useEffect(() => {
@@ -691,9 +922,9 @@ function ImageCarousel({ images }: { images: string[] }) {
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 60 : -60,
+      x: direction > 0 ? 40 : -40,
       opacity: 0,
-      scale: 0.98
+      scale: 1
     }),
     center: {
       x: 0,
@@ -701,9 +932,9 @@ function ImageCarousel({ images }: { images: string[] }) {
       scale: 1
     },
     exit: (direction: number) => ({
-      x: direction < 0 ? 60 : -60,
+      x: direction < 0 ? 40 : -40,
       opacity: 0,
-      scale: 0.98
+      scale: 1
     })
   }
 
@@ -724,7 +955,7 @@ function ImageCarousel({ images }: { images: string[] }) {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
             className="image-carousel-image"
           />
         </AnimatePresence>
@@ -857,11 +1088,23 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                         )
                       }
 
+                      // Preload images on hover
+                      const preloadImages = () => {
+                        if (project.images && project.images.length > 0) {
+                          project.images.forEach(src => {
+                            const img = new Image()
+                            img.src = src
+                          })
+                        }
+                      }
+
                       return (
                         <button
                           key={project._id}
                           className="work-entry"
                           onClick={() => { haptics.soft(); setSelectedId(project.name) }}
+                          onMouseEnter={preloadImages}
+                          onFocus={preloadImages}
                         >
                           <span className="work-entry-name">{project.name}</span>
                           {project.description && (
@@ -957,267 +1200,50 @@ interface ExperienceData {
   company: string
   role: string
   date: string
+  details?: string
   order: number
 }
 
 function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
+  // Sort: pending (no date) first, then by date descending
+  const sortedExperiences = [...experiences].sort((a, b) => {
+    if (!a.date && b.date) return -1
+    if (a.date && !b.date) return 1
+    return 0
+  })
+
   return (
     <EditableSection sectionId="experience" onEdit={onEdit}>
       <section id="experience" className="section stagger-in stagger-in-5">
-        <h2 className="section-title">Experience</h2>
-        <div className="experience-list">
-          {experiences.map((exp) => (
-            <div key={exp._id} className="experience-row">
-              <span className="experience-company">{exp.company}</span>
-              <span className="experience-line" />
-              <span className="experience-role">{exp.role}</span>
-              <span className="experience-date">
-                {exp.date || <span className="blink-cursor">_</span>}
-              </span>
-            </div>
-          ))}
+        <h2 className="section-title section-title-with-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeWidth="0">
+            <line x1="4" y1="17" x2="4" y2="3" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            <circle cx="4" cy="10" r="2.5" strokeWidth="0" />
+            <rect x="8" y="3" width="9" height="5" rx="1.5" ry="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            <rect x="8" y="12" width="9" height="5" rx="1.5" ry="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+          </svg>
+          Timeline
+        </h2>
+        <div className="timeline">
+          {sortedExperiences.map((exp) => {
+            const isPending = !exp.date
+
+            return (
+              <div key={exp._id} className={`timeline-item ${isPending ? 'pending' : ''}`}>
+                <div className="timeline-marker" />
+                <div className="timeline-content">
+                  <div className="timeline-header">
+                    <span className="timeline-company">{exp.company}</span>
+                    <span className="timeline-date">{exp.date || 'Upcoming'}</span>
+                  </div>
+                  <span className="timeline-role">{exp.role}</span>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </section>
     </EditableSection>
-  )
-}
-
-function LoginModal({ onClose }: { onClose: () => void }) {
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
-  const haptics = useHaptics()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    haptics.rigid()
-    setLoading(true)
-    const success = await login(password)
-    if (success) {
-      haptics.nudge()
-      onClose()
-    } else {
-      haptics.buzz()
-      setError(true)
-      setPassword('')
-    }
-    setLoading(false)
-  }
-
-  return (
-    <div className="login-modal-overlay" onClick={onClose}>
-      <motion.div
-        className="login-modal"
-        onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.96, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 8 }}
-        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-      >
-        <form onSubmit={handleSubmit}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); setError(false) }}
-            autoFocus
-            className={error ? 'error' : ''}
-            disabled={loading}
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? '...' : 'Login'}
-          </button>
-        </form>
-      </motion.div>
-    </div>
-  )
-}
-
-function Footer({ copyrightYear }: { copyrightYear: string }) {
-  const [time, setTime] = useState(new Date())
-  const [clickCount, setClickCount] = useState(0)
-  const [showLogin, setShowLogin] = useState(false)
-  const [showGraph, setShowGraph] = useState(false)
-  const { isAuthenticated, logout } = useAuth()
-  const { isEditMode, toggleEditMode } = useEditMode()
-  const haptics = useHaptics()
-  const { data, currentLatency, color } = useLatency()
-  const theme = useThemeMode()
-  const pingRef = React.useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    if (clickCount >= 5 && !isAuthenticated) {
-      setShowLogin(true)
-      setClickCount(0)
-    }
-    const resetTimer = setTimeout(() => setClickCount(0), 2000)
-    return () => clearTimeout(resetTimer)
-  }, [clickCount, isAuthenticated])
-
-  // Close ping popover on outside click
-  useEffect(() => {
-    if (!showGraph) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (pingRef.current && !pingRef.current.contains(e.target as Node)) {
-        setShowGraph(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showGraph])
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    })
-  }
-
-  const scrollToTop = () => {
-    haptics.soft()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const handleLogout = async () => {
-    haptics.nudge()
-    await logout()
-  }
-
-  const handleToggleEditMode = () => {
-    haptics.selection()
-    toggleEditMode()
-  }
-
-  const handlePingClick = () => {
-    haptics.soft()
-    setShowGraph(prev => !prev)
-  }
-
-  return (
-    <>
-      <footer className="footer stagger-in stagger-in-8">
-        {/* Desktop: quote at top, Mobile: quote in top row */}
-        <div className="footer-quote-row">
-          <span className="footer-quote-inline">The only limit is yourself</span>
-        </div>
-
-        <div className="footer-bottom">
-          <div className="footer-left">
-            <span
-              className="footer-text footer-secret"
-              onClick={() => setClickCount(c => c + 1)}
-            >
-              © {copyrightYear}
-            </span>
-            <span className="footer-dot">•</span>
-            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="footer-link">CC BY 4.0</a>
-          </div>
-          <div className="footer-right">
-            <div className="footer-ping-wrapper" ref={pingRef}>
-              <button
-                className="footer-ping"
-                onClick={handlePingClick}
-                aria-label={`Latency: ${currentLatency}ms. Click to ${showGraph ? 'hide' : 'show'} graph.`}
-                aria-expanded={showGraph}
-              >
-                <span className="footer-ping-dot" style={{ backgroundColor: color }} />
-                <span className="footer-ping-value">
-                  {currentLatency > 0 ? `${currentLatency}ms` : '...'}
-                </span>
-              </button>
-
-              <AnimatePresence>
-                {showGraph && (
-                  <motion.div
-                    className="footer-ping-popover"
-                    initial={{ opacity: 0, scale: 0.95, y: 8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
-                    transition={{ duration: 0.2, ease: 'easeOut' }}
-                  >
-                    {data.length > 0 && (
-                      <Liveline
-                        data={data}
-                        value={currentLatency}
-                        color={color}
-                        theme={theme}
-                        grid={true}
-                        badge={true}
-                        fill={true}
-                        pulse={true}
-                        scrub={true}
-                        momentum={false}
-                        showValue={false}
-                        window={30}
-                        lerpSpeed={0.15}
-                        formatValue={(v: number) => `${Math.round(v)}ms`}
-                        formatTime={(t: number) => {
-                          const date = new Date(t * 1000)
-                          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                        }}
-                      />
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <span className="footer-time">{formatTime(time)}</span>
-
-            <SignedIn>
-              <motion.button
-                className={`edit-mode-btn ${isEditMode ? 'active' : ''}`}
-                onClick={handleToggleEditMode}
-                whileTap={{ scale: 0.95 }}
-                title={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </motion.button>
-              <motion.button
-                className="logout-btn-small"
-                onClick={handleLogout}
-                whileTap={{ scale: 0.95 }}
-                title="Logout"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-              </motion.button>
-            </SignedIn>
-
-            <motion.button
-              className="back-to-top"
-              onClick={scrollToTop}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Back to top"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 19V5M5 12l7-7 7 7" />
-              </svg>
-            </motion.button>
-          </div>
-        </div>
-        <div className="footer-signature">
-          <img src="/signature.png" alt="EJ" className="signature-img" />
-        </div>
-      </footer>
-      <AnimatePresence>
-        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
-      </AnimatePresence>
-    </>
   )
 }
 
@@ -1615,7 +1641,7 @@ function HomeContent() {
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
-      <Footer copyrightYear={footerData.copyrightYear} />
+      <Footer showEditControls={true} showSignature={true} showQuote={true} className="stagger-in stagger-in-8" />
 
       {/* Editors */}
       <AnimatePresence>

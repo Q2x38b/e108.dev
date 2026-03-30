@@ -1,29 +1,11 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useHaptics } from '../hooks/useHaptics'
-import { Footer } from '../components/Footer'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import type { DragEndEvent } from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import { Link } from 'react-router-dom'
 import { LazyImage } from '@/components/lazy-image'
 
 type ItemType = 'image' | 'quote' | 'text'
@@ -66,66 +48,15 @@ const BACKGROUND_COLORS = [
   { name: 'Zinc', value: '#27272a' },
 ]
 
-// Sortable Item for edit mode
-function SortableItem({ item, index, isDarkBg }: {
-  item: ShelfItem
-  index: number
-  isDarkBg: (color: string) => boolean
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item._id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1000 : 1,
-  }
-
-  const bgStyle = item.backgroundColor ? { backgroundColor: item.backgroundColor } : {}
-  const isDark = isDarkBg(item.backgroundColor || '')
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={{ ...style, ...bgStyle }}
-      className={`shelf-reorder-item ${isDark ? 'dark-bg' : ''}`}
-      {...attributes}
-      {...listeners}
-    >
-      <div className="shelf-item-drag-handle">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="9" cy="6" r="1.5" />
-          <circle cx="15" cy="6" r="1.5" />
-          <circle cx="9" cy="12" r="1.5" />
-          <circle cx="15" cy="12" r="1.5" />
-          <circle cx="9" cy="18" r="1.5" />
-          <circle cx="15" cy="18" r="1.5" />
-        </svg>
-      </div>
-      {item.type === 'image' && item.url && (
-        <img src={item.url} alt={item.caption || item.fileName} />
-      )}
-      {item.type === 'quote' && (
-        <p className="shelf-reorder-quote">"{item.quoteText}"</p>
-      )}
-      {item.type === 'text' && (
-        <p className="shelf-reorder-text">{item.textContent}</p>
-      )}
-    </div>
-  )
-}
+// Grid configuration for canvas layout
+const GRID_COLS = 6
+const CELL_WIDTH = 320
+const CELL_HEIGHT = 400
+const CELL_GAP = 40
 
 export default function Shelf() {
-  // Initialize theme (ensures data-theme is set when landing directly on this page)
-  useTheme()
-  const { sessionToken, isAuthenticated } = useAuth()
+  const { theme: resolvedTheme } = useTheme()
+  const { sessionToken } = useAuth()
   const items = useQuery(api.shelf.list)
   const haptics = useHaptics()
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
@@ -134,7 +65,20 @@ export default function Shelf() {
   const addText = useMutation(api.shelf.addText)
   const updateItem = useMutation(api.shelf.update)
   const removeItem = useMutation(api.shelf.remove)
-  const reorderItems = useMutation(api.shelf.reorder)
+
+  // Canvas state
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const [isPanning, setIsPanning] = useState(false)
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 })
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [initialOffset, setInitialOffset] = useState({ x: 0, y: 0 })
+  const [hasInitialized, setHasInitialized] = useState(false)
+
+  // Momentum/inertia state
+  const velocityRef = useRef({ x: 0, y: 0 })
+  const lastPosRef = useRef({ x: 0, y: 0 })
+  const lastTimeRef = useRef(0)
+  const animationRef = useRef<number | null>(null)
 
   const [isUploading, setIsUploading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -142,7 +86,6 @@ export default function Shelf() {
   const [selectedItem, setSelectedItem] = useState<ShelfItem | null>(null)
   const [editingItem, setEditingItem] = useState<ShelfItem | null>(null)
   const [dragActive, setDragActive] = useState(false)
-  const [isEditMode, setIsEditMode] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [pendingFile, setPendingFile] = useState<File | null>(null)
@@ -175,66 +118,182 @@ export default function Shelf() {
     return items as ShelfItem[]
   }, [items])
 
-  // Get current index of selected item
-  const selectedIndex = useMemo(() => {
-    if (!selectedItem || !shelfItems.length) return -1
-    return shelfItems.findIndex(item => item._id === selectedItem._id)
-  }, [selectedItem, shelfItems])
-
-  // Navigation functions
-  const goToPrevItem = useCallback(() => {
-    if (selectedIndex > 0) {
-      haptics.selection()
-      setSelectedItem(shelfItems[selectedIndex - 1])
-    }
-  }, [selectedIndex, shelfItems, haptics])
-
-  const goToNextItem = useCallback(() => {
-    if (selectedIndex < shelfItems.length - 1) {
-      haptics.selection()
-      setSelectedItem(shelfItems[selectedIndex + 1])
-    }
-  }, [selectedIndex, shelfItems, haptics])
-
-  const goToItem = useCallback((index: number) => {
-    if (index >= 0 && index < shelfItems.length) {
-      haptics.selection()
-      setSelectedItem(shelfItems[index])
-    }
-  }, [shelfItems, haptics])
-
-  // Distribute items across 4 columns for masonry
-  const columns = useMemo(() => {
-    const cols: ShelfItem[][] = [[], [], [], []]
-    shelfItems.forEach((item, index) => {
-      cols[index % 4].push(item)
+  // Calculate item positions in a grid layout
+  const itemPositions = useMemo(() => {
+    return shelfItems.map((item, index) => {
+      const col = index % GRID_COLS
+      const row = Math.floor(index / GRID_COLS)
+      return {
+        item,
+        x: col * (CELL_WIDTH + CELL_GAP),
+        y: row * (CELL_HEIGHT + CELL_GAP),
+      }
     })
-    return cols
   }, [shelfItems])
 
-  // DnD sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  )
+  // Calculate canvas bounds
+  const canvasBounds = useMemo(() => {
+    if (itemPositions.length === 0) return { width: 0, height: 0 }
+    const rows = Math.ceil(shelfItems.length / GRID_COLS)
+    return {
+      width: GRID_COLS * (CELL_WIDTH + CELL_GAP) - CELL_GAP,
+      height: rows * (CELL_HEIGHT + CELL_GAP) - CELL_GAP,
+    }
+  }, [itemPositions.length, shelfItems.length])
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
-    if (over && active.id !== over.id && sessionToken) {
-      const oldIndex = shelfItems.findIndex((item) => item._id === active.id)
-      const newIndex = shelfItems.findIndex((item) => item._id === over.id)
-      const newItems = arrayMove(shelfItems, oldIndex, newIndex)
-      const orderUpdates = newItems.map((item, index) => ({
-        id: item._id as any,
-        order: index,
+  // Center canvas on load
+  useEffect(() => {
+    if (!hasInitialized && canvasBounds.width > 0 && canvasRef.current) {
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const centerX = (viewportWidth - canvasBounds.width) / 2
+      const centerY = (viewportHeight - canvasBounds.height) / 2
+      setOffset({ x: centerX, y: centerY })
+      setHasInitialized(true)
+    }
+  }, [canvasBounds, hasInitialized])
+
+  // Momentum animation
+  const applyMomentum = useCallback(() => {
+    const friction = 0.92
+    const minVelocity = 0.5
+
+    const animate = () => {
+      velocityRef.current.x *= friction
+      velocityRef.current.y *= friction
+
+      if (Math.abs(velocityRef.current.x) < minVelocity && Math.abs(velocityRef.current.y) < minVelocity) {
+        velocityRef.current = { x: 0, y: 0 }
+        animationRef.current = null
+        return
+      }
+
+      setOffset(prev => ({
+        x: prev.x + velocityRef.current.x,
+        y: prev.y + velocityRef.current.y,
       }))
-      try {
-        await reorderItems({ token: sessionToken, items: orderUpdates })
-      } catch (error) {
-        console.error('Reorder error:', error)
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animationRef.current = requestAnimationFrame(animate)
+  }, [])
+
+  // Stop momentum when starting a new pan
+  const stopMomentum = useCallback(() => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current)
+      animationRef.current = null
+    }
+    velocityRef.current = { x: 0, y: 0 }
+  }, [])
+
+  // Mouse panning handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return // Only left click
+    if ((e.target as HTMLElement).closest('.canvas-item, .floating-panel, .modal-overlay')) return
+    stopMomentum()
+    setIsPanning(true)
+    setPanStart({ x: e.clientX, y: e.clientY })
+    setInitialOffset({ ...offset })
+    lastPosRef.current = { x: e.clientX, y: e.clientY }
+    lastTimeRef.current = performance.now()
+    document.body.style.cursor = 'grabbing'
+  }, [offset, stopMomentum])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isPanning) return
+    const now = performance.now()
+    const dt = now - lastTimeRef.current
+
+    if (dt > 0) {
+      velocityRef.current = {
+        x: (e.clientX - lastPosRef.current.x) * (16 / dt),
+        y: (e.clientY - lastPosRef.current.y) * (16 / dt),
       }
     }
-  }
+
+    lastPosRef.current = { x: e.clientX, y: e.clientY }
+    lastTimeRef.current = now
+
+    const dx = e.clientX - panStart.x
+    const dy = e.clientY - panStart.y
+    setOffset({
+      x: initialOffset.x + dx,
+      y: initialOffset.y + dy,
+    })
+  }, [isPanning, panStart, initialOffset])
+
+  const handleMouseUp = useCallback(() => {
+    if (isPanning) {
+      setIsPanning(false)
+      document.body.style.cursor = ''
+      applyMomentum()
+    }
+  }, [isPanning, applyMomentum])
+
+  // Touch panning handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest('.canvas-item, .floating-panel, .modal-overlay')) return
+    stopMomentum()
+    const touch = e.touches[0]
+    setIsPanning(true)
+    setPanStart({ x: touch.clientX, y: touch.clientY })
+    setInitialOffset({ ...offset })
+    lastPosRef.current = { x: touch.clientX, y: touch.clientY }
+    lastTimeRef.current = performance.now()
+  }, [offset, stopMomentum])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPanning) return
+    const touch = e.touches[0]
+    const now = performance.now()
+    const dt = now - lastTimeRef.current
+
+    if (dt > 0) {
+      velocityRef.current = {
+        x: (touch.clientX - lastPosRef.current.x) * (16 / dt),
+        y: (touch.clientY - lastPosRef.current.y) * (16 / dt),
+      }
+    }
+
+    lastPosRef.current = { x: touch.clientX, y: touch.clientY }
+    lastTimeRef.current = now
+
+    const dx = touch.clientX - panStart.x
+    const dy = touch.clientY - panStart.y
+    setOffset({
+      x: initialOffset.x + dx,
+      y: initialOffset.y + dy,
+    })
+  }, [isPanning, panStart, initialOffset])
+
+  const handleTouchEnd = useCallback(() => {
+    if (isPanning) {
+      setIsPanning(false)
+      applyMomentum()
+    }
+  }, [isPanning, applyMomentum])
+
+  // Wheel handler for scrolling
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if ((e.target as HTMLElement).closest('.floating-panel, .modal-overlay')) return
+    e.preventDefault()
+    setOffset(prev => ({
+      x: prev.x - e.deltaX,
+      y: prev.y - e.deltaY,
+    }))
+  }, [])
+
+  // Reset view to center
+  const resetView = useCallback(() => {
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    const centerX = (viewportWidth - canvasBounds.width) / 2
+    const centerY = (viewportHeight - canvasBounds.height) / 2
+    setOffset({ x: centerX, y: centerY })
+    haptics.soft()
+  }, [canvasBounds, haptics])
 
   const resetForm = () => {
     setUploadCaption('')
@@ -433,173 +492,162 @@ export default function Shelf() {
   }
 
   return (
-    <div className="blog-container shelf-container">
-      <header className="blog-header stagger-in stagger-in-1">
-        <nav className="breadcrumb">
-          <Link to="/" className="breadcrumb-link">Home</Link>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-current">Shelf</span>
-        </nav>
-        <div className="header-right">
-          <SignedIn>
-            <button
-              className={`theme-toggle ${isEditMode ? 'active' : ''}`}
-              onClick={() => { haptics.selection(); setIsEditMode(!isEditMode) }}
-              aria-label={isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-              </svg>
-            </button>
-            <button
-              className="theme-toggle"
-              onClick={() => { haptics.soft(); setShowAddModal(true) }}
-              aria-label="Add item"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </button>
-          </SignedIn>
-        </div>
-      </header>
-
-      <div className="shelf-title-section stagger-in stagger-in-2">
-        <div className="shelf-title-row">
-          <h1 className="shelf-title">shelf</h1>
-          <span className="shelf-title-divider">|</span>
-          <p className="shelf-title-definition">A collection of moments, ideas, and inspirations that have shaped my journey.</p>
-        </div>
-        {isEditMode && (
-          <p className="shelf-edit-hint">Drag items to reorder</p>
-        )}
-      </div>
-
-      {/* Content */}
-      <main className="shelf-content stagger-in stagger-in-3">
+    <div
+      className="canvas-container"
+      ref={canvasRef}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onWheel={handleWheel}
+      style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+    >
+      {/* Canvas content */}
+      <div
+        className="canvas-content"
+        style={{
+          transform: `translate(${offset.x}px, ${offset.y}px)`,
+        }}
+      >
         {items === undefined ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="canvas-loading">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : shelfItems.length === 0 ? (
-          <p className="py-20 text-center text-muted-foreground">No items yet.</p>
-        ) : isEditMode && isAuthenticated ? (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={shelfItems.map(item => item._id)} strategy={verticalListSortingStrategy}>
-              <div className="flex flex-col gap-3">
-                {shelfItems.map((item, index) => (
-                  <SortableItem key={item._id} item={item} index={index} isDarkBg={isDarkBg} />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
-            {columns.map((columnItems, col) => (
-              <div className="grid gap-4" key={col}>
-                {columnItems.map((item) => {
-                  if (item.type === 'image' && item.url) {
-                    return (
-                      <div
-                        key={item._id}
-                        onClick={() => setSelectedItem(item)}
-                        className="cursor-pointer overflow-hidden rounded-lg transition-transform hover:scale-[1.02]"
-                      >
-                        <LazyImage
-                          alt={item.caption || item.fileName || 'Image'}
-                          containerClassName="rounded-lg"
-                          inView={true}
-                          ratio={item.aspectRatio || 1}
-                          src={item.url}
-                        />
-                        {item.caption && (
-                          <p className="mt-2 text-sm text-muted-foreground">{item.caption}</p>
-                        )}
-                      </div>
-                    )
-                  }
-
-                  if (item.type === 'quote') {
-                    const isDark = isDarkBg(item.backgroundColor || '')
-                    const isBarStyle = item.quoteStyle === 'bar'
-                    return (
-                      <div
-                        key={item._id}
-                        onClick={() => setSelectedItem(item)}
-                        className={`shelf-quote-card ${isDark ? 'dark' : ''} ${isBarStyle ? 'bar-style' : ''}`}
-                        style={{ backgroundColor: item.backgroundColor || undefined }}
-                      >
-                        {isBarStyle ? (
-                          <div className="shelf-quote-bar-wrapper">
-                            <div className="shelf-quote-bar-line" />
-                            <div className="shelf-quote-bar-content">
-                              <blockquote>"{item.quoteText}"</blockquote>
-                              {(item.quoteAuthor || item.quoteSource) && (
-                                <cite>
-                                  {item.quoteAuthor && <span className="quote-author">— {item.quoteAuthor}</span>}
-                                  {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
-                                </cite>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <svg className="shelf-quote-icon" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/>
-                            </svg>
-                            <blockquote>{item.quoteText}</blockquote>
-                            {(item.quoteAuthor || item.quoteSource) && (
-                              <cite>
-                                {item.quoteAuthor && <span className="quote-author">— {item.quoteAuthor}</span>}
-                                {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
-                              </cite>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )
-                  }
-
-                  if (item.type === 'text') {
-                    const isDark = isDarkBg(item.backgroundColor || '')
-                    return (
-                      <div
-                        key={item._id}
-                        onClick={() => setSelectedItem(item)}
-                        className={`cursor-pointer rounded-lg p-4 transition-transform hover:scale-[1.02] ${isDark ? 'text-white' : ''}`}
-                        style={{ backgroundColor: item.backgroundColor || 'var(--accent)' }}
-                      >
-                        {item.textLabel && (
-                          <span className="mb-1 block text-xs font-medium uppercase tracking-wider opacity-60">
-                            {item.textLabel}
-                          </span>
-                        )}
-                        <p className="text-sm">{item.textContent}</p>
-                      </div>
-                    )
-                  }
-
-                  return null
-                })}
-              </div>
-            ))}
+          <div className="canvas-empty">
+            <p className="text-muted-foreground">No items yet. Add something to your shelf.</p>
           </div>
+        ) : (
+          itemPositions.map(({ item, x, y }) => (
+            <div
+              key={item._id}
+              className="canvas-item"
+              style={{
+                left: x,
+                top: y,
+                width: CELL_WIDTH,
+              }}
+              onClick={() => {
+                haptics.selection()
+                setSelectedItem(item)
+              }}
+            >
+              {item.type === 'image' && item.url && (
+                <div className="canvas-item-image">
+                  <LazyImage
+                    alt={item.caption || item.fileName || 'Image'}
+                    containerClassName="rounded-lg"
+                    inView={true}
+                    ratio={item.aspectRatio || 1}
+                    src={item.url}
+                  />
+                  {item.caption && (
+                    <p className="canvas-item-caption">{item.caption}</p>
+                  )}
+                </div>
+              )}
+
+              {item.type === 'quote' && (
+                <div
+                  className={`canvas-item-quote ${isDarkBg(item.backgroundColor || '') ? 'dark' : ''} ${item.quoteStyle === 'bar' ? 'bar-style' : ''}`}
+                  style={{ backgroundColor: item.backgroundColor || undefined }}
+                >
+                  {item.quoteStyle === 'bar' ? (
+                    <div className="shelf-quote-bar-wrapper">
+                      <div className="shelf-quote-bar-line" />
+                      <div className="shelf-quote-bar-content">
+                        <blockquote>"{item.quoteText}"</blockquote>
+                        {(item.quoteAuthor || item.quoteSource) && (
+                          <cite>
+                            {item.quoteAuthor && <span className="quote-author">— {item.quoteAuthor}</span>}
+                            {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
+                          </cite>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <svg className="shelf-quote-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/>
+                      </svg>
+                      <blockquote>{item.quoteText}</blockquote>
+                      {(item.quoteAuthor || item.quoteSource) && (
+                        <cite>
+                          {item.quoteAuthor && <span className="quote-author">— {item.quoteAuthor}</span>}
+                          {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
+                        </cite>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {item.type === 'text' && (
+                <div
+                  className={`canvas-item-text ${isDarkBg(item.backgroundColor || '') ? 'dark' : ''}`}
+                  style={{ backgroundColor: item.backgroundColor || 'var(--accent)' }}
+                >
+                  {item.textLabel && (
+                    <span className="canvas-item-text-label">
+                      {item.textLabel}
+                    </span>
+                  )}
+                  <p>{item.textContent}</p>
+                </div>
+              )}
+            </div>
+          ))
         )}
-      </main>
+      </div>
+
+      {/* Floating navigation panel */}
+      <div className="floating-panel">
+        <Link to="/" className="floating-panel-btn" onClick={() => haptics.soft()}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </Link>
+        <button className="floating-panel-btn" onClick={resetView} title="Reset view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        </button>
+        <SignedIn>
+          <button
+            className="floating-panel-btn"
+            onClick={() => { haptics.soft(); setShowAddModal(true) }}
+            title="Add item"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
+        </SignedIn>
+      </div>
+
+      {/* Canvas info */}
+      <div className="canvas-info">
+        <span>Shelf</span>
+        <span className="canvas-info-count">{shelfItems.length} items</span>
+      </div>
 
       {/* Add Modal */}
       <AnimatePresence>
         {showAddModal && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => { setShowAddModal(false); resetForm() }}
           >
             <motion.div
-              className="w-full max-w-md rounded-xl bg-background p-6 shadow-xl"
+              className="modal-content"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -773,14 +821,14 @@ export default function Shelf() {
       <AnimatePresence>
         {editingItem && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setEditingItem(null)}
           >
             <motion.div
-              className="w-full max-w-md rounded-xl bg-background p-6 shadow-xl"
+              className="modal-content"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -834,7 +882,7 @@ export default function Shelf() {
                         style={{ backgroundColor: color.value || 'var(--accent)' }}
                         onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
                         aria-label={`${color.name} background`}
-                        aria-pressed={backgroundColor === color.value}
+                        aria-pressed={editBackgroundColor === color.value}
                       />
                     ))}
                   </div>
@@ -865,7 +913,7 @@ export default function Shelf() {
                         style={{ backgroundColor: color.value || 'var(--accent)' }}
                         onClick={() => { haptics.selection(); setEditBackgroundColor(color.value) }}
                         aria-label={`${color.name} background`}
-                        aria-pressed={backgroundColor === color.value}
+                        aria-pressed={editBackgroundColor === color.value}
                       />
                     ))}
                   </div>
@@ -904,14 +952,14 @@ export default function Shelf() {
       <AnimatePresence>
         {selectedItem && (
           <motion.div
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 p-4"
+            className="modal-overlay preview-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedItem(null)}
           >
             <motion.div
-              className="relative max-w-4xl"
+              className="preview-content"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -973,7 +1021,7 @@ export default function Shelf() {
 
               <SignedIn>
                 <button
-                  className="absolute right-2 top-2 rounded-full bg-background/80 p-2 backdrop-blur-sm hover:bg-background"
+                  className="preview-edit-btn"
                   onClick={() => { haptics.soft(); openEditModal(selectedItem) }}
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -984,7 +1032,7 @@ export default function Shelf() {
               </SignedIn>
 
               <button
-                className="absolute left-2 top-2 rounded-full bg-background/80 p-2 backdrop-blur-sm hover:bg-background"
+                className="preview-close-btn"
                 onClick={() => { haptics.soft(); setSelectedItem(null) }}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -994,42 +1042,10 @@ export default function Shelf() {
               </button>
             </motion.div>
 
-            {/* Navigation Pill */}
-            <motion.div
-              className="mt-6 flex items-center gap-2 rounded-full bg-black/20 px-2 py-1.5 backdrop-blur-xl"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ delay: 0.1 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
-                onClick={goToPrevItem}
-                disabled={selectedIndex <= 0}
-                aria-label="Previous"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <path d="M14.5 18L8.5 12L14.5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-
-              <button
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
-                onClick={goToNextItem}
-                disabled={selectedIndex >= shelfItems.length - 1}
-                aria-label="Next"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <path d="M9.5 18L15.5 12L9.5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </motion.div>
-
             {/* Description */}
             {(selectedItem.caption || selectedItem.quoteAuthor || selectedItem.textLabel) && (
               <motion.p
-                className="mt-3 max-w-md text-center text-sm text-white/70"
+                className="preview-description"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -1042,11 +1058,6 @@ export default function Shelf() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Short divider before footer */}
-      <div className="shelf-footer-divider" />
-
-      <Footer showSignature={false} />
     </div>
   )
 }

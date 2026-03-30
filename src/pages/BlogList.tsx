@@ -6,6 +6,7 @@ import { useTheme } from './Home'
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Footer } from '../components/Footer'
+import { Header } from '../components/Header'
 import { useHaptics } from '../hooks/useHaptics'
 
 const fadeInUp = {
@@ -52,7 +53,7 @@ function formatDateCompact(timestamp: number) {
 
 export default function BlogList() {
   // Initialize theme (ensures data-theme is set when landing directly on this page)
-  useTheme()
+  const { theme: resolvedTheme, preference, setPreference } = useTheme()
   const posts = useQuery(api.posts.list)
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [searchQuery, setSearchQuery] = useState('')
@@ -78,13 +79,17 @@ export default function BlogList() {
 
   return (
     <div className="blog-list-layout">
-      <header className="blog-header blog-list-header stagger-in stagger-in-1">
-        <nav className="breadcrumb">
-          <Link to="/" className="breadcrumb-link">Home</Link>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-current">Writing</span>
-        </nav>
-        <div className="header-right">
+      <Header
+        theme={resolvedTheme}
+        preference={preference}
+        setPreference={setPreference}
+        showBackLink={true}
+        currentPage="blog"
+      />
+
+      <div className="blog-list-title stagger-in stagger-in-2">
+        <div className="blog-title-row">
+          <h1 className="blog-title">Writing</h1>
           <SignedIn>
             <Link to="/blog/new" className="add-post-btn" aria-label="New post">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -94,10 +99,6 @@ export default function BlogList() {
             </Link>
           </SignedIn>
         </div>
-      </header>
-
-      <div className="blog-list-title stagger-in stagger-in-2">
-        <h1 className="blog-title">Writing</h1>
       </div>
 
       {/* Search Bar and View Toggle */}
@@ -202,7 +203,7 @@ export default function BlogList() {
         )}
       </main>
 
-      <Footer showSignature={false} />
+      <Footer showSignature={false} showQuote={false} />
       <div className="blog-blur-bottom" />
     </div>
   )
