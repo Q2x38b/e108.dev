@@ -53,6 +53,7 @@ const GRID_COLS = 6
 const CELL_WIDTH = 320
 const CELL_HEIGHT = 400
 const CELL_GAP = 40
+const CANVAS_PADDING = 500 // Extra space outside content for scrolling
 
 export default function Shelf() {
   const { theme: resolvedTheme } = useTheme()
@@ -79,6 +80,8 @@ export default function Shelf() {
   const lastPosRef = useRef({ x: 0, y: 0 })
   const lastTimeRef = useRef(0)
   const animationRef = useRef<number | null>(null)
+  const hasDraggedRef = useRef(false)
+  const clickedItemRef = useRef<ShelfItem | null>(null)
 
   const [isUploading, setIsUploading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -118,26 +121,28 @@ export default function Shelf() {
     return items as ShelfItem[]
   }, [items])
 
-  // Calculate item positions in a grid layout
+  // Calculate item positions in a grid layout (offset by padding)
   const itemPositions = useMemo(() => {
     return shelfItems.map((item, index) => {
       const col = index % GRID_COLS
       const row = Math.floor(index / GRID_COLS)
       return {
         item,
-        x: col * (CELL_WIDTH + CELL_GAP),
-        y: row * (CELL_HEIGHT + CELL_GAP),
+        x: CANVAS_PADDING + col * (CELL_WIDTH + CELL_GAP),
+        y: CANVAS_PADDING + row * (CELL_HEIGHT + CELL_GAP),
       }
     })
   }, [shelfItems])
 
-  // Calculate canvas bounds
+  // Calculate canvas bounds (content area + padding on all sides)
   const canvasBounds = useMemo(() => {
     if (itemPositions.length === 0) return { width: 0, height: 0 }
     const rows = Math.ceil(shelfItems.length / GRID_COLS)
+    const contentWidth = GRID_COLS * (CELL_WIDTH + CELL_GAP) - CELL_GAP
+    const contentHeight = rows * (CELL_HEIGHT + CELL_GAP) - CELL_GAP
     return {
-      width: GRID_COLS * (CELL_WIDTH + CELL_GAP) - CELL_GAP,
-      height: rows * (CELL_HEIGHT + CELL_GAP) - CELL_GAP,
+      width: contentWidth + CANVAS_PADDING * 2,
+      height: contentHeight + CANVAS_PADDING * 2,
     }
   }, [itemPositions.length, shelfItems.length])
 
@@ -155,8 +160,12 @@ export default function Shelf() {
 
   // Momentum animation
   const applyMomentum = useCallback(() => {
-    const friction = 0.92
-    const minVelocity = 0.5
+    const friction = 0.96
+    const minVelocity = 0.3
+
+    // Boost initial velocity for more powerful slide
+    velocityRef.current.x *= 1.5
+    velocityRef.current.y *= 1.5
 
     const animate = () => {
       velocityRef.current.x *= friction
@@ -191,20 +200,29 @@ export default function Shelf() {
   // Mouse panning handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return // Only left click
-    if ((e.target as HTMLElement).closest('.canvas-item, .floating-panel, .modal-overlay')) return
+    if ((e.target as HTMLElement).closest('.floating-panel, .modal-overlay')) return
     stopMomentum()
+    hasDraggedRef.current = false
     setIsPanning(true)
     setPanStart({ x: e.clientX, y: e.clientY })
     setInitialOffset({ ...offset })
     lastPosRef.current = { x: e.clientX, y: e.clientY }
     lastTimeRef.current = performance.now()
-    document.body.style.cursor = 'grabbing'
   }, [offset, stopMomentum])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isPanning) return
     const now = performance.now()
     const dt = now - lastTimeRef.current
+
+    const dx = e.clientX - panStart.x
+    const dy = e.clientY - panStart.y
+
+    // Mark as dragged if moved more than 5px
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasDraggedRef.current = true
+      document.body.style.cursor = 'grabbing'
+    }
 
     if (dt > 0) {
       velocityRef.current = {
@@ -216,8 +234,6 @@ export default function Shelf() {
     lastPosRef.current = { x: e.clientX, y: e.clientY }
     lastTimeRef.current = now
 
-    const dx = e.clientX - panStart.x
-    const dy = e.clientY - panStart.y
     setOffset({
       x: initialOffset.x + dx,
       y: initialOffset.y + dy,
@@ -228,14 +244,23 @@ export default function Shelf() {
     if (isPanning) {
       setIsPanning(false)
       document.body.style.cursor = ''
-      applyMomentum()
+
+      // Only select item if we didn't drag
+      if (!hasDraggedRef.current && clickedItemRef.current) {
+        haptics.selection()
+        setSelectedItem(clickedItemRef.current)
+      } else if (hasDraggedRef.current) {
+        applyMomentum()
+      }
+      clickedItemRef.current = null
     }
-  }, [isPanning, applyMomentum])
+  }, [isPanning, applyMomentum, haptics])
 
   // Touch panning handlers
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if ((e.target as HTMLElement).closest('.canvas-item, .floating-panel, .modal-overlay')) return
+    if ((e.target as HTMLElement).closest('.floating-panel, .modal-overlay')) return
     stopMomentum()
+    hasDraggedRef.current = false
     const touch = e.touches[0]
     setIsPanning(true)
     setPanStart({ x: touch.clientX, y: touch.clientY })
@@ -250,6 +275,14 @@ export default function Shelf() {
     const now = performance.now()
     const dt = now - lastTimeRef.current
 
+    const dx = touch.clientX - panStart.x
+    const dy = touch.clientY - panStart.y
+
+    // Mark as dragged if moved more than 5px
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasDraggedRef.current = true
+    }
+
     if (dt > 0) {
       velocityRef.current = {
         x: (touch.clientX - lastPosRef.current.x) * (16 / dt),
@@ -260,8 +293,6 @@ export default function Shelf() {
     lastPosRef.current = { x: touch.clientX, y: touch.clientY }
     lastTimeRef.current = now
 
-    const dx = touch.clientX - panStart.x
-    const dy = touch.clientY - panStart.y
     setOffset({
       x: initialOffset.x + dx,
       y: initialOffset.y + dy,
@@ -271,9 +302,17 @@ export default function Shelf() {
   const handleTouchEnd = useCallback(() => {
     if (isPanning) {
       setIsPanning(false)
-      applyMomentum()
+
+      // Only select item if we didn't drag
+      if (!hasDraggedRef.current && clickedItemRef.current) {
+        haptics.selection()
+        setSelectedItem(clickedItemRef.current)
+      } else if (hasDraggedRef.current) {
+        applyMomentum()
+      }
+      clickedItemRef.current = null
     }
-  }, [isPanning, applyMomentum])
+  }, [isPanning, applyMomentum, haptics])
 
   // Wheel handler for scrolling
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -530,10 +569,8 @@ export default function Shelf() {
                 top: y,
                 width: CELL_WIDTH,
               }}
-              onClick={() => {
-                haptics.selection()
-                setSelectedItem(item)
-              }}
+              onMouseDown={() => { clickedItemRef.current = item }}
+              onTouchStart={() => { clickedItemRef.current = item }}
             >
               {item.type === 'image' && item.url && (
                 <div className="canvas-item-image">
