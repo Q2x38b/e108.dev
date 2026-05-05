@@ -94,6 +94,30 @@ const AccordionIcons: { [key: string]: React.ReactNode } = {
       <polyline points="14 2 14 8 20 8"/>
     </svg>
   ),
+  athletics: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+      <circle cx="11.5" cy="3.5" r="2" fill="currentColor" />
+      <path d="m9.161,12.269c-.184,0-.37-.029-.554-.09-.917-.306-1.413-1.296-1.107-2.213l.911-2.734c.306-.917,1.299-1.412,2.213-1.107.917.306,1.413,1.296,1.107,2.213l-.911,2.734c-.244.733-.927,1.197-1.66,1.197Z" fill="currentColor" />
+      <polyline points="10.038 7.032 7 7.25 5.5 9.25" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <polyline points="10.635 7.276 12.5 9.75 14.75 10" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <polyline points="8.614 11.037 11.25 13.75 11.75 17" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <polyline points="6.25 17.25 7.75 15 7.857 14.001" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+    </svg>
+  ),
+  leadership: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+      <circle cx="6.5" cy="8" r="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" fill="currentColor" />
+      <circle cx="13.5" cy="5" r="2" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <path d="m18.16,12.226c-.744-1.96-2.573-3.226-4.66-3.226-1.509,0-2.876.669-3.803,1.776,1.498.77,2.699,2.071,3.332,3.74.058.153.092.309.127.465.115.005.229.02.344.02,1.297,0,2.594-.299,3.881-.898.711-.331,1.053-1.155.778-1.876Z" fill="currentColor" />
+      <path d="m11.16,15.226c-.744-1.96-2.573-3.226-4.66-3.226s-3.916,1.266-4.66,3.226c-.275.722.067,1.546.778,1.877,1.288.599,2.584.898,3.881.898s2.594-.299,3.881-.898c.711-.331,1.053-1.155.778-1.876Z" fill="currentColor" />
+    </svg>
+  ),
+  academics: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+      <path d="M10.488,12.39c-.459,.236-.974,.36-1.488,.36s-1.031-.125-1.489-.361l-4.011-2.064v3.676c0,1.805,2.767,2.75,5.5,2.75s5.5-.945,5.5-2.75v-3.676l-4.012,2.065Z" fill="currentColor" />
+      <path d="M16.719,9.226c-.026-.806,.056-1.611,.216-2.402,.018-.13,.065-.191,.065-.449,0-.601-.332-1.146-.866-1.421L9.802,1.694c-.502-.259-1.102-.258-1.604,0L1.866,4.955c-.534,.275-.866,.819-.866,1.42s.332,1.146,.866,1.421l6.332,3.259c.251,.129,.526,.194,.802,.194s.551-.065,.802-.194l5.451-2.806c-.019,.341-.045,.682-.034,1.024,.024,.772,.126,1.546,.301,2.301,.08,.347,.389,.581,.729,.581,.057,0,.113-.006,.17-.02,.403-.093,.655-.496,.562-.899-.152-.66-.241-1.336-.262-2.011Z" fill="currentColor" />
+    </svg>
+  ),
   code: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="16 18 22 12 16 6"/>
@@ -121,30 +145,6 @@ const AccordionIcons: { [key: string]: React.ReactNode } = {
       <rect x="6" y="13" width="3" height="3" rx="0.5"/>
       <rect x="10.5" y="13" width="3" height="3" rx="0.5"/>
       <rect x="15" y="13" width="3" height="3" rx="0.5"/>
-    </svg>
-  ),
-  star: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-    </svg>
-  ),
-  shopping: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-      <line x1="3" y1="6" x2="21" y2="6"/>
-      <path d="M16 10a4 4 0 0 1-8 0"/>
-    </svg>
-  ),
-  warning: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-      <line x1="12" y1="9" x2="12" y2="13"/>
-      <line x1="12" y1="17" x2="12.01" y2="17"/>
-    </svg>
-  ),
-  folder: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
     </svg>
   ),
 }
@@ -175,7 +175,7 @@ interface AccordionItemData {
   icon?: string
 }
 
-// Grouped accordion with liquid separation animation
+// Grouped accordion
 function AccordionGroup({
   items,
   openId,
@@ -192,94 +192,57 @@ function AccordionGroup({
     onToggle(id)
   }
 
-  // Find the index of the open item
-  const openIndex = openId ? items.findIndex(item => item.id === openId) : -1
-
-  // Split items into segments: before open, open item, after open
-  const segments: { type: 'group' | 'open', items: AccordionItemData[], startIndex: number }[] = []
-
-  if (openIndex === -1) {
-    // No item is open - all items in one group
-    segments.push({ type: 'group', items, startIndex: 0 })
-  } else {
-    // Items before the open one
-    if (openIndex > 0) {
-      segments.push({ type: 'group', items: items.slice(0, openIndex), startIndex: 0 })
-    }
-    // The open item
-    segments.push({ type: 'open', items: [items[openIndex]], startIndex: openIndex })
-    // Items after the open one
-    if (openIndex < items.length - 1) {
-      segments.push({ type: 'group', items: items.slice(openIndex + 1), startIndex: openIndex + 1 })
-    }
-  }
-
   return (
-    <LayoutGroup>
-      <div className="accordion-group-container">
-        {segments.map((segment, segmentIndex) => (
-          <motion.div
-            key={`segment-${segment.startIndex}-${segment.type}`}
-            className={`accordion-group-box ${segment.type === 'open' ? 'accordion-group-box-open' : ''}`}
-            layout
-            transition={{
-              layout: { duration: 0.4, ease: [0.23, 1, 0.32, 1] }
-            }}
-          >
-            {segment.items.map((item, itemIndex) => {
-              const isOpen = item.id === openId
-              const isFirst = itemIndex === 0
-              const isLast = itemIndex === segment.items.length - 1
+    <div className="accordion-group-container">
+      <div className="accordion-group-box">
+        {items.map((item, itemIndex) => {
+          const isOpen = item.id === openId
+          const isFirst = itemIndex === 0
+          const isLast = itemIndex === items.length - 1
 
-              return (
-                <motion.div
-                  key={item.id}
-                  className={`accordion-group-item ${isOpen ? 'open' : ''} ${isFirst ? 'first' : ''} ${isLast ? 'last' : ''}`}
-                  layout
-                  transition={{
-                    layout: { duration: 0.4, ease: [0.23, 1, 0.32, 1] }
-                  }}
-                >
-                  <button
-                    className="accordion-group-header"
-                    onClick={() => handleToggle(item.id)}
-                    aria-expanded={isOpen}
+          return (
+            <div
+              key={item.id}
+              className={`accordion-group-item ${isOpen ? 'open' : ''} ${isFirst ? 'first' : ''} ${isLast ? 'last' : ''}`}
+            >
+              <button
+                className="accordion-group-header"
+                onClick={() => handleToggle(item.id)}
+                aria-expanded={isOpen}
+              >
+                <span className="accordion-group-icon" aria-hidden="true">
+                  {AccordionIcons[item.icon || 'default'] || AccordionIcons.default}
+                </span>
+                <span className="accordion-group-title">{item.title}</span>
+                <span className="accordion-group-chevron">
+                  <ChevronIcon isOpen={isOpen} />
+                </span>
+              </button>
+
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    className="accordion-group-content-wrapper"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{
+                      height: { duration: 0.35, ease: [0.23, 1, 0.32, 1] },
+                      opacity: { duration: 0.2, ease: 'easeOut' }
+                    }}
                   >
-                    <span className="accordion-group-icon" aria-hidden="true">
-                      {AccordionIcons[item.icon || 'default'] || AccordionIcons.default}
-                    </span>
-                    <span className="accordion-group-title">{item.title}</span>
-                    <span className="accordion-group-chevron">
-                      <ChevronIcon isOpen={isOpen} />
-                    </span>
-                  </button>
-
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        className="accordion-group-content-wrapper"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{
-                          height: { duration: 0.4, ease: [0.23, 1, 0.32, 1] },
-                          opacity: { duration: 0.25, ease: [0.23, 1, 0.32, 1] }
-                        }}
-                      >
-                        <div
-                          className="accordion-group-content"
-                          dangerouslySetInnerHTML={{ __html: item.content }}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )
-            })}
-          </motion.div>
-        ))}
+                    <div
+                      className="accordion-group-content"
+                      dangerouslySetInnerHTML={{ __html: item.content }}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )
+        })}
       </div>
-    </LayoutGroup>
+    </div>
   )
 }
 
@@ -816,6 +779,9 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
   // Assign icons based on skill title keywords
   const getIconForSkill = (title: string): string => {
     const lowerTitle = title.toLowerCase()
+    if (lowerTitle.includes('athletic') || lowerTitle.includes('sport') || lowerTitle.includes('physical') || lowerTitle.includes('running')) return 'athletics'
+    if (lowerTitle.includes('leadership') || lowerTitle.includes('leader') || lowerTitle.includes('manag')) return 'leadership'
+    if (lowerTitle.includes('academic') || lowerTitle.includes('school') || lowerTitle.includes('education') || lowerTitle.includes('learning')) return 'academics'
     if (lowerTitle.includes('code') || lowerTitle.includes('programming') || lowerTitle.includes('development')) return 'code'
     if (lowerTitle.includes('design') || lowerTitle.includes('ui') || lowerTitle.includes('ux')) return 'design'
     if (lowerTitle.includes('tool') || lowerTitle.includes('workflow')) return 'tools'
