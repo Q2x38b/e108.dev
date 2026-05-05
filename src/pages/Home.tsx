@@ -27,6 +27,7 @@ import { EditableSection } from '../components/EditableSection'
 import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
 import { Footer } from '../components/Footer'
+import { Carousel_002 } from '../components/ui/skiper-ui/skiper48'
 
 // Navigation links
 const navLinks: string[] = []
@@ -866,143 +867,6 @@ interface ProjectData {
   order: number
 }
 
-// Image Carousel Component
-function ImageCarousel({ images }: { images: string[] }) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [direction, setDirection] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]))
-  const haptics = useHaptics()
-
-  // Preload adjacent images
-  useEffect(() => {
-    if (!images || images.length <= 1) return
-
-    const toPreload = [
-      (currentIndex + 1) % images.length,
-      (currentIndex - 1 + images.length) % images.length
-    ]
-
-    toPreload.forEach(idx => {
-      if (!loadedImages.has(idx)) {
-        const img = new Image()
-        img.src = images[idx]
-        img.onload = () => {
-          setLoadedImages(prev => new Set([...prev, idx]))
-        }
-      }
-    })
-  }, [currentIndex, images, loadedImages])
-
-  // Autoplay every 5 seconds
-  useEffect(() => {
-    if (!images || images.length <= 1 || isPaused) return
-
-    const interval = setInterval(() => {
-      setDirection(1)
-      setCurrentIndex((prev) => (prev + 1) % images.length)
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [images, isPaused])
-
-  if (!images || images.length === 0) return null
-
-  const goToNext = () => {
-    haptics.soft()
-    setDirection(1)
-    setCurrentIndex((prev) => (prev + 1) % images.length)
-  }
-
-  const goToPrev = () => {
-    haptics.soft()
-    setDirection(-1)
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
-  }
-
-  const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 40 : -40,
-      opacity: 0,
-      scale: 1
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1
-    },
-    exit: (direction: number) => ({
-      x: direction < 0 ? 40 : -40,
-      opacity: 0,
-      scale: 1
-    })
-  }
-
-  return (
-    <div
-      className="image-carousel"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      <div className="image-carousel-container">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
-          <motion.img
-            key={currentIndex}
-            src={images[currentIndex]}
-            alt={`Project image ${currentIndex + 1}`}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-            className="image-carousel-image"
-          />
-        </AnimatePresence>
-      </div>
-
-      {images.length > 1 && (
-        <div className="image-carousel-pill">
-          <button
-            className="image-carousel-pill-btn"
-            onClick={goToPrev}
-            aria-label="Previous image"
-          >
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M14.5 18L8.5 12L14.5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-
-          <div className="image-carousel-pill-dots">
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                className={`image-carousel-pill-dot ${idx === currentIndex ? 'active' : ''}`}
-                onClick={() => {
-                  haptics.selection()
-                  setDirection(idx > currentIndex ? 1 : -1)
-                  setCurrentIndex(idx)
-                }}
-                aria-label={`Go to image ${idx + 1}`}
-              />
-            ))}
-          </div>
-
-          <button
-            className="image-carousel-pill-btn"
-            onClick={goToNext}
-            aria-label="Next image"
-          >
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M9.5 18L15.5 12L9.5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
 function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selectedProject = projects.find(p => p.name === selectedId)
@@ -1152,7 +1016,16 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
               </button>
 
               {selectedProject.images && selectedProject.images.length > 0 && (
-                <ImageCarousel images={selectedProject.images} />
+                <div className="work-modal-carousel">
+                  <Carousel_002
+                    images={selectedProject.images.map((src, idx) => ({
+                      src,
+                      alt: `${selectedProject.name} image ${idx + 1}`
+                    }))}
+                    showPagination={true}
+                    loop={true}
+                  />
+                </div>
               )}
 
               <div className="work-modal-content">
