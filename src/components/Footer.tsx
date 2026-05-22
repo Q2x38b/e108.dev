@@ -241,6 +241,7 @@ export function Footer({
               text="EJ"
               fontSize={48}
               duration={1.2}
+              displayHeight={36}
               className="signature-svg"
             />
           </div>

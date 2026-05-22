@@ -10,6 +10,7 @@ interface SignatureProps {
   delay?: number
   className?: string
   inView?: boolean
+  displayHeight?: number
 }
 
 export function Signature({
@@ -19,13 +20,15 @@ export function Signature({
   duration = 1.5,
   delay = 0,
   className = '',
-  inView = false
+  inView = false,
+  displayHeight
 }: SignatureProps) {
   // Use currentColor if no color specified - this respects CSS color property
   const strokeColor = color || 'currentColor'
   const [pathData, setPathData] = useState<string>('')
   const [viewBox, setViewBox] = useState('0 0 100 50')
-  const [animationKey, setAnimationKey] = useState(0)
+  const [svgWidth, setSvgWidth] = useState(100)
+  const [svgHeight, setSvgHeight] = useState(50)
   const [isLoaded, setIsLoaded] = useState(false)
   const ref = useRef<SVGSVGElement>(null)
   const isInView = useInView(ref, { once: false, amount: 0.5 })
@@ -54,6 +57,8 @@ export function Signature({
 
         setPathData(translatedPath.toPathData(2))
         setViewBox(`0 0 ${width} ${height}`)
+        setSvgWidth(width)
+        setSvgHeight(height)
         setIsLoaded(true)
       } catch (error) {
         console.error('Failed to load signature font:', error)
@@ -67,10 +72,16 @@ export function Signature({
     return null
   }
 
+  const scale = displayHeight ? displayHeight / svgHeight : 1
+  const renderedWidth = Math.round(svgWidth * scale * 100) / 100
+  const renderedHeight = displayHeight ?? svgHeight
+
   return (
     <motion.svg
       ref={ref}
       viewBox={viewBox}
+      width={renderedWidth}
+      height={renderedHeight}
       fill="none"
       className={className}
       initial={{ opacity: 0 }}
