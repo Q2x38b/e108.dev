@@ -94,6 +94,12 @@ const AccordionIcons: { [key: string]: React.ReactNode } = {
       <polyline points="14 2 14 8 20 8"/>
     </svg>
   ),
+  technical: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+      <path d="m3.034,12.231c-.111.475.072,1.01.555,1.286l5.83,3.332c.36.206.801.206,1.161,0l5.83-3.332c.483-.276.667-.811.555-1.286" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <path d="m10.58,3.154l5.83,3.332c.786.449.786,1.582,0,2.031l-5.83,3.332c-.36.205-.801.205-1.161,0l-5.83-3.332c-.786-.449-.786-1.582,0-2.031l5.83-3.332c.36-.205.801-.205,1.161,0Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" fill="currentColor" />
+    </svg>
+  ),
   athletics: (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
       <circle cx="11.5" cy="3.5" r="2" fill="currentColor" />
@@ -106,8 +112,8 @@ const AccordionIcons: { [key: string]: React.ReactNode } = {
   ),
   leadership: (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-      <circle cx="6.5" cy="8" r="2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" fill="currentColor" />
-      <circle cx="13.5" cy="5" r="2" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <circle cx="6.5" cy="8" r="2" fill="currentColor" />
+      <circle cx="13.5" cy="5" r="2" fill="currentColor" />
       <path d="m18.16,12.226c-.744-1.96-2.573-3.226-4.66-3.226-1.509,0-2.876.669-3.803,1.776,1.498.77,2.699,2.071,3.332,3.74.058.153.092.309.127.465.115.005.229.02.344.02,1.297,0,2.594-.299,3.881-.898.711-.331,1.053-1.155.778-1.876Z" fill="currentColor" />
       <path d="m11.16,15.226c-.744-1.96-2.573-3.226-4.66-3.226s-3.916,1.266-4.66,3.226c-.275.722.067,1.546.778,1.877,1.288.599,2.584.898,3.881.898s2.594-.299,3.881-.898c.711-.331,1.053-1.155.778-1.876Z" fill="currentColor" />
     </svg>
@@ -161,7 +167,7 @@ const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
     strokeLinecap="round"
     strokeLinejoin="round"
     animate={{ rotate: isOpen ? 180 : 0 }}
-    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+    transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
   >
     <polyline points="6 9 12 15 18 9"/>
   </motion.svg>
@@ -227,8 +233,8 @@ function AccordionGroup({
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{
-                      height: { duration: 0.35, ease: [0.23, 1, 0.32, 1] },
-                      opacity: { duration: 0.2, ease: 'easeOut' }
+                      height: { duration: 0.28, ease: [0.25, 0.1, 0.25, 1] },
+                      opacity: { duration: 0.15, ease: 'easeOut' }
                     }}
                   >
                     <div
@@ -752,9 +758,9 @@ function About({ about, onEdit }: { about: AboutData; onEdit: () => void }) {
                 </svg>
               )}
               {link.platform === 'email' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+                  <path d="m3,7l6.504,3.716c.307.176.685.176.992,0l6.504-3.716" />
+                  <rect x="3" y="4" width="14" height="12" rx="3" ry="3" />
                 </svg>
               )}
               {link.label}
@@ -782,6 +788,7 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
     if (lowerTitle.includes('athletic') || lowerTitle.includes('sport') || lowerTitle.includes('physical') || lowerTitle.includes('running')) return 'athletics'
     if (lowerTitle.includes('leadership') || lowerTitle.includes('leader') || lowerTitle.includes('manag')) return 'leadership'
     if (lowerTitle.includes('academic') || lowerTitle.includes('school') || lowerTitle.includes('education') || lowerTitle.includes('learning')) return 'academics'
+    if (lowerTitle.includes('technical') || lowerTitle.includes('tech')) return 'technical'
     if (lowerTitle.includes('code') || lowerTitle.includes('programming') || lowerTitle.includes('development')) return 'code'
     if (lowerTitle.includes('design') || lowerTitle.includes('ui') || lowerTitle.includes('ux')) return 'design'
     if (lowerTitle.includes('tool') || lowerTitle.includes('workflow')) return 'tools'
@@ -1055,11 +1062,9 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
     <EditableSection sectionId="experience" onEdit={onEdit}>
       <section id="experience" className="section stagger-in stagger-in-5">
         <h2 className="section-title section-title-with-icon">
-          <svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeWidth="0">
-            <line x1="4" y1="17" x2="4" y2="3" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            <circle cx="4" cy="10" r="2.5" strokeWidth="0" />
-            <rect x="8" y="3" width="9" height="5" rx="1.5" ry="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            <rect x="8" y="12" width="9" height="5" rx="1.5" ry="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+            <path d="m17,6l-7.293,7.293c-.391.391-1.024.391-1.414,0l-2.586-2.586c-.391-.391-1.024-.391-1.414,0l-2.293,2.293" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            <polyline points="17 13 17 6 10 6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
           </svg>
           Timeline
         </h2>
@@ -1069,7 +1074,22 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
 
             return (
               <div key={exp._id} className={`timeline-item ${isPending ? 'pending' : ''}`}>
-                <div className="timeline-marker" />
+                {isPending ? (
+                  <svg className="timeline-marker" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="m7,17h-1c-1.657,0-3-1.343-3-3v-1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <path d="m13,3h1c1.657,0,3,1.343,3,3v1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <path d="m3,7v-1c0-1.657,1.343-3,3-3h1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <path d="m17,13v1c0,1.657-1.343,3-3,3h-1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                  </svg>
+                ) : (
+                  <svg className="timeline-marker" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="m3,7v-1c0-1.657,1.343-3,3-3h1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <path d="m7,17h-1c-1.657,0-3-1.343-3-3v-1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <path d="m17,13v1c0,1.657-1.343,3-3,3h-1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <path d="m13,3h1c1.657,0,3,1.343,3,3v1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <rect x="8" y="8" width="4" height="4" rx="1" ry="1" transform="translate(20 0) rotate(90)" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                  </svg>
+                )}
                 <div className="timeline-content">
                   <div className="timeline-header">
                     <span className="timeline-company">{exp.company}</span>

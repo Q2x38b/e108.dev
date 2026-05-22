@@ -643,14 +643,17 @@ export default function Shelf() {
       {/* Floating navigation panel */}
       <div className="floating-panel">
         <Link to="/" className="floating-panel-btn" onClick={() => haptics.soft()}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none">
+            <line x1="17" y1="10" x2="3" y2="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            <polyline points="8 5 3 10 8 15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
           </svg>
         </Link>
         <button className="floating-panel-btn" onClick={resetView} title="Reset view">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none">
+            <path d="m4,10c0,3.314,2.686,6,6,6,1.227,0,2.367-.368,3.317-1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            <polygon points="14.25 10 16 12 17.75 10 14.25 10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" fill="currentColor" />
+            <path d="m16,10c0-3.314-2.686-6-6-6-1.227,0-2.367.368-3.317,1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            <polygon points="5.75 10 4 8 2.25 10 5.75 10" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
           </svg>
         </button>
         <SignedIn>
@@ -667,11 +670,6 @@ export default function Shelf() {
         </SignedIn>
       </div>
 
-      {/* Canvas info */}
-      <div className="canvas-info">
-        <span>Shelf</span>
-        <span className="canvas-info-count">{shelfItems.length} items</span>
-      </div>
 
       {/* Add Modal */}
       <AnimatePresence>
@@ -681,13 +679,15 @@ export default function Shelf() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             onClick={() => { setShowAddModal(false); resetForm() }}
           >
             <motion.div
               className="modal-content"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95, y: -12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -8 }}
+              transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="mb-4 text-xl font-semibold">Add to Shelf</h2>

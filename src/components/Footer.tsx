@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useConvex } from 'convex/react'
+import { api } from '../../convex/_generated/api'
 import { useAuth, SignedIn } from '../contexts/AuthContext'
 import { useEditMode } from '../contexts/EditModeContext'
 import { useHaptics } from '../hooks/useHaptics'
@@ -86,9 +88,28 @@ export function Footer({
   const [time, setTime] = useState(new Date())
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const { isAuthenticated, logout } = useAuth()
   const editModeContext = useEditMode()
   const haptics = useHaptics()
+  const convex = useConvex()
+
+  const handleExport = async () => {
+    haptics.soft()
+    setExporting(true)
+    try {
+      const data = await convex.query(api.content.getHomepageData)
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `portfolio-export-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -171,6 +192,19 @@ export function Footer({
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </motion.button>
+                  <motion.button
+                    className="footer-btn"
+                    onClick={handleExport}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Export data"
+                    disabled={exporting}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
                   </motion.button>
                   <motion.button

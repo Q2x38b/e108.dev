@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import opentype from 'opentype.js'
 
@@ -63,10 +63,6 @@ export function Signature({
     loadFont()
   }, [text, fontSize])
 
-  const handleClick = useCallback(() => {
-    setAnimationKey(k => k + 1)
-  }, [])
-
   if (!isLoaded) {
     return null
   }
@@ -74,12 +70,9 @@ export function Signature({
   return (
     <motion.svg
       ref={ref}
-      key={animationKey}
       viewBox={viewBox}
       fill="none"
       className={className}
-      onClick={handleClick}
-      style={{ cursor: 'pointer' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: shouldAnimate ? 1 : 0 }}
       transition={{ duration: 0.3, delay }}
