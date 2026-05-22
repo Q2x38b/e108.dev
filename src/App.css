@@ -2072,22 +2072,8 @@
 }
 
 .accordion-group-box {
-  background: var(--card-bg, rgba(0, 0, 0, 0.03));
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid var(--border);
-}
-
-[data-theme="dark"] .accordion-group-box {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.accordion-group-box-open {
-  background: var(--card-bg-open, rgba(0, 0, 0, 0.05));
-}
-
-[data-theme="dark"] .accordion-group-box-open {
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .accordion-group-item {

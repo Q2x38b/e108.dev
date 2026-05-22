@@ -1076,18 +1076,11 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
               <div key={exp._id} className={`timeline-item ${isPending ? 'pending' : ''}`}>
                 {isPending ? (
                   <svg className="timeline-marker" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" aria-hidden="true">
-                    <path d="m7,17h-1c-1.657,0-3-1.343-3-3v-1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-                    <path d="m13,3h1c1.657,0,3,1.343,3,3v1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-                    <path d="m3,7v-1c0-1.657,1.343-3,3-3h1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-                    <path d="m17,13v1c0,1.657-1.343,3-3,3h-1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
                   </svg>
                 ) : (
                   <svg className="timeline-marker" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" aria-hidden="true">
-                    <path d="m3,7v-1c0-1.657,1.343-3,3-3h1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-                    <path d="m7,17h-1c-1.657,0-3-1.343-3-3v-1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-                    <path d="m17,13v1c0,1.657-1.343,3-3,3h-1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-                    <path d="m13,3h1c1.657,0,3,1.343,3,3v1" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-                    <rect x="8" y="8" width="4" height="4" rx="1" ry="1" transform="translate(20 0) rotate(90)" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                    <path d="m10,2C5.589,2,2,5.589,2,10s3.589,8,8,8,8-3.589,8-8S14.411,2,10,2Zm0,11c-1.657,0-3-1.343-3-3s1.343-3,3-3,3,1.343,3,3-1.343,3-3,3Z" fill="currentColor" strokeWidth="0"/>
                   </svg>
                 )}
                 <div className="timeline-content">
