@@ -71,6 +71,7 @@ export default defineSchema({
       url: v.string(),
     }))),
     images: v.optional(v.array(v.string())), // Array of image URLs
+    noModal: v.optional(v.boolean()),
     order: v.number(),
     updatedAt: v.number(),
   }).index("by_order", ["order"]),

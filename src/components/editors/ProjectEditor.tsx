@@ -20,6 +20,7 @@ interface ProjectData {
   url?: string
   links?: ProjectLink[]
   images?: string[]
+  noModal?: boolean
   order: number
 }
 
@@ -42,6 +43,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
     techString: p.tech.join(', '),
     links: p.links || [],
     images: p.images || [],
+    noModal: p.noModal ?? false,
     isNew: false
   })))
   const [saving, setSaving] = useState(false)
@@ -200,7 +202,8 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
             tech,
             url: project.url || undefined,
             links: links.length > 0 ? links : undefined,
-            images: images.length > 0 ? images : undefined
+            images: images.length > 0 ? images : undefined,
+            noModal: project.noModal || undefined,
           })
         } else {
           const original = projects.find(p => p._id === project._id)
@@ -215,7 +218,8 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
               tech,
               url: project.url || undefined,
               links: links.length > 0 ? links : undefined,
-              images: images.length > 0 ? images : undefined
+              images: images.length > 0 ? images : undefined,
+              noModal: project.noModal || undefined,
             })
           }
         }
@@ -292,6 +296,20 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
                   placeholder="Full description shown in modal"
                   rows={2}
                 />
+              </div>
+              <div className="editor-field editor-field-checkbox">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={project.noModal ?? false}
+                    onChange={(e) => {
+                      const updated = [...localProjects]
+                      updated[index] = { ...updated[index], noModal: e.target.checked }
+                      setLocalProjects(updated)
+                    }}
+                  />
+                  Disable modal (entry is not clickable)
+                </label>
               </div>
               <div className="editor-field">
                 <label>Technologies (comma-separated)</label>

@@ -993,6 +993,11 @@
   transition: transform 0.1s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
+.work-entry-static {
+  cursor: default;
+  pointer-events: none;
+}
+
 .work-entry:last-child {
   border-bottom: none;
 }
@@ -5169,6 +5174,22 @@
 
 .editor-field-small {
   flex: 0 0 100px;
+}
+
+.editor-field-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.editor-field-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--accent-color, #007AFF);
 }
 
 .editor-row {

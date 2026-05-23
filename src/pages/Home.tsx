@@ -837,6 +837,7 @@ interface ProjectData {
   url?: string
   links?: ProjectLink[]
   images?: string[]
+  noModal?: boolean
   order: number
 }
 
@@ -898,6 +899,18 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                       // Only treat as external link if URL is valid (starts with http/https)
                       const isValidExternalUrl = primaryLink && (primaryLink.startsWith('http://') || primaryLink.startsWith('https://'))
                       const shouldLinkDirectly = !hasDetails && isValidExternalUrl
+
+                      if (project.noModal) {
+                        return (
+                          <div key={project._id} className="work-entry work-entry-static">
+                            <span className="work-entry-name">{project.name}</span>
+                            {project.description && (
+                              <span className="work-entry-description">{project.description}</span>
+                            )}
+                            <span className="work-entry-date">{project.year}</span>
+                          </div>
+                        )
+                      }
 
                       if (shouldLinkDirectly) {
                         return (
