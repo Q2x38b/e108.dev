@@ -203,7 +203,7 @@ export const updateProject = mutation({
       ...(args.url !== undefined && { url: args.url }),
       ...(args.links !== undefined && { links: args.links }),
       ...(args.images !== undefined && { images: args.images }),
-      noModal: args.noModal ?? false,
+      ...(args.noModal !== undefined && { noModal: args.noModal }),
     });
   },
 });
