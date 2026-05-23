@@ -167,7 +167,7 @@ const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
     strokeLinecap="round"
     strokeLinejoin="round"
     animate={{ rotate: isOpen ? 180 : 0 }}
-    transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+    transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
   >
     <polyline points="6 9 12 15 18 9"/>
   </motion.svg>
@@ -233,7 +233,7 @@ function AccordionGroup({
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{
-                      height: { duration: 0.28, ease: [0.25, 0.1, 0.25, 1] },
+                      height: { type: 'spring', duration: 0.35, bounce: 0 },
                       opacity: { duration: 0.15, ease: 'easeOut' }
                     }}
                   >
