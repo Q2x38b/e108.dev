@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Autoplay, EffectCards } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -9,6 +10,20 @@ import { useHaptics } from '../hooks/useHaptics'
 import { useAuth } from '../contexts/AuthContext'
 import 'swiper/css'
 import 'swiper/css/effect-cards'
+
+// Cursor-origin tracker for the scale-in hover background on prev/next buttons
+function setCursorOrigin(el: HTMLElement, e: PointerEvent) {
+  const { clientX, clientY } = e
+  const { top, left } = el.getBoundingClientRect()
+  el.style.setProperty('--x', `${clientX - left}px`)
+  el.style.setProperty('--y', `${clientY - top}px`)
+}
+
+function cursorOriginRef(el: HTMLElement | null) {
+  if (!el) return
+  el.addEventListener('pointerenter', (e) => setCursorOrigin(el, e))
+  el.addEventListener('pointerleave', (e) => setCursorOrigin(el, e))
+}
 
 type ItemType = 'image' | 'quote' | 'text'
 type QuoteStyle = 'default' | 'bar'
@@ -66,7 +81,7 @@ function ShelfCarouselSlide({
             onImageClick?.(item)
           }}
           style={{
-            cursor: 'zoom-in',
+            cursor: 'pointer',
             visibility: isExpanded ? 'hidden' : 'visible',
           }}
         />
@@ -239,9 +254,10 @@ export function ShelfCarousel({ className }: { className?: string }) {
           <div className="shelf-carousel-controls">
             <button
               type="button"
-              className="shelf-carousel-ctrl"
+              className="shelf-carousel-ctrl shelf-carousel-step"
               onClick={handlePrev}
               aria-label="Previous slide"
+              ref={cursorOriginRef}
             >
               <ChevronLeft />
             </button>
@@ -254,7 +270,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
             >
               <span
                 className="shelf-carousel-progress"
-                style={{ transform: `scaleX(${1 - progress})` }}
+                style={{ transform: `scaleX(${progress})` }}
                 aria-hidden="true"
               />
               <span className="shelf-carousel-ctrl-icon">
@@ -263,9 +279,10 @@ export function ShelfCarousel({ className }: { className?: string }) {
             </button>
             <button
               type="button"
-              className="shelf-carousel-ctrl"
+              className="shelf-carousel-ctrl shelf-carousel-step"
               onClick={handleNext}
               aria-label="Next slide"
+              ref={cursorOriginRef}
             >
               <ChevronRight />
             </button>
@@ -338,41 +355,44 @@ export function ShelfCarousel({ className }: { className?: string }) {
       </div>
       )}
 
-      <AnimatePresence>
-        {expandedItem && expandedItem.type === 'image' && expandedItem.url && (
-          <motion.div
-            key="shelf-expand-overlay"
-            className="shelf-expand-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            onClick={closeExpanded}
-          >
-            <motion.img
-              layoutId={`shelf-img-${expandedItem._id}`}
-              src={expandedItem.url}
-              alt={expandedItem.caption || expandedItem.fileName || 'Shelf image'}
-              className="shelf-expand-image"
-              draggable={false}
-              onClick={(e) => e.stopPropagation()}
-              transition={{ type: 'spring', stiffness: 220, damping: 28 }}
-            />
-            {expandedItem.caption && (
-              <motion.p
-                className="shelf-expand-caption"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.18, delay: 0.05 }}
+      {createPortal(
+        <AnimatePresence>
+          {expandedItem && expandedItem.type === 'image' && expandedItem.url && (
+            <motion.div
+              key="shelf-expand-overlay"
+              className="shelf-expand-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              onClick={closeExpanded}
+            >
+              <motion.img
+                layoutId={`shelf-img-${expandedItem._id}`}
+                src={expandedItem.url}
+                alt={expandedItem.caption || expandedItem.fileName || 'Shelf image'}
+                className="shelf-expand-image"
+                draggable={false}
                 onClick={(e) => e.stopPropagation()}
-              >
-                {expandedItem.caption}
-              </motion.p>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                transition={{ type: 'spring', stiffness: 220, damping: 28 }}
+              />
+              {expandedItem.caption && (
+                <motion.p
+                  className="shelf-expand-caption"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.18, delay: 0.05 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {expandedItem.caption}
+                </motion.p>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </section>
   )
 }

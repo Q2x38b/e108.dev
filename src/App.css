@@ -9402,7 +9402,7 @@
   color: var(--text-tertiary);
   cursor: pointer;
   overflow: hidden;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -9417,33 +9417,66 @@
   transform: scale(0.94);
 }
 
+/* Prev / Next: cursor-origin scale-in hover (matches header nav buttons) */
+.shelf-carousel-step::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 6px;
+  background: var(--hover-bg);
+  transform-origin: var(--x, 50%) var(--y, 50%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.7, 0.2), opacity 0.2s cubic-bezier(0.4, 0, 0.7, 0.2);
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .shelf-carousel-ctrl:hover {
-    background: var(--hover-bg);
+  .shelf-carousel-step:hover {
     color: var(--text);
+  }
+
+  .shelf-carousel-step:hover::before {
+    transform: scale(1);
+    opacity: 1;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
   }
 }
 
+/* Play / Pause: persistent background + left-to-right progress fill */
 .shelf-carousel-play {
   width: 30px;
+  background: var(--hover-bg);
+  color: var(--text-tertiary);
 }
 
 .shelf-carousel-progress {
   position: absolute;
   inset: 0;
-  background: var(--hover-bg);
+  background: var(--text-tertiary);
+  opacity: 0.22;
   transform-origin: left center;
   transform: scaleX(0);
   z-index: 0;
   pointer-events: none;
-  transition: transform 80ms linear;
+  transition: transform 90ms linear;
   border-radius: 6px;
+}
+
+[data-theme="dark"] .shelf-carousel-progress {
+  opacity: 0.3;
 }
 
 .shelf-carousel-ctrl-icon {
   position: relative;
   z-index: 1;
   display: inline-flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .shelf-carousel-play:hover {
+    color: var(--text);
+  }
 }
 
 .shelf-carousel-wrapper {
@@ -9577,17 +9610,18 @@
 .shelf-expand-overlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 18px;
   padding: 40px 24px;
-  background: rgba(0, 0, 0, 0.78);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  cursor: zoom-out;
+  background: rgba(10, 10, 12, 0.72);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  cursor: pointer;
+  overflow: hidden;
 }
 
 .shelf-expand-image {
