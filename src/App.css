@@ -457,7 +457,11 @@
   height: 16px;
 }
 
-.header-nav-btn:active svg {
+.header-nav-btn {
+  transition: color 0.15s var(--ease-out), transform 0.12s var(--ease-out);
+}
+
+.header-nav-btn:active {
   transform: scale(0.92);
 }
 
@@ -592,7 +596,7 @@
 }
 
 .location-btn:hover .location-tooltip,
-.location-btn:focus .location-tooltip {
+.location-btn:focus-visible .location-tooltip {
   opacity: 1;
   transform: translateX(-50%) scale(1);
 }
@@ -626,7 +630,7 @@
 }
 
 .nav-tooltip-btn:hover .nav-tooltip,
-.nav-tooltip-btn:focus .nav-tooltip {
+.nav-tooltip-btn:focus-visible .nav-tooltip {
   opacity: 1;
   transform: translateX(-50%) scale(1);
 }
@@ -671,6 +675,10 @@
   width: 15px;
   height: 15px;
   pointer-events: none;
+}
+
+.theme-toggle:active {
+  transform: scale(0.92);
 }
 
 .theme-toggle.active {
