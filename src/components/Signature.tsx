@@ -48,10 +48,11 @@ export function Signature({
         const width = bbox.x2 - bbox.x1 + padding * 2 + strokeWidth
         const height = bbox.y2 - bbox.y1 + padding * 2 + strokeWidth
 
-        // Position text: x offset centers horizontally, y offset positions baseline
-        // so full glyph (including ascenders) fits in viewBox
+        // opentype.js positions glyphs with their baseline at the provided y.
+        // Shift the baseline down by fontSize so ascenders (which sit above the
+        // baseline at negative-relative coords) land inside the viewBox.
         const xOffset = -bbox.x1 + padding + strokeWidth / 2
-        const yOffset = -bbox.y1 + padding + strokeWidth / 2
+        const yOffset = fontSize - bbox.y1 + padding + strokeWidth / 2
 
         const translatedPath = font.getPath(text, xOffset, yOffset, fontSize)
 

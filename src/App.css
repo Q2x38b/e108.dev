@@ -882,7 +882,6 @@
   display: inline-block;
   width: 0.75em;
   height: 0.75em;
-  min-width: 0.75em;
   margin-right: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
   background-size: contain;
@@ -1741,6 +1740,48 @@
 
 .footer-btn.active {
   color: var(--accent-color, #3b82f6);
+}
+
+/* Back-to-top button: cursor-origin scale-in hover (matches header nav buttons) */
+.footer-top {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.footer-top::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 6px;
+  background: var(--hover-bg);
+  transform-origin: var(--x, 50%) var(--y, 50%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.7, 0.2), opacity 0.2s cubic-bezier(0.4, 0, 0.7, 0.2);
+}
+
+.footer-top > * {
+  position: relative;
+  z-index: 1;
+}
+
+.footer-top:active::before {
+  background: var(--active-bg, var(--hover-bg));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footer-top:hover {
+    background: transparent;
+    color: var(--text);
+  }
+
+  .footer-top:hover::before {
+    transform: scale(1);
+    opacity: 1;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
+  }
 }
 
 /* Legacy classes for backwards compatibility */
@@ -3379,7 +3420,7 @@
 .footer-signature {
   display: flex;
   justify-content: center;
-  padding: 12px 0 16px;
+  padding: 16px 0 8px;
   position: relative;
   z-index: 1;
 }
@@ -3403,7 +3444,7 @@
 
 @media (max-width: 520px) {
   .footer-signature {
-    padding: 10px 0 14px;
+    padding: 12px 0 6px;
   }
 
   .signature-img {
@@ -9319,5 +9360,220 @@
   .modal-content {
     padding: 20px;
     border-radius: 16px;
+  }
+}
+
+/* Shelf Carousel — home page section */
+.shelf-carousel-section {
+  margin-top: 8px;
+}
+
+.shelf-carousel-section h2.section-title {
+  margin-bottom: 20px;
+}
+
+.shelf-carousel-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 0 4px;
+}
+
+.shelf-carousel.swiper {
+  width: 280px;
+  height: 360px;
+  padding-bottom: 36px !important;
+  overflow: visible;
+}
+
+.shelf-carousel-swiper-slide {
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--background, #fff);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 10px 30px -12px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="dark"] .shelf-carousel-swiper-slide {
+  background: var(--background-secondary, #161616);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 14px 40px -14px rgba(0, 0, 0, 0.65);
+}
+
+.shelf-carousel-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.shelf-carousel-slide-image {
+  background: var(--background-secondary, #f5f4f3);
+}
+
+.shelf-carousel-slide-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.shelf-carousel-caption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 8px;
+  letter-spacing: -0.005em;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.shelf-carousel-slide-quote,
+.shelf-carousel-slide-text {
+  padding: 28px 26px;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-primary);
+}
+
+.shelf-carousel-slide-quote.dark,
+.shelf-carousel-slide-text.dark {
+  color: #f5f4f3;
+}
+
+.shelf-carousel-quote-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--text-tertiary);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.shelf-carousel-slide-quote.dark .shelf-carousel-quote-icon {
+  color: rgba(245, 244, 243, 0.55);
+}
+
+.shelf-carousel-slide-quote blockquote {
+  font-size: 0.9375rem;
+  font-weight: 460;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.shelf-carousel-slide-quote cite,
+.shelf-carousel-slide-text .shelf-carousel-text-label {
+  font-style: normal;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shelf-carousel-slide-quote.dark cite,
+.shelf-carousel-slide-text.dark .shelf-carousel-text-label {
+  color: rgba(245, 244, 243, 0.6);
+}
+
+.shelf-carousel-slide-quote .quote-source {
+  font-size: 0.6875rem;
+  opacity: 0.75;
+}
+
+.shelf-carousel-slide-quote.bar-style {
+  padding: 28px 22px;
+}
+
+.shelf-carousel-quote-bar {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.shelf-carousel-quote-bar-line {
+  width: 2px;
+  background: var(--text-tertiary);
+  opacity: 0.5;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.shelf-carousel-slide-quote.dark .shelf-carousel-quote-bar-line {
+  background: rgba(245, 244, 243, 0.55);
+}
+
+.shelf-carousel-quote-bar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shelf-carousel-text-label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+.shelf-carousel-slide-text p {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+
+/* Swiper pagination — minimal dots */
+.shelf-carousel .swiper-pagination {
+  bottom: 0 !important;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.shelf-carousel .swiper-pagination-bullet {
+  width: 5px;
+  height: 5px;
+  background: var(--text-tertiary);
+  opacity: 0.35;
+  margin: 0 !important;
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.shelf-carousel .swiper-pagination-bullet-active {
+  opacity: 1;
+  width: 16px;
+  border-radius: 3px;
+  background: var(--text-primary);
+}
+
+@media (max-width: 520px) {
+  .shelf-carousel.swiper {
+    width: 240px;
+    height: 320px;
+  }
+
+  .shelf-carousel-slide-quote blockquote {
+    font-size: 0.875rem;
+  }
+
+  .shelf-carousel-slide-text p {
+    font-size: 1rem;
   }
 }

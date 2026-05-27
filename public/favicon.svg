@@ -1,0 +1,15 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .fg { stroke: #000000; }
+    @media (prefers-color-scheme: dark) {
+      .fg { stroke: #ffffff; }
+    }
+  </style>
+  <path
+    class="fg"
+    d="M620 260H790V700C790 820 710 900 590 900H500C380 900 300 820 300 700C300 580 380 500 500 500H610"
+    stroke-width="90"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

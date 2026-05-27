@@ -7,6 +7,24 @@ import { useEditMode } from '../contexts/EditModeContext'
 import { useHaptics } from '../hooks/useHaptics'
 import { Signature } from './Signature'
 
+// Tracks the cursor entry/exit point on a button so the ::before hover
+// background can scale out from where the pointer arrives. Mirrors the
+// helper used by the header nav buttons in Home.tsx.
+function setCursorOrigin(el: HTMLElement, e: PointerEvent) {
+  const { clientX, clientY } = e
+  const { top, left } = el.getBoundingClientRect()
+  const x = clientX - left
+  const y = clientY - top
+  el.style.setProperty('--x', `${x}px`)
+  el.style.setProperty('--y', `${y}px`)
+}
+
+function cursorOriginRef(el: HTMLElement | null) {
+  if (!el) return
+  el.addEventListener('pointerenter', (e) => setCursorOrigin(el, e))
+  el.addEventListener('pointerleave', (e) => setCursorOrigin(el, e))
+}
+
 function LoginModal({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(false)
@@ -227,6 +245,7 @@ export function Footer({
               className="footer-btn footer-top"
               onClick={scrollToTop}
               aria-label="Back to top"
+              ref={cursorOriginRef}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M12 19V5M5 12l7-7 7 7" />

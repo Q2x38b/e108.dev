@@ -25,7 +25,7 @@ interface HeaderProps {
   preference: ThemePreference
   setPreference: (theme: ThemePreference) => void
   showBackLink?: boolean
-  currentPage?: 'home' | 'blog' | 'shelf'
+  currentPage?: 'home' | 'blog'
 }
 
 export function Header({ theme, preference, setPreference, showBackLink = false, currentPage }: HeaderProps) {
@@ -95,8 +95,8 @@ export function Header({ theme, preference, setPreference, showBackLink = false,
           <div className="nav-tooltip">Writing</div>
         </Link>
         <Link
-          to="/shelf"
-          className={`shared-header-btn nav-tooltip-btn ${currentPage === 'shelf' ? 'active' : ''}`}
+          to="/#shelf"
+          className="shared-header-btn nav-tooltip-btn"
           aria-label="Shelf"
           ref={cursorOriginRef}
         >

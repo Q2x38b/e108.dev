@@ -19,7 +19,7 @@ function cursorOriginRef(el: HTMLElement | null) {
   el.addEventListener('pointerenter', (e) => setCursorOrigin(el, e))
   el.addEventListener('pointerleave', (e) => setCursorOrigin(el, e))
 }
-import { useQuery, useConvex } from 'convex/react'
+import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
@@ -28,6 +28,7 @@ import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEdito
 import { useHaptics } from '../hooks/useHaptics'
 import { Footer } from '../components/Footer'
 import { Carousel_002 } from '../components/ui/skiper-ui/skiper48'
+import { ShelfCarousel } from '../components/ShelfCarousel'
 
 // Navigation links
 const navLinks: string[] = []
@@ -504,7 +505,6 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
 }) {
   const [profileExpanded, setProfileExpanded] = useState(false)
   const [isProfileDragging, setIsProfileDragging] = useState(false)
-  const convex = useConvex()
   const haptics = useHaptics()
 
   // Draggable profile image state
@@ -536,9 +536,9 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
     element?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const prefetchShelf = () => {
-    // Prefetch shelf data on hover - result is cached by Convex
-    convex.query(api.shelf.list, {})
+  const handleShelfClick = () => {
+    haptics.soft()
+    scrollToSection('shelf')
   }
 
   const handleProfileClick = () => {
@@ -595,13 +595,13 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
             </svg>
             <div className="nav-tooltip">Writing</div>
           </Link>
-          <Link to="/shelf" className="header-nav-btn nav-tooltip-btn" aria-label="Shelf" onMouseEnter={prefetchShelf} ref={cursorOriginRef}>
+          <button type="button" className="header-nav-btn nav-tooltip-btn" aria-label="Shelf" onClick={handleShelfClick} ref={cursorOriginRef}>
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
               <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
             </svg>
             <div className="nav-tooltip">Shelf</div>
-          </Link>
+          </button>
           <button className="header-nav-btn location-btn" aria-label="Location" ref={cursorOriginRef}>
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0zm-8 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fillRule="evenodd" />
@@ -1451,6 +1451,14 @@ function HomeContent() {
   const [editingProjects, setEditingProjects] = useState(false)
   const [editingExperiences, setEditingExperiences] = useState(false)
 
+  // Scroll to hash target (e.g., /#shelf) once content has loaded
+  useEffect(() => {
+    if (!window.location.hash) return
+    const id = window.location.hash.slice(1)
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [skills, projects, experiences])
+
   // Show loading skeleton while fetching data from Convex
   if (profile === undefined || about === undefined || skills === undefined ||
       projects === undefined || experiences === undefined || footer === undefined) {
@@ -1506,6 +1514,7 @@ function HomeContent() {
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
+      <ShelfCarousel />
       <Footer showEditControls={true} showSignature={true} showQuote={true} className="stagger-in stagger-in-8" />
 
       {/* Editors */}

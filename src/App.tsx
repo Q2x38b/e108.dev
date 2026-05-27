@@ -4,7 +4,6 @@ import Home from './pages/Home'
 import BlogList from './pages/BlogList'
 import BlogPost from './pages/BlogPost'
 import BlogEditor from './pages/BlogEditor'
-import Shelf from './pages/Shelf'
 import './App.css'
 
 function App() {
@@ -16,7 +15,6 @@ function App() {
         <Route path="/blog/new" element={<BlogEditor />} />
         <Route path="/blog/edit/:shortId" element={<BlogEditor />} />
         <Route path="/blog/:shortId" element={<BlogPost />} />
-        <Route path="/shelf" element={<Shelf />} />
       </Routes>
       {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
     </>
