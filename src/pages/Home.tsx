@@ -24,7 +24,7 @@ import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
 import { EditableSection } from '../components/EditableSection'
-import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor } from '../components/editors'
+import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor, ShelfEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
 import { Footer } from '../components/Footer'
 import { Carousel_002 } from '../components/ui/skiper-ui/skiper48'
@@ -1443,6 +1443,7 @@ function HomeContent() {
   const projects = useQuery(api.content.getProjects)
   const experiences = useQuery(api.content.getExperiences)
   const footer = useQuery(api.content.getFooter)
+  const shelfItems = useQuery(api.shelf.list)
 
   // Editor states
   const [editingProfile, setEditingProfile] = useState(false)
@@ -1450,6 +1451,7 @@ function HomeContent() {
   const [editingSkills, setEditingSkills] = useState(false)
   const [editingProjects, setEditingProjects] = useState(false)
   const [editingExperiences, setEditingExperiences] = useState(false)
+  const [editingShelf, setEditingShelf] = useState(false)
 
   // Scroll to hash target (e.g., /#shelf) once content has loaded
   useEffect(() => {
@@ -1514,7 +1516,9 @@ function HomeContent() {
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
-      <ShelfCarousel />
+      <EditableSection sectionId="shelf" onEdit={() => { setEditingShelf(true); setEditingSection('shelf') }}>
+        <ShelfCarousel />
+      </EditableSection>
       <Footer showEditControls={true} showSignature={true} showQuote={true} className="stagger-in stagger-in-8" />
 
       {/* Editors */}
@@ -1547,6 +1551,12 @@ function HomeContent() {
           <ExperienceEditor
             experiences={experiences}
             onClose={() => handleCloseEditor(setEditingExperiences)}
+          />
+        )}
+        {editingShelf && (
+          <ShelfEditor
+            items={(shelfItems as never[]) || []}
+            onClose={() => handleCloseEditor(setEditingShelf)}
           />
         )}
       </AnimatePresence>

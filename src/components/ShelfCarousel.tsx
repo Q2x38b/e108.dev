@@ -1,11 +1,14 @@
-import { motion } from 'framer-motion'
-import { Autoplay, EffectCards, Pagination } from 'swiper/modules'
+import { useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Autoplay, EffectCards } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
+import type { Swiper as SwiperType } from 'swiper'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
+import { useHaptics } from '../hooks/useHaptics'
+import { useAuth } from '../contexts/AuthContext'
 import 'swiper/css'
 import 'swiper/css/effect-cards'
-import 'swiper/css/pagination'
 
 type ItemType = 'image' | 'quote' | 'text'
 type QuoteStyle = 'default' | 'bar'
@@ -25,6 +28,8 @@ interface ShelfItem {
   backgroundColor?: string
 }
 
+const AUTOPLAY_DELAY = 4500
+
 const DARK_BG_VALUES = new Set([
   '#2d3748',
   '#1a1a2e',
@@ -39,18 +44,32 @@ function isDarkBg(color?: string) {
   return !!color && DARK_BG_VALUES.has(color)
 }
 
-function ShelfCarouselSlide({ item }: { item: ShelfItem }) {
+function ShelfCarouselSlide({
+  item,
+  onImageClick,
+  isExpanded,
+}: {
+  item: ShelfItem
+  onImageClick?: (item: ShelfItem) => void
+  isExpanded?: boolean
+}) {
   if (item.type === 'image' && item.url) {
     return (
       <div className="shelf-carousel-slide shelf-carousel-slide-image">
-        <img
+        <motion.img
+          layoutId={`shelf-img-${item._id}`}
           src={item.url}
           alt={item.caption || item.fileName || 'Shelf image'}
           draggable={false}
+          onClick={(e) => {
+            e.stopPropagation()
+            onImageClick?.(item)
+          }}
+          style={{
+            cursor: 'zoom-in',
+            visibility: isExpanded ? 'hidden' : 'visible',
+          }}
         />
-        {item.caption && (
-          <span className="shelf-carousel-caption">{item.caption}</span>
-        )}
       </div>
     )
   }
@@ -65,15 +84,7 @@ function ShelfCarouselSlide({ item }: { item: ShelfItem }) {
         {item.quoteStyle === 'bar' ? (
           <div className="shelf-carousel-quote-bar">
             <div className="shelf-carousel-quote-bar-line" />
-            <div className="shelf-carousel-quote-bar-content">
-              <blockquote>"{item.quoteText}"</blockquote>
-              {(item.quoteAuthor || item.quoteSource) && (
-                <cite>
-                  {item.quoteAuthor && <span className="quote-author">— {item.quoteAuthor}</span>}
-                  {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
-                </cite>
-              )}
-            </div>
+            <blockquote>"{item.quoteText}"</blockquote>
           </div>
         ) : (
           <>
@@ -81,12 +92,6 @@ function ShelfCarouselSlide({ item }: { item: ShelfItem }) {
               <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
             </svg>
             <blockquote>{item.quoteText}</blockquote>
-            {(item.quoteAuthor || item.quoteSource) && (
-              <cite>
-                {item.quoteAuthor && <span className="quote-author">— {item.quoteAuthor}</span>}
-                {item.quoteSource && <span className="quote-source">{item.quoteSource}</span>}
-              </cite>
-            )}
           </>
         )}
       </div>
@@ -100,9 +105,6 @@ function ShelfCarouselSlide({ item }: { item: ShelfItem }) {
         className={`shelf-carousel-slide shelf-carousel-slide-text ${dark ? 'dark' : ''}`}
         style={{ backgroundColor: item.backgroundColor || undefined }}
       >
-        {item.textLabel && (
-          <span className="shelf-carousel-text-label">{item.textLabel}</span>
-        )}
         <p>{item.textContent}</p>
       </div>
     )
@@ -111,21 +113,171 @@ function ShelfCarouselSlide({ item }: { item: ShelfItem }) {
   return null
 }
 
+function describeItem(item?: ShelfItem): string {
+  if (!item) return ''
+  if (item.type === 'image') return item.caption || ''
+  if (item.type === 'quote') {
+    const parts: string[] = []
+    if (item.quoteAuthor) parts.push(`— ${item.quoteAuthor}`)
+    if (item.quoteSource) parts.push(item.quoteSource)
+    return parts.join(', ')
+  }
+  if (item.type === 'text') return item.textLabel || ''
+  return ''
+}
+
+const ChevronLeft = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+)
+
+const ChevronRight = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+)
+
+const PlayIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+    <path d="M8 5v14l11-7z" />
+  </svg>
+)
+
+const PauseIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+    <rect x="6" y="5" width="4" height="14" rx="1" />
+    <rect x="14" y="5" width="4" height="14" rx="1" />
+  </svg>
+)
+
 export function ShelfCarousel({ className }: { className?: string }) {
   const items = useQuery(api.shelf.list) as ShelfItem[] | undefined
+  const haptics = useHaptics()
+  const { isAuthenticated } = useAuth()
+  const swiperRef = useRef<SwiperType | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [progress, setProgress] = useState(0)
+  const [expandedItem, setExpandedItem] = useState<ShelfItem | null>(null)
+  const wasPlayingBeforeExpand = useRef(false)
 
-  if (!items || items.length === 0) return null
+  const handleImageClick = (item: ShelfItem) => {
+    haptics.soft()
+    wasPlayingBeforeExpand.current = isPlaying
+    if (swiperRef.current && isPlaying) {
+      swiperRef.current.autoplay.stop()
+    }
+    setExpandedItem(item)
+  }
+
+  const closeExpanded = () => {
+    haptics.soft()
+    setExpandedItem(null)
+    if (swiperRef.current && wasPlayingBeforeExpand.current) {
+      swiperRef.current.autoplay.start()
+    }
+  }
+
+  // Lock body scroll + close on Escape while modal is open
+  useEffect(() => {
+    if (!expandedItem) return
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    const prevOverflow = document.body.style.overflow
+    const prevPadding = document.body.style.paddingRight
+    document.body.style.overflow = 'hidden'
+    document.body.style.paddingRight = `${scrollbarWidth}px`
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeExpanded()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.body.style.paddingRight = prevPadding
+      window.removeEventListener('keydown', onKey)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandedItem])
+
+  // Hide the section entirely for visitors when there's nothing to show.
+  // Authenticated admins still see it so they can open the editor.
+  if (!items || (items.length === 0 && !isAuthenticated)) return null
+
+  const multipleItems = items.length > 1
+  const activeItem = items[activeIndex]
+  const description = describeItem(activeItem)
+
+  const handlePrev = () => {
+    haptics.soft()
+    swiperRef.current?.slidePrev()
+  }
+
+  const handleNext = () => {
+    haptics.soft()
+    swiperRef.current?.slideNext()
+  }
+
+  const togglePlay = () => {
+    haptics.selection()
+    const swiper = swiperRef.current
+    if (!swiper) return
+    if (isPlaying) {
+      swiper.autoplay.stop()
+      setIsPlaying(false)
+    } else {
+      swiper.autoplay.start()
+      setIsPlaying(true)
+    }
+  }
 
   return (
     <section id="shelf" className={`section shelf-carousel-section stagger-in stagger-in-7 ${className || ''}`}>
-      <h2 className="section-title section-title-with-icon">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
-          <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" fill="currentColor" />
-          <path d="M12 17v5" />
-        </svg>
-        Shelf
-      </h2>
+      <div className="shelf-carousel-header">
+        <h2 className="section-title">Shelf</h2>
 
+        {multipleItems && (
+          <div className="shelf-carousel-controls">
+            <button
+              type="button"
+              className="shelf-carousel-ctrl"
+              onClick={handlePrev}
+              aria-label="Previous slide"
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              type="button"
+              className={`shelf-carousel-ctrl shelf-carousel-play ${isPlaying ? 'is-playing' : ''}`}
+              onClick={togglePlay}
+              aria-label={isPlaying ? 'Pause autoplay' : 'Play autoplay'}
+              aria-pressed={!isPlaying}
+            >
+              <span
+                className="shelf-carousel-progress"
+                style={{ transform: `scaleX(${1 - progress})` }}
+                aria-hidden="true"
+              />
+              <span className="shelf-carousel-ctrl-icon">
+                {isPlaying ? <PauseIcon /> : <PlayIcon />}
+              </span>
+            </button>
+            <button
+              type="button"
+              className="shelf-carousel-ctrl"
+              onClick={handleNext}
+              aria-label="Next slide"
+            >
+              <ChevronRight />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {items.length === 0 ? (
+        <div className="shelf-carousel-empty">
+          Double-click here to add shelf items.
+        </div>
+      ) : (
       <motion.div
         initial={{ opacity: 0, translateY: 16 }}
         whileInView={{ opacity: 1, translateY: 0 }}
@@ -137,8 +289,19 @@ export function ShelfCarousel({ className }: { className?: string }) {
           effect="cards"
           grabCursor
           loop={items.length > 2}
-          modules={[EffectCards, Autoplay, Pagination]}
-          pagination={{ clickable: true }}
+          modules={[EffectCards, Autoplay]}
+          autoplay={multipleItems ? { delay: AUTOPLAY_DELAY, disableOnInteraction: false } : false}
+          onSwiper={(s) => { swiperRef.current = s }}
+          onSlideChange={(s) => {
+            setActiveIndex(s.realIndex)
+            setProgress(0)
+          }}
+          onAutoplayTimeLeft={(_s, _time, p) => {
+            // Swiper provides p going from 1 → 0 over the delay.
+            // Store as elapsed (0 → 1) so the bar fills left-to-right.
+            setProgress(1 - p)
+          }}
+          onAutoplayStop={() => setProgress(0)}
           className="shelf-carousel"
           cardsEffect={{
             slideShadows: false,
@@ -148,11 +311,68 @@ export function ShelfCarousel({ className }: { className?: string }) {
         >
           {items.map((item) => (
             <SwiperSlide key={item._id} className="shelf-carousel-swiper-slide">
-              <ShelfCarouselSlide item={item} />
+              <ShelfCarouselSlide
+                item={item}
+                onImageClick={handleImageClick}
+                isExpanded={expandedItem?._id === item._id}
+              />
             </SwiperSlide>
           ))}
         </Swiper>
       </motion.div>
+      )}
+
+      {items.length > 0 && (
+      <div className="shelf-carousel-description" aria-live="polite">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.p
+            key={activeItem?._id || activeIndex}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          >
+            {description || ' '}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+      )}
+
+      <AnimatePresence>
+        {expandedItem && expandedItem.type === 'image' && expandedItem.url && (
+          <motion.div
+            key="shelf-expand-overlay"
+            className="shelf-expand-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            onClick={closeExpanded}
+          >
+            <motion.img
+              layoutId={`shelf-img-${expandedItem._id}`}
+              src={expandedItem.url}
+              alt={expandedItem.caption || expandedItem.fileName || 'Shelf image'}
+              className="shelf-expand-image"
+              draggable={false}
+              onClick={(e) => e.stopPropagation()}
+              transition={{ type: 'spring', stiffness: 220, damping: 28 }}
+            />
+            {expandedItem.caption && (
+              <motion.p
+                className="shelf-expand-caption"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.18, delay: 0.05 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {expandedItem.caption}
+              </motion.p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }
