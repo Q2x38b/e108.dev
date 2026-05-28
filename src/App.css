@@ -459,6 +459,11 @@
 
 /* Press effect — scale icon + ::before background together so the button
    appears to compress, while the tooltip (a sibling child) stays put. */
+.header-nav-btn {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
 .header-nav-btn:active svg {
   transform: scale(0.92);
   transition: transform 0.12s var(--ease-out);
@@ -476,7 +481,9 @@
     transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
   }
 
-  .header-nav-btn:active::before {
+  /* Only paint the pressed-down background while the pointer is still
+     over the button — drag off cleanly cancels the press visual. */
+  .header-nav-btn:hover:active::before {
     transform: scale(0.92);
     background: var(--active-bg, var(--hover-bg));
     transition: transform 0.12s var(--ease-out);
@@ -884,14 +891,29 @@
   color: inherit;
   font-weight: inherit;
   line-height: inherit;
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--text-tertiary);
+  text-underline-offset: 2.5px;
   position: relative;
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
   overflow: hidden;
   vertical-align: baseline;
-  transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), text-decoration-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+@media (hover: hover) {
+  .bio a:hover {
+    text-decoration-color: var(--text-secondary);
+  }
+}
+
+/* The shine variant uses a gradient as its color — the dotted underline
+   would pick up that transparent text and disappear, so drop it. */
+.bio a.bio-shine {
+  text-decoration: none;
 }
 
 .bio a::before {
@@ -928,6 +950,43 @@
 
 .bio em {
   font-style: italic;
+}
+
+/* .bio-shine — hover sweep that paints the text with a gradient that
+   travels from right to left through warm/red mid-stops. Drop into bio
+   HTML as <span class="bio-shine">text</span> (or wrap an <a>). */
+.bio-shine {
+  display: inline;
+  cursor: crosshair;
+  background-image: linear-gradient(
+    in oklch 120deg,
+    var(--text) 0%,
+    var(--text) 33%,
+    #fad150 42%,
+    #cf1d43 58%,
+    var(--text) 67%,
+    var(--text) 100%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 50%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  transition: background-position 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (hover: hover) {
+  .bio-shine:hover {
+    background-position: 0% 50%;
+  }
+}
+
+/* When the shine is on an <a>, keep the external-link icon styling work */
+.bio a.bio-shine::before {
+  /* icon uses currentColor (which is transparent here) — restore by
+     painting via the gradient's mid stop on hover, or just hide it */
+  display: none;
 }
 
 .bio kbd {
@@ -1626,6 +1685,8 @@
   border-radius: 8px;
   transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), background-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   text-decoration: none;
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 .shared-header-btn svg {

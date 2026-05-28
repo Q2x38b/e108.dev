@@ -588,7 +588,7 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
         </EditableSection>
 
         <nav className="header-nav">
-          <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing" ref={cursorOriginRef}>
+          <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing" ref={cursorOriginRef} draggable={false}>
             <svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
               <line x1="17" y1="17" x2="12" y2="17" fill="none" />
               <path d="m3,17l1-4.5L12.914,3.586c.781-.781,2.047-.781,2.828,0l.672.672c.781.781.781,2.047,0,2.828l-8.914,8.914-4.5,1Z" />

@@ -87,6 +87,7 @@ export function Header({ theme, preference, setPreference, showBackLink = false,
           className={`shared-header-btn nav-tooltip-btn ${currentPage === 'blog' ? 'active' : ''}`}
           aria-label="Writing"
           ref={cursorOriginRef}
+          draggable={false}
         >
           <svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
             <line x1="17" y1="17" x2="12" y2="17" fill="none" />
@@ -99,6 +100,7 @@ export function Header({ theme, preference, setPreference, showBackLink = false,
           className="shared-header-btn nav-tooltip-btn"
           aria-label="Shelf"
           ref={cursorOriginRef}
+          draggable={false}
         >
           <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
             <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
