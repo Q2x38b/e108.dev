@@ -1414,8 +1414,10 @@
   content: '';
   position: absolute;
   left: -14.5px;
-  top: 17px;
-  height: calc(100% - 17px);
+  /* Marker is top:4 + height:12 = bottom edge at y=16. Start the line
+     at 15 so it tucks under the marker — no visible gap, no overhang. */
+  top: 15px;
+  height: calc(100% - 15px);
   width: 1px;
   background: var(--border);
   border-radius: 999px;
