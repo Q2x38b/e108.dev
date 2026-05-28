@@ -44,7 +44,7 @@ export function Signature({
         const bbox = initialPath.getBoundingBox()
 
         const padding = 8
-        const strokeWidth = fontSize / 12
+        const strokeWidth = fontSize / 16
         const width = bbox.x2 - bbox.x1 + padding * 2 + strokeWidth
         const height = bbox.y2 - bbox.y1 + padding * 2 + strokeWidth
 
@@ -92,7 +92,7 @@ export function Signature({
       <motion.path
         d={pathData}
         stroke={strokeColor}
-        strokeWidth={fontSize / 12}
+        strokeWidth={fontSize / 16}
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"

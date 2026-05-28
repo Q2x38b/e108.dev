@@ -1414,8 +1414,8 @@
   content: '';
   position: absolute;
   left: -14.5px;
-  top: 18px;
-  height: calc(100% - 18px);
+  top: 17px;
+  height: calc(100% - 17px);
   width: 1px;
   background: var(--border);
   border-radius: 999px;
@@ -1436,12 +1436,14 @@
 
 .timeline-marker {
   position: absolute;
-  left: -21px;
-  /* Center marker on first line of title.
-     Title font-size ~13px, line-height 1.55 → line box ~20px. (20-14)/2 ≈ 3px. */
-  top: 3px;
-  width: 14px;
-  height: 14px;
+  /* Connector line lives at x = -14.5 to -13.5 (center -14px).
+     12px marker → left -20px keeps it horizontally centered on the line. */
+  left: -20px;
+  /* Center marker vertically on first line of title.
+     Title font-size ~13px, line-height 1.55 → line box ~20px. (20-12)/2 = 4px. */
+  top: 4px;
+  width: 12px;
+  height: 12px;
   z-index: 1;
   color: var(--text-tertiary);
   background: var(--bg);
@@ -9556,6 +9558,31 @@
   display: inline-flex;
 }
 
+/* Cross-fade icon swap (CSS-only, no AnimatePresence) — overlay is
+   absolutely positioned, base flows so the wrapper inherits its size.
+   Toggle `.is-shown` on whichever icon should be visible. */
+.shelf-icon-anim {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.25);
+  filter: blur(4px);
+  transition: opacity 300ms ease-in-out, transform 300ms ease-in-out, filter 300ms ease-in-out;
+  will-change: opacity, transform, filter;
+}
+
+.shelf-icon-anim.is-shown {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+}
+
+.shelf-icon-anim-overlay {
+  position: absolute;
+  inset: 0;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .shelf-carousel-play:hover {
     color: var(--text);
@@ -9690,24 +9717,21 @@
   text-align: center;
 }
 
-.shelf-expand-overlay {
+.shelf-expand-backdrop {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding: 40px 24px;
   background: rgba(10, 10, 12, 0.72);
   backdrop-filter: blur(18px) saturate(1.1);
   -webkit-backdrop-filter: blur(18px) saturate(1.1);
   cursor: pointer;
-  overflow: hidden;
 }
 
 .shelf-expand-image {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  z-index: 10000;
   max-width: min(90vw, 1100px);
   max-height: 85vh;
   width: auto;
@@ -9721,7 +9745,13 @@
 }
 
 .shelf-expand-caption {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  /* framer drives transform (x: '-50%' + y) — don't set it here */
+  z-index: 10000;
   margin: 0;
+  padding: 0 24px;
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.82);
   text-align: center;

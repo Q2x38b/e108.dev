@@ -283,18 +283,18 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 aria-hidden="true"
               />
               <span className="shelf-carousel-ctrl-icon">
-                <AnimatePresence mode="popLayout" initial={false}>
-                  <motion.span
-                    key={isPlaying ? 'pause' : 'play'}
-                    initial={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
-                    transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
-                    style={{ display: 'inline-flex' }}
-                  >
-                    {isPlaying ? <PauseIcon /> : <PlayIcon />}
-                  </motion.span>
-                </AnimatePresence>
+                <span
+                  className={`shelf-icon-anim shelf-icon-anim-overlay ${isPlaying ? 'is-shown' : ''}`}
+                  aria-hidden={!isPlaying}
+                >
+                  <PauseIcon />
+                </span>
+                <span
+                  className={`shelf-icon-anim ${isPlaying ? '' : 'is-shown'}`}
+                  aria-hidden={isPlaying}
+                >
+                  <PlayIcon />
+                </span>
               </span>
             </button>
             <button
@@ -377,39 +377,40 @@ export function ShelfCarousel({ className }: { className?: string }) {
 
       {createPortal(
         <AnimatePresence>
-          {expandedItem && expandedItem.type === 'image' && expandedItem.url && (
+          {expandedItem && expandedItem.type === 'image' && expandedItem.url && [
             <motion.div
-              key="shelf-expand-overlay"
-              className="shelf-expand-overlay"
+              key="shelf-expand-backdrop"
+              className="shelf-expand-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
               onClick={closeExpanded}
-            >
-              <motion.img
-                layoutId={`shelf-img-${expandedItem._id}`}
-                src={expandedItem.url}
-                alt={expandedItem.caption || expandedItem.fileName || 'Shelf image'}
-                className="shelf-expand-image"
-                draggable={false}
+            />,
+            <motion.img
+              key="shelf-expand-image"
+              layoutId={`shelf-img-${expandedItem._id}`}
+              src={expandedItem.url}
+              alt={expandedItem.caption || expandedItem.fileName || 'Shelf image'}
+              className="shelf-expand-image"
+              draggable={false}
+              onClick={(e) => e.stopPropagation()}
+              transition={{ type: 'spring', stiffness: 240, damping: 32 }}
+            />,
+            expandedItem.caption ? (
+              <motion.p
+                key="shelf-expand-caption"
+                className="shelf-expand-caption"
+                initial={{ opacity: 0, x: '-50%', y: 8 }}
+                animate={{ opacity: 1, x: '-50%', y: 0 }}
+                exit={{ opacity: 0, x: '-50%', y: 8 }}
+                transition={{ duration: 0.18, delay: 0.05 }}
                 onClick={(e) => e.stopPropagation()}
-                transition={{ type: 'spring', stiffness: 220, damping: 28 }}
-              />
-              {expandedItem.caption && (
-                <motion.p
-                  className="shelf-expand-caption"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18, delay: 0.05 }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {expandedItem.caption}
-                </motion.p>
-              )}
-            </motion.div>
-          )}
+              >
+                {expandedItem.caption}
+              </motion.p>
+            ) : null,
+          ]}
         </AnimatePresence>,
         document.body,
       )}
