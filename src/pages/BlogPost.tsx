@@ -264,15 +264,35 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="loading-spinner">
             <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeLinecap="round" />
           </svg>
-        ) : isPlaying ? (
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="4" width="4" height="16" />
-            <rect x="14" y="4" width="4" height="16" />
-          </svg>
         ) : (
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="6 4 18 12 6 20 6 4" />
-          </svg>
+          <span className="audio-player-icon-swap">
+            <span
+              className={`shelf-icon-anim shelf-icon-anim-overlay ${isPlaying ? 'is-shown' : ''}`}
+              aria-hidden={!isPlaying}
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M4 6C4 4.34315 5.34315 3 7 3C8.65685 3 10 4.34315 10 6V18C10 19.6569 8.65685 21 7 21C5.34315 21 4 19.6569 4 18V6Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M14 6C14 4.34315 15.3431 3 17 3C18.6569 3 20 4.34315 20 6V18C20 19.6569 18.6569 21 17 21C15.3431 21 14 19.6569 14 18V6Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+            <span
+              className={`shelf-icon-anim ${isPlaying ? '' : 'is-shown'}`}
+              aria-hidden={isPlaying}
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M11.1967 2.71828C8.53683 0.970354 5 2.8783 5 6.0611V17.9387C5 21.1215 8.53684 23.0294 11.1967 21.2815L20.234 15.3427C22.6384 13.7627 22.6384 10.2371 20.234 8.65706L11.1967 2.71828Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+          </span>
         )}
       </button>
 
@@ -384,40 +404,23 @@ function ShareModal({ title, subtitle, titleImage, onClose, onCopy }: ShareModal
     onClose()
   }
 
-  const shareToFacebook = () => {
+  const openShareTab = (target: string) => {
     haptics.soft()
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400')
+    // Open in a real new tab (no width/height = no popup window) with
+    // safe rel for cross-origin.
+    window.open(target, '_blank', 'noopener,noreferrer')
   }
 
+  const shareToFacebook = () => openShareTab(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)
   const shareToEmail = () => {
     haptics.soft()
     window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`
   }
-
-  const shareToTwitter = () => {
-    haptics.soft()
-    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
-  }
-
-  const shareToLinkedIn = () => {
-    haptics.soft()
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400')
-  }
-
-  const shareToReddit = () => {
-    haptics.soft()
-    window.open(`https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
-  }
-
-  const shareToBluesky = () => {
-    haptics.soft()
-    window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(title + ' ' + url)}`, '_blank', 'width=600,height=400')
-  }
-
-  const shareToHackerNews = () => {
-    haptics.soft()
-    window.open(`https://news.ycombinator.com/submitlink?u=${encodeURIComponent(url)}&t=${encodeURIComponent(title)}`, '_blank', 'width=600,height=400')
-  }
+  const shareToTwitter = () => openShareTab(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`)
+  const shareToLinkedIn = () => openShareTab(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`)
+  const shareToReddit = () => openShareTab(`https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`)
+  const shareToBluesky = () => openShareTab(`https://bsky.app/intent/compose?text=${encodeURIComponent(title + ' ' + url)}`)
+  const shareToHackerNews = () => openShareTab(`https://news.ycombinator.com/submitlink?u=${encodeURIComponent(url)}&t=${encodeURIComponent(title)}`)
 
   return (
     <motion.div
@@ -1042,12 +1045,7 @@ export default function BlogPost() {
     return (
       <div className="blog-container blog-post-layout">
         <header className="blog-header">
-          <nav className="breadcrumb">
-            <div className="skeleton-breadcrumb" />
-          </nav>
-          <div className="header-right">
-            <div className="skeleton-theme-toggle" />
-          </div>
+          <div className="skeleton-back-btn" />
         </header>
         <article className="blog-article">
           <header className="article-header-new">
@@ -1094,13 +1092,15 @@ export default function BlogPost() {
       )}
 
       <header className="blog-header stagger-in stagger-in-1">
-        <nav className="breadcrumb">
-          <Link to="/" className="breadcrumb-link">Home</Link>
-          <span className="breadcrumb-sep">/</span>
-          <Link to="/blog" className="breadcrumb-link">Writing</Link>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-current">Article</span>
-        </nav>
+        <Link to="/blog" className="blog-back-btn" aria-label="Back to writing" draggable={false}>
+          <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M9.70711 4.70711C10.0976 4.31658 10.0976 3.68342 9.70711 3.29289C9.31658 2.90237 8.68342 2.90237 8.29289 3.29289L3.29289 8.29289C2.90237 8.68342 2.90237 9.31658 3.29289 9.70711L8.29289 14.7071C8.68342 15.0976 9.31658 15.0976 9.70711 14.7071C10.0976 14.3166 10.0976 13.6834 9.70711 13.2929L6.41421 10H10.4C12.0967 10 13.309 10.0008 14.2594 10.0784C15.198 10.1551 15.7927 10.3018 16.27 10.545C17.2108 11.0243 17.9757 11.7892 18.455 12.73C18.6982 13.2073 18.8449 13.802 18.9216 14.7406C18.9992 15.691 19 16.9033 19 18.6V20C19 20.5523 19.4477 21 20 21C20.5523 21 21 20.5523 21 20V18.5556C21 16.913 21 15.6191 20.9149 14.5778C20.8281 13.5154 20.6478 12.6283 20.237 11.8221C19.5659 10.5049 18.4951 9.43407 17.1779 8.76295C16.3717 8.35217 15.4846 8.17186 14.4222 8.08507C13.3809 7.99999 12.087 7.99999 10.4444 8L6.41421 8L9.70711 4.70711Z"
+              fill="currentColor"
+            />
+          </svg>
+          <span>Back</span>
+        </Link>
       </header>
 
       <article className="blog-article stagger-in stagger-in-2">

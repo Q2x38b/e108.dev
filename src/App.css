@@ -2386,6 +2386,54 @@
   margin-bottom: 48px;
 }
 
+.blog-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 8px;
+  margin-left: -10px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 460;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  letter-spacing: -0.005em;
+  transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    background-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.blog-back-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .blog-back-btn:hover {
+    color: var(--text);
+    background: var(--hover-bg);
+  }
+
+  .blog-back-btn:hover svg {
+    transform: translate(-1px, -1px);
+  }
+}
+
+.blog-back-btn:active {
+  transform: scale(0.97);
+}
+
+.skeleton-back-btn {
+  width: 78px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--hover-bg);
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -4225,6 +4273,27 @@
 }
 
 .audio-player-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Stacked play/pause swap inside the audio player button — uses the
+   same .shelf-icon-anim pattern so the icon morphs in/out smoothly. */
+.audio-player-icon-swap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+
+.audio-player-icon-swap .shelf-icon-anim {
+  width: 14px;
+  height: 14px;
+}
+
+.audio-player-icon-swap .shelf-icon-anim svg {
   width: 14px;
   height: 14px;
 }
