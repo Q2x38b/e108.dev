@@ -1269,7 +1269,7 @@ export default function BlogPost() {
         />
       )}
 
-      <Footer showSignature={false} showQuote={false} />
+      <Footer showEditControls={true} showSignature={true} showQuote={true} />
 
       <AnimatePresence>
         {showAudioPlayer && (

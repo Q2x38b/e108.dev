@@ -203,7 +203,7 @@ export default function BlogList() {
         )}
       </main>
 
-      <Footer showSignature={false} showQuote={false} />
+      <Footer showEditControls={true} showSignature={true} showQuote={true} />
       <div className="blog-blur-bottom" />
     </div>
   )
