@@ -154,15 +154,24 @@ const ChevronRight = () => (
 )
 
 const PlayIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
-    <path d="M8 5v14l11-7z" />
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11.1967 2.71828C8.53683 0.970354 5 2.8783 5 6.0611V17.9387C5 21.1215 8.53684 23.0294 11.1967 21.2815L20.234 15.3427C22.6384 13.7627 22.6384 10.2371 20.234 8.65706L11.1967 2.71828Z"
+      fill="currentColor"
+    />
   </svg>
 )
 
 const PauseIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
-    <rect x="6" y="5" width="4" height="14" rx="1" />
-    <rect x="14" y="5" width="4" height="14" rx="1" />
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M4 6C4 4.34315 5.34315 3 7 3C8.65685 3 10 4.34315 10 6V18C10 19.6569 8.65685 21 7 21C5.34315 21 4 19.6569 4 18V6Z"
+      fill="currentColor"
+    />
+    <path
+      d="M14 6C14 4.34315 15.3431 3 17 3C18.6569 3 20 4.34315 20 6V18C20 19.6569 18.6569 21 17 21C15.3431 21 14 19.6569 14 18V6Z"
+      fill="currentColor"
+    />
   </svg>
 )
 
@@ -274,7 +283,18 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 aria-hidden="true"
               />
               <span className="shelf-carousel-ctrl-icon">
-                {isPlaying ? <PauseIcon /> : <PlayIcon />}
+                <AnimatePresence mode="popLayout" initial={false}>
+                  <motion.span
+                    key={isPlaying ? 'pause' : 'play'}
+                    initial={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
+                    transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+                    style={{ display: 'inline-flex' }}
+                  >
+                    {isPlaying ? <PauseIcon /> : <PlayIcon />}
+                  </motion.span>
+                </AnimatePresence>
               </span>
             </button>
             <button
