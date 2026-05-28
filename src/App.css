@@ -3662,6 +3662,22 @@
   margin-left: 1px;
 }
 
+.listen-btn-icon-swap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+}
+
+.listen-btn-icon-swap .shelf-icon-anim,
+.listen-btn-icon-swap .shelf-icon-anim svg {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+}
+
 @media (hover: hover) {
   .listen-btn-small:hover {
     opacity: 0.85;
