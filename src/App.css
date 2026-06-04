@@ -3404,90 +3404,6 @@
   }
 }
 
-/* Mobile Scroll Indicator */
-.mobile-scroll-indicator {
-  position: fixed;
-  right: 6px;
-  top: 10%;
-  bottom: 10%;
-  z-index: 999;
-  display: none;
-  pointer-events: auto;
-}
-
-@media (max-width: 520px) {
-  .mobile-scroll-indicator {
-    display: block;
-  }
-}
-
-.mobile-scroll-track {
-  width: 44px;
-  height: 100%;
-  background: transparent;
-  position: relative;
-  cursor: grab;
-  touch-action: none;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.mobile-scroll-track:active {
-  cursor: grabbing;
-}
-
-.mobile-scroll-thumb {
-  position: absolute;
-  right: 0;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  pointer-events: none;
-  transition: transform 0.25s var(--ease-out);
-}
-
-.mobile-scroll-thumb.dragging {
-  transform: translateY(-50%) translateX(-24px);
-}
-
-.mobile-scroll-thumb-indicator {
-  width: 3px;
-  height: 24px;
-  background: var(--text-secondary);
-  border-radius: 2px;
-  flex-shrink: 0;
-  transition: transform 0.15s var(--ease-out), height 0.15s var(--ease-out);
-}
-
-.mobile-scroll-thumb.dragging .mobile-scroll-thumb-indicator {
-  transform: scaleY(1.3);
-}
-
-.mobile-scroll-label-wrapper {
-  pointer-events: none;
-  display: flex;
-}
-
-.mobile-scroll-label {
-  background: var(--bg);
-  color: var(--text);
-  font-size: 0.7rem;
-  font-weight: 500;
-  padding: 5px 9px;
-  border-radius: 12px;
-  white-space: nowrap;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--border);
-  user-select: none;
-  display: inline-flex;
-  overflow: hidden;
-  /* Smooth width transitions when text changes */
-  transition: width 0.15s var(--ease-out);
-}
-
-[data-theme="dark"] .mobile-scroll-label {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border);
-}
 
 /* Blog Bottom Fade Effect */
 .blog-blur-bottom {
@@ -9680,30 +9596,54 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 8px 0 4px;
+  padding: 28px 0 24px;
 }
 
 .shelf-carousel.swiper {
-  width: 280px;
-  height: 360px;
+  width: 100%;
+  height: 320px;
   overflow: visible;
+  padding: 8px 0;
+}
+
+.shelf-carousel.swiper .swiper-wrapper {
+  align-items: center;
 }
 
 .shelf-carousel-swiper-slide {
-  border-radius: 18px;
+  width: 240px;
+  height: 300px;
+  border-radius: 6px;
   overflow: hidden;
-  background: var(--background, #fff);
-  border: 1px solid var(--border);
+  background: #fff;
+  padding: 8px 8px 8px;
+  /* Tilt set inline per-slide; CSS variable lets Swiper compose its
+     own translate3d while we apply rotation locally. */
+  transform: rotate(var(--tilt, 0deg));
+  transform-origin: 50% 60%;
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 10px 30px -12px rgba(0, 0, 0, 0.18);
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 14px 32px -10px rgba(0, 0, 0, 0.28);
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.35s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 [data-theme="dark"] .shelf-carousel-swiper-slide {
-  background: var(--background-secondary, #161616);
+  background: #f5f4f3;
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.3),
-    0 14px 40px -14px rgba(0, 0, 0, 0.65);
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 18px 40px -12px rgba(0, 0, 0, 0.7);
+}
+
+.shelf-carousel-swiper-slide.swiper-slide-active {
+  transform: rotate(calc(var(--tilt, 0deg) * 0.5)) translateY(-4px);
+  z-index: 2;
+}
+
+@media (hover: hover) {
+  .shelf-carousel-swiper-slide:hover {
+    transform: rotate(calc(var(--tilt, 0deg) * 0.4)) translateY(-6px);
+    z-index: 3;
+  }
 }
 
 .shelf-carousel-slide {
@@ -9712,10 +9652,12 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  border-radius: 3px;
+  overflow: hidden;
 }
 
 .shelf-carousel-slide-image {
-  background: var(--background-secondary, #f5f4f3);
+  background: #f5f4f3;
 }
 
 .shelf-carousel-slide-image img {
@@ -9867,8 +9809,13 @@
 
 @media (max-width: 520px) {
   .shelf-carousel.swiper {
-    width: 240px;
-    height: 320px;
+    width: 100%;
+    height: 260px;
+  }
+
+  .shelf-carousel-swiper-slide {
+    width: 180px;
+    height: 240px;
   }
 
   .shelf-carousel-slide-quote blockquote {

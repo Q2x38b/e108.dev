@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, animate, type PanInfo } from 'framer-motion'
 
@@ -195,7 +195,7 @@ function AccordionGroup({
   const haptics = useHaptics()
 
   const handleToggle = (id: string) => {
-    haptics.soft()
+    haptics.selection()
     onToggle(id)
   }
 
@@ -380,7 +380,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
 
   // Mobile: simple toggle between light and dark
   const handleMobileToggle = () => {
-    haptics.soft()
+    haptics.selection()
     // Toggle based on resolved theme (what's actually showing)
     setPreference(resolvedTheme === 'light' ? 'dark' : 'light')
   }
@@ -415,7 +415,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
     <div className="theme-dropdown" ref={dropdownRef}>
       <button
         className="theme-toggle"
-        onClick={() => { haptics.soft(); setIsOpen(!isOpen) }}
+        onClick={() => { haptics.soft(); setIsOpen((v) => !v) }}
         aria-label="Change theme"
         aria-expanded={isOpen}
         ref={cursorOriginRef}
@@ -1131,239 +1131,6 @@ function EditModeIndicator() {
   )
 }
 
-// Section definitions for mobile scroll indicator
-const sections = [
-  { id: 'top', label: 'Top' },
-  { id: 'about', label: 'About' },
-  { id: 'work', label: 'Work' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'skills', label: 'Skills' },
-]
-
-// Mobile scroll indicator component
-function MobileScrollIndicator() {
-  const [currentSection, setCurrentSection] = useState('Top')
-  const [scrollProgress, setScrollProgress] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
-  const trackRef = useRef<HTMLDivElement>(null)
-  const haptics = useHaptics()
-  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastSectionRef = useRef('Top')
-
-  // Calculate scroll progress and current section
-  const updateScrollState = useCallback(() => {
-    const scrollTop = window.scrollY
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight
-    // Avoid division by zero and clamp between 0 and 1
-    const progress = docHeight > 0 ? Math.min(Math.max(scrollTop / docHeight, 0), 1) : 0
-    setScrollProgress(progress)
-
-    // Determine current section based on scroll position
-    let current = 'Top'
-    for (const section of sections) {
-      if (section.id === 'top') continue
-      const element = document.getElementById(section.id)
-      if (element) {
-        const rect = element.getBoundingClientRect()
-        if (rect.top <= window.innerHeight * 0.4) {
-          current = section.label
-        }
-      }
-    }
-
-    // Trigger haptic when section changes
-    if (current !== lastSectionRef.current) {
-      haptics.selection()
-      lastSectionRef.current = current
-    }
-
-    setCurrentSection(current)
-  }, [haptics])
-
-  // Show indicator when scrolling
-  const handleScroll = useCallback(() => {
-    setIsVisible(true)
-    updateScrollState()
-
-    // Hide after delay if not dragging
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current)
-    }
-    if (!isDragging) {
-      hideTimeoutRef.current = setTimeout(() => {
-        setIsVisible(false)
-      }, 2500)
-    }
-  }, [isDragging, updateScrollState])
-
-  useEffect(() => {
-    // Check if mobile
-    const checkMobile = () => window.innerWidth <= 520
-    if (!checkMobile()) return
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    updateScrollState()
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current)
-      }
-    }
-  }, [handleScroll, updateScrollState])
-
-  // Hide scroll indicator when clicking anywhere else on the page
-  useEffect(() => {
-    const handleInteraction = (e: Event) => {
-      const target = e.target as HTMLElement
-      // Don't hide if clicking on the scroll indicator itself
-      if (target.closest('.mobile-scroll-indicator')) return
-
-      // Hide immediately when clicking buttons, dropdowns, or interactive elements
-      if (target.closest('button, a, input, select, [role="button"], .theme-dropdown')) {
-        setIsVisible(false)
-        if (hideTimeoutRef.current) {
-          clearTimeout(hideTimeoutRef.current)
-        }
-      }
-    }
-
-    window.addEventListener('touchstart', handleInteraction, { passive: true })
-    window.addEventListener('mousedown', handleInteraction)
-
-    return () => {
-      window.removeEventListener('touchstart', handleInteraction)
-      window.removeEventListener('mousedown', handleInteraction)
-    }
-  }, [])
-
-  // Handle drag start
-  const handleDragStart = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-    setIsVisible(true)
-    haptics.soft()
-
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current)
-    }
-  }
-
-  // Handle drag move - maps track position directly to scroll position
-  const handleDragMove = useCallback((clientY: number) => {
-    if (!isDragging || !trackRef.current) return
-
-    const track = trackRef.current
-    const rect = track.getBoundingClientRect()
-    const relativeY = clientY - rect.top
-    const progress = Math.min(Math.max(relativeY / rect.height, 0), 1)
-
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight
-    const targetScroll = progress * docHeight
-
-    // Temporarily disable smooth scroll and set directly
-    document.documentElement.style.scrollBehavior = 'auto'
-    window.scrollTo(0, targetScroll)
-    // Re-enable after a frame
-    requestAnimationFrame(() => {
-      document.documentElement.style.scrollBehavior = ''
-    })
-  }, [isDragging])
-
-  // Handle drag end
-  const handleDragEnd = () => {
-    setIsDragging(false)
-    haptics.soft()
-
-    hideTimeoutRef.current = setTimeout(() => {
-      setIsVisible(false)
-    }, 2500)
-  }
-
-  // Touch and mouse event handlers
-  useEffect(() => {
-    if (!isDragging) return
-
-    const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault()
-      handleDragMove(e.touches[0].clientY)
-    }
-
-    const handleMouseMove = (e: MouseEvent) => {
-      handleDragMove(e.clientY)
-    }
-
-    const handleEnd = () => {
-      handleDragEnd()
-    }
-
-    window.addEventListener('touchmove', handleTouchMove, { passive: false })
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('touchend', handleEnd)
-    window.addEventListener('mouseup', handleEnd)
-
-    return () => {
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('touchend', handleEnd)
-      window.removeEventListener('mouseup', handleEnd)
-    }
-  }, [isDragging, handleDragMove])
-
-  // Only show on mobile
-  const [isMobile, setIsMobile] = useState(false)
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 520)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  if (!isMobile) return null
-
-  const shouldShow = isVisible || isDragging
-
-  return (
-    <AnimatePresence>
-      {shouldShow && (
-        <motion.div
-          key="scroll-indicator"
-          className="mobile-scroll-indicator"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-        >
-          <div
-            className="mobile-scroll-track"
-            ref={trackRef}
-            onTouchStart={handleDragStart}
-            onMouseDown={handleDragStart}
-          >
-            {/* Thumb container - slides left when dragging */}
-            <div
-              className={`mobile-scroll-thumb ${isDragging ? 'dragging' : ''}`}
-              style={{ top: `clamp(0%, ${scrollProgress * 100}%, 100%)` }}
-            >
-              <div className="mobile-scroll-label-wrapper">
-                <motion.div
-                  className="mobile-scroll-label"
-                  layout
-                  transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
-                >
-                  {currentSection}
-                </motion.div>
-              </div>
-              {/* Small bar indicator */}
-              <div className="mobile-scroll-thumb-indicator" />
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
 
 // Loading skeleton
 function LoadingSkeleton() {
@@ -1487,7 +1254,6 @@ function HomeContent() {
 
   return (
     <>
-    <MobileScrollIndicator />
     <div className="container">
       <Header
         preference={preference}

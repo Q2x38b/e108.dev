@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Autoplay, EffectCards } from 'swiper/modules'
+import { Autoplay } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperType } from 'swiper'
 import { useQuery } from 'convex/react'
@@ -9,7 +9,9 @@ import { api } from '../../convex/_generated/api'
 import { useHaptics } from '../hooks/useHaptics'
 import { useAuth } from '../contexts/AuthContext'
 import 'swiper/css'
-import 'swiper/css/effect-cards'
+
+// Subtle alternating tilts so the cards form a hand-laid spread.
+const SLIDE_TILTS = [-3.5, 2.2, -1.4, 4.1, -2.8, 1.6, -4.2, 3.4]
 
 // Cursor-origin tracker for the scale-in hover background on prev/next buttons
 function setCursorOrigin(el: HTMLElement, e: PointerEvent) {
@@ -187,7 +189,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
   const wasPlayingBeforeExpand = useRef(false)
 
   const handleImageClick = (item: ShelfItem) => {
-    haptics.soft()
+    haptics.selection()
     wasPlayingBeforeExpand.current = isPlaying
     if (swiperRef.current && isPlaying) {
       swiperRef.current.autoplay.stop()
@@ -323,10 +325,14 @@ export function ShelfCarousel({ className }: { className?: string }) {
         className="shelf-carousel-wrapper"
       >
         <Swiper
-          effect="cards"
           grabCursor
-          loop={items.length > 2}
-          modules={[EffectCards, Autoplay]}
+          loop={items.length > 3}
+          slidesPerView="auto"
+          spaceBetween={-24}
+          centeredSlides={true}
+          centerInsufficientSlides={true}
+          speed={650}
+          modules={[Autoplay]}
           autoplay={multipleItems ? { delay: AUTOPLAY_DELAY, disableOnInteraction: false } : false}
           onSwiper={(s) => { swiperRef.current = s }}
           onSlideChange={(s) => {
@@ -340,14 +346,13 @@ export function ShelfCarousel({ className }: { className?: string }) {
           }}
           onAutoplayStop={() => setProgress(0)}
           className="shelf-carousel"
-          cardsEffect={{
-            slideShadows: false,
-            perSlideOffset: 8,
-            perSlideRotate: 2,
-          }}
         >
-          {items.map((item) => (
-            <SwiperSlide key={item._id} className="shelf-carousel-swiper-slide">
+          {items.map((item, idx) => (
+            <SwiperSlide
+              key={item._id}
+              className="shelf-carousel-swiper-slide"
+              style={{ ['--tilt' as never]: `${SLIDE_TILTS[idx % SLIDE_TILTS.length]}deg` }}
+            >
               <ShelfCarouselSlide
                 item={item}
                 onImageClick={handleImageClick}
