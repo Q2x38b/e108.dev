@@ -9601,25 +9601,11 @@
 
 .shelf-carousel.swiper {
   width: 100%;
-  height: 260px;
+  height: 220px;
   /* Clip to the section margins. Vertical padding gives the tilted
      corners room to bleed without being cropped. */
   padding: 12px 0;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 24px,
-    #000 calc(100% - 24px),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 24px,
-    #000 calc(100% - 24px),
-    transparent 100%
-  );
 }
 
 .shelf-carousel.swiper .swiper-wrapper {
@@ -9627,20 +9613,28 @@
 }
 
 .shelf-carousel-swiper-slide {
-  width: 170px;
-  height: 220px;
-  border-radius: 6px;
+  height: 196px;
+  border-radius: 12px;
   overflow: hidden;
   background: #fff;
-  padding: 7px 7px 7px;
+  padding: 6px 6px 6px;
   /* Tilt set inline per-slide; CSS variable lets Swiper compose its
      own translate3d while we apply rotation locally. */
   transform: rotate(var(--tilt, 0deg));
   transform-origin: 50% 60%;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.06),
-    0 12px 28px -10px rgba(0, 0, 0, 0.28);
-  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+    0 10px 24px -10px rgba(0, 0, 0, 0.28);
+  /* Slides outside the visible row are hidden; .swiper-slide-visible
+     fades in / out as the row shifts so cards smoothly cross the edge. */
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.shelf-carousel-swiper-slide.swiper-slide-visible {
+  opacity: 1;
 }
 
 [data-theme="dark"] .shelf-carousel-swiper-slide {
@@ -9650,14 +9644,9 @@
     0 18px 40px -12px rgba(0, 0, 0, 0.7);
 }
 
-.shelf-carousel-swiper-slide.swiper-slide-active {
-  transform: rotate(calc(var(--tilt, 0deg) * 0.5)) translateY(-4px);
-  z-index: 2;
-}
-
 @media (hover: hover) {
-  .shelf-carousel-swiper-slide:hover {
-    transform: rotate(calc(var(--tilt, 0deg) * 0.4)) translateY(-6px);
+  .shelf-carousel-swiper-slide.swiper-slide-visible:hover {
+    transform: rotate(calc(var(--tilt, 0deg) * 0.4)) translateY(-4px);
     z-index: 3;
   }
 }
@@ -9668,7 +9657,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-radius: 3px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -9825,12 +9814,11 @@
 
 @media (max-width: 520px) {
   .shelf-carousel.swiper {
-    height: 220px;
+    height: 180px;
   }
 
   .shelf-carousel-swiper-slide {
-    width: 140px;
-    height: 190px;
+    height: 156px;
   }
 
   .shelf-carousel-slide-quote blockquote {

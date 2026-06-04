@@ -326,12 +326,16 @@ export function ShelfCarousel({ className }: { className?: string }) {
       >
         <Swiper
           grabCursor
-          loop={items.length > 3}
-          slidesPerView="auto"
-          spaceBetween={-24}
-          centeredSlides={true}
-          centerInsufficientSlides={true}
+          loop={items.length > 4}
+          slidesPerView={4}
+          spaceBetween={14}
+          watchSlidesProgress={true}
           speed={650}
+          breakpoints={{
+            0: { slidesPerView: 2, spaceBetween: 10 },
+            420: { slidesPerView: 3, spaceBetween: 12 },
+            640: { slidesPerView: 4, spaceBetween: 14 },
+          }}
           modules={[Autoplay]}
           autoplay={multipleItems ? { delay: AUTOPLAY_DELAY, disableOnInteraction: false } : false}
           onSwiper={(s) => { swiperRef.current = s }}
