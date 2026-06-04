@@ -186,12 +186,6 @@ export function Footer({
             >
               CC BY 4.0
             </a>
-            {showQuote && (
-              <>
-                <span className="footer-sep">·</span>
-                <span className="footer-quote">The only limit is yourself</span>
-              </>
-            )}
           </div>
 
           <div className="footer-actions">
@@ -254,6 +248,12 @@ export function Footer({
             </button>
           </div>
         </div>
+
+        {showQuote && (
+          <div className="footer-quote-row">
+            <span className="footer-quote">The only limit is yourself</span>
+          </div>
+        )}
 
         {showSignature && (
           <div className="footer-signature">
