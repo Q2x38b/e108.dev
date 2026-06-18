@@ -330,8 +330,8 @@ export function ShelfCarousel({ className }: { className?: string }) {
           speed={650}
           cardsEffect={{
             slideShadows: false,
-            perSlideOffset: 60,
-            perSlideRotate: 4,
+            perSlideOffset: 16,
+            perSlideRotate: 3,
             rotate: true,
           }}
           modules={[Autoplay, EffectCards]}

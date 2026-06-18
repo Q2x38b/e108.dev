@@ -126,10 +126,19 @@
   }
 }
 
+.header-name-btn {
+  transition: transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.header-name-btn:active {
+  transform: scale(0.96);
+}
+
 .header-name-btn:active::before {
   background: rgba(255, 255, 255, 0.1);
-  scale: 1;
+  scale: 0.96;
   opacity: 1;
+  transition: scale 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
 [data-theme="light"] .header-name-btn::before {
@@ -245,18 +254,13 @@
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  transition: transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-}
-
-.profile-expand-link:hover {
-  transform: scale(1.05);
-}
-
-.profile-expand-link:active {
-  transform: scale(0.95);
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 .profile-expand-link-icon {
+  position: relative;
+  overflow: hidden;
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -264,19 +268,46 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  transition: transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
 [data-theme="dark"] .profile-expand-link-icon {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.profile-expand-link:hover .profile-expand-link-icon {
+/* Cursor-origin scale-in hover — same pattern as header nav buttons. */
+.profile-expand-link-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 50%;
   background: rgba(0, 0, 0, 0.15);
+  transform-origin: var(--x, 50%) var(--y, 50%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.7, 0.2), opacity 0.2s cubic-bezier(0.4, 0, 0.7, 0.2);
 }
 
-[data-theme="dark"] .profile-expand-link:hover .profile-expand-link-icon {
+[data-theme="dark"] .profile-expand-link-icon::before {
   background: rgba(255, 255, 255, 0.2);
+}
+
+.profile-expand-link-icon > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profile-expand-link:hover .profile-expand-link-icon::before {
+    transform: scale(1);
+    opacity: 1;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
+  }
+}
+
+.profile-expand-link:active .profile-expand-link-icon {
+  transform: scale(0.94);
 }
 
 .profile-expand-link-icon svg {
@@ -9609,8 +9640,8 @@
 }
 
 .shelf-carousel.swiper {
-  width: 320px;
-  height: 380px;
+  width: 240px;
+  height: 300px;
   overflow: visible;
 }
 
@@ -9796,8 +9827,8 @@
 
 @media (max-width: 520px) {
   .shelf-carousel.swiper {
-    width: 260px;
-    height: 320px;
+    width: 200px;
+    height: 250px;
   }
 
   .shelf-carousel-slide-quote blockquote {

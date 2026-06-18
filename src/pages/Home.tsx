@@ -19,6 +19,22 @@ function cursorOriginRef(el: HTMLElement | null) {
   el.addEventListener('pointerenter', (e) => setCursorOrigin(el, e))
   el.addEventListener('pointerleave', (e) => setCursorOrigin(el, e))
 }
+
+// Tracks the cursor on the wrapping link but writes --x/--y onto its
+// inner icon circle (so the ::before scale-in originates from the
+// pointer entry point on the circle, not the whole flex item).
+function profileLinkOriginRef(el: HTMLElement | null) {
+  if (!el) return
+  const icon = el.querySelector('.profile-expand-link-icon') as HTMLElement | null
+  if (!icon) return
+  const update = (e: PointerEvent) => {
+    const { top, left } = icon.getBoundingClientRect()
+    icon.style.setProperty('--x', `${e.clientX - left}px`)
+    icon.style.setProperty('--y', `${e.clientY - top}px`)
+  }
+  el.addEventListener('pointerenter', update)
+  el.addEventListener('pointerleave', update)
+}
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
@@ -689,6 +705,8 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: 0.15 + index * 0.05, ease: [0.23, 1, 0.32, 1] }}
                   onClick={() => haptics.selection()}
+                  ref={profileLinkOriginRef}
+                  draggable={false}
                 >
                   <span className="profile-expand-link-icon">
                     {link.icon}
