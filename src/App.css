@@ -1796,7 +1796,7 @@
 .footer-quote-row {
   display: flex;
   justify-content: center;
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .footer-quote {
@@ -3510,7 +3510,7 @@
 .footer-signature {
   display: flex;
   justify-content: center;
-  padding: 28px 0 12px;
+  padding: 10px 0 8px;
   position: relative;
   z-index: 1;
 }
@@ -3534,7 +3534,7 @@
 
 @media (max-width: 520px) {
   .footer-signature {
-    padding: 22px 0 10px;
+    padding: 8px 0 6px;
   }
 
   .signature-img {
