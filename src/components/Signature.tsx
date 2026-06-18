@@ -30,10 +30,16 @@ export function Signature({
   const [svgWidth, setSvgWidth] = useState(100)
   const [svgHeight, setSvgHeight] = useState(50)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [replayKey, setReplayKey] = useState(0)
   const ref = useRef<SVGSVGElement>(null)
   const isInView = useInView(ref, { once: false, amount: 0.5 })
 
   const shouldAnimate = inView ? isInView : true
+
+  // Hovering bumps a key on the inner paths so they remount and re-run
+  // their initial → animate transitions — re-drawing the stroke and
+  // re-fading in the fill.
+  const handleHover = () => setReplayKey((k) => k + 1)
 
   useEffect(() => {
     const loadFont = async () => {
@@ -88,8 +94,11 @@ export function Signature({
       initial={{ opacity: 0 }}
       animate={{ opacity: shouldAnimate ? 1 : 0 }}
       transition={{ duration: 0.3, delay }}
+      onMouseEnter={handleHover}
+      style={{ cursor: 'pointer' }}
     >
       <motion.path
+        key={`stroke-${replayKey}`}
         d={pathData}
         stroke={strokeColor}
         strokeWidth={fontSize / 16}
@@ -104,6 +113,7 @@ export function Signature({
         }}
       />
       <motion.path
+        key={`fill-${replayKey}`}
         d={pathData}
         fill={strokeColor}
         stroke="none"

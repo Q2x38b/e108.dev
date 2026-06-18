@@ -134,19 +134,25 @@
   transform: scale(0.96);
 }
 
-.header-name-btn:active::before {
-  background: rgba(255, 255, 255, 0.1);
-  scale: 0.96;
-  opacity: 1;
-  transition: scale 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+/* Only paint the pressed-down background while the pointer is still
+   over the button. Drag-off cleanly cancels the press visual. */
+@media (hover: hover) and (pointer: fine) {
+  .header-name-btn:hover:active::before {
+    background: rgba(255, 255, 255, 0.1);
+    scale: 0.96;
+    opacity: 1;
+    transition: scale 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  }
 }
 
 [data-theme="light"] .header-name-btn::before {
   background: rgba(0, 0, 0, 0.04);
 }
 
-[data-theme="light"] .header-name-btn:active::before {
-  background: rgba(0, 0, 0, 0.06);
+@media (hover: hover) and (pointer: fine) {
+  [data-theme="light"] .header-name-btn:hover:active::before {
+    background: rgba(0, 0, 0, 0.06);
+  }
 }
 
 .header-name {
@@ -2426,49 +2432,69 @@
 }
 
 .blog-back-btn {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px 6px 8px;
-  margin-left: -10px;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  gap: 5px;
+  padding: 4px 8px 4px 6px;
+  margin-left: -8px;
+  border-radius: 7px;
+  font-size: 0.8125rem;
   font-weight: 460;
   color: var(--text-tertiary);
   text-decoration: none;
   letter-spacing: -0.005em;
   transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
-    background-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+    transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   -webkit-user-drag: none;
   user-drag: none;
   -webkit-tap-highlight-color: transparent;
 }
 
+.blog-back-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.blog-back-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 7px;
+  background: var(--hover-bg);
+  transform-origin: var(--x, 50%) var(--y, 50%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.7, 0.2), opacity 0.2s cubic-bezier(0.4, 0, 0.7, 0.2);
+}
+
 .blog-back-btn svg {
-  width: 18px;
-  height: 18px;
-  transition: transform 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  width: 16px;
+  height: 16px;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .blog-back-btn:hover {
     color: var(--text);
-    background: var(--hover-bg);
   }
 
-  .blog-back-btn:hover svg {
-    transform: translate(-1px, -1px);
+  .blog-back-btn:hover::before {
+    transform: scale(1);
+    opacity: 1;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
   }
 }
 
 .blog-back-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .skeleton-back-btn {
-  width: 78px;
-  height: 28px;
-  border-radius: 8px;
+  width: 66px;
+  height: 24px;
+  border-radius: 7px;
   background: var(--hover-bg);
   animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
@@ -7543,7 +7569,7 @@
   justify-content: space-between;
   width: 100%;
   max-width: 800px;
-  margin: 0 auto 32px;
+  margin: 28px auto 32px;
   padding: 0 20px;
   box-sizing: border-box;
 }
