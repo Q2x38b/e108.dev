@@ -23,10 +23,15 @@ function cursorOriginRef(el: HTMLElement | null) {
   el.addEventListener('pointerleave', (e) => setCursorOrigin(el, e))
 }
 
+// Matches the Home page's @keyframes staggerIn: small lift, slight
+// scale-up, blur clearing — the same physical feel of arriving in place.
 const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
+  hidden: { opacity: 0, y: 8, scale: 0.98, filter: 'blur(8px)' },
+  visible: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
 }
+
+const STAGGER_EASE = [0.23, 1, 0.32, 1] as const
+const STAGGER_DURATION = 0.4
 
 interface Post {
   _id: string
@@ -177,7 +182,7 @@ export default function BlogList() {
                 variants={fadeInUp}
                 initial="hidden"
                 animate="visible"
-                transition={{ duration: 0.4, delay: index * 0.05 }}
+                transition={{ duration: STAGGER_DURATION, delay: 0.2 + index * 0.05, ease: STAGGER_EASE }}
               >
                 <Link to={`/blog/${post.shortId}`} className="blog-card">
                   <div className="blog-card-content">
@@ -205,7 +210,7 @@ export default function BlogList() {
                 variants={fadeInUp}
                 initial="hidden"
                 animate="visible"
-                transition={{ duration: 0.4, delay: index * 0.03 }}
+                transition={{ duration: STAGGER_DURATION, delay: 0.2 + index * 0.03, ease: STAGGER_EASE }}
               >
                 <Link to={`/blog/${post.shortId}`} className="blog-table-row">
                   <span className="blog-table-title">{post.title}</span>

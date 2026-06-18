@@ -878,24 +878,24 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
     <section className="more-articles">
       <div className="more-articles-tabs-container">
         <div className="more-articles-tabs">
-          <button
-            className={`more-articles-tab ${activeTab === 'top' ? 'active' : ''}`}
-            onClick={(e) => handleTabClick('top', e)}
-          >
-            Top
-          </button>
-          <button
-            className={`more-articles-tab ${activeTab === 'latest' ? 'active' : ''}`}
-            onClick={(e) => handleTabClick('latest', e)}
-          >
-            Latest
-          </button>
-          <button
-            className={`more-articles-tab ${activeTab === 'discussions' ? 'active' : ''}`}
-            onClick={(e) => handleTabClick('discussions', e)}
-          >
-            Discussions
-          </button>
+          {(['top', 'latest', 'discussions'] as const).map((tab) => (
+            <button
+              key={tab}
+              className={`more-articles-tab ${activeTab === tab ? 'active' : ''}`}
+              onClick={(e) => handleTabClick(tab, e)}
+            >
+              {activeTab === tab && (
+                <motion.span
+                  layoutId="more-articles-tab-pill"
+                  className="more-articles-tab-pill"
+                  transition={{ type: 'spring', stiffness: 380, damping: 32, mass: 0.7 }}
+                />
+              )}
+              <span className="more-articles-tab-label">
+                {tab === 'top' ? 'Top' : tab === 'latest' ? 'Latest' : 'Discussions'}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -927,9 +927,10 @@ function MoreArticles({ currentPostId, posts }: MoreArticlesProps) {
       <button
         className="see-all-btn"
         onClick={() => { haptics.soft(); navigate('/blog') }}
+        ref={cursorOriginRef}
       >
-        See all
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <span className="see-all-label">See all</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M9 18l6-6-6-6" />
         </svg>
       </button>
