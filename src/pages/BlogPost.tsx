@@ -487,13 +487,13 @@ function ShareModal({ title, subtitle, titleImage, onClose, onCopy }: ShareModal
             <span>Copy link</span>
           </button>
 
-          <button className="share-option" onClick={shareToFacebook}>
+          <button className="share-option" onClick={shareToTwitter}>
             <div className="share-option-icon">
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
               </svg>
             </div>
-            <span>Facebook</span>
+            <span>X</span>
           </button>
 
           <button className="share-option" onClick={shareToEmail}>
@@ -506,14 +506,27 @@ function ShareModal({ title, subtitle, titleImage, onClose, onCopy }: ShareModal
             <span>Email</span>
           </button>
 
-          <div className="share-option-wrapper">
-            <button className="share-option" onClick={() => setShowMore(!showMore)}>
+          <div className={`share-option-wrapper ${showMore ? 'is-open' : ''}`}>
+            <button
+              className={`share-option ${showMore ? 'is-active' : ''}`}
+              onClick={() => setShowMore((v) => !v)}
+              aria-label="Toggle more share options"
+              aria-pressed={showMore}
+            >
               <div className="share-option-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <circle cx="5" cy="12" r="2" />
-                  <circle cx="12" cy="12" r="2" />
-                  <circle cx="19" cy="12" r="2" />
-                </svg>
+                <motion.svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  animate={{ rotate: showMore ? 45 : 0 }}
+                  transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </motion.svg>
               </div>
               <span>More</span>
             </button>
@@ -522,9 +535,10 @@ function ShareModal({ title, subtitle, titleImage, onClose, onCopy }: ShareModal
               {showMore && (
                 <motion.div
                   className="share-more-dropdown"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, scale: 0.85, x: -10, y: '-50%' }}
+                  animate={{ opacity: 1, scale: 1, x: 0, y: '-50%' }}
+                  exit={{ opacity: 0, scale: 0.85, x: -10, y: '-50%' }}
+                  transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                 >
                   <button onClick={shareToBluesky}>
                     <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
@@ -532,11 +546,11 @@ function ShareModal({ title, subtitle, titleImage, onClose, onCopy }: ShareModal
                     </svg>
                     <span>Bluesky</span>
                   </button>
-                  <button onClick={shareToTwitter}>
+                  <button onClick={shareToFacebook}>
                     <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                     </svg>
-                    <span>X (Twitter)</span>
+                    <span>Facebook</span>
                   </button>
                   <button onClick={shareToLinkedIn}>
                     <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
@@ -786,20 +800,13 @@ function TOCSidebar({ headings, isOpen, onToggle, activeHeadingId }: TOCSidebarP
                    linesRef.current.getBoundingClientRect().height / 2
             }}
           >
-            <div className="toc-popup-header">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="toc-header-icon">
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="15" y2="12" />
-                <line x1="3" y1="18" x2="18" y2="18" />
-              </svg>
-              CONTENTS
-            </div>
             <nav className="toc-popup-nav">
               {headings.map((heading, index) => (
                 <button
                   key={index}
                   className={`toc-popup-item ${heading.level > 1 ? 'toc-popup-item-sub' : ''} ${activeHeadingId === heading.id ? 'active' : ''}`}
                   onClick={() => scrollToHeading(heading.id)}
+                  ref={cursorOriginRef}
                 >
                   {heading.text}
                 </button>
@@ -1055,32 +1062,7 @@ export default function BlogPost() {
   }, [headings])
 
   if (post === undefined) {
-    return (
-      <div className="blog-container blog-post-layout">
-        <header className="blog-header">
-          <div className="skeleton-back-btn" />
-        </header>
-        <article className="blog-article">
-          <header className="article-header-new">
-            <div className="skeleton-article-title" />
-            <div className="skeleton-article-meta" />
-            <div className="skeleton-article-subtitle" />
-            <div className="skeleton-article-author">
-              <div className="skeleton-author-image" />
-              <div className="skeleton-author-name" />
-            </div>
-          </header>
-          <div className="article-divider" />
-          <div className="skeleton-article-content">
-            <div className="skeleton-paragraph" />
-            <div className="skeleton-paragraph skeleton-short" />
-            <div className="skeleton-paragraph" />
-            <div className="skeleton-paragraph skeleton-medium" />
-            <div className="skeleton-paragraph" />
-          </div>
-        </article>
-      </div>
-    )
+    return null
   }
 
   if (post === null) {
@@ -1153,6 +1135,7 @@ export default function BlogPost() {
                 onClick={() => { haptics.selection(); setShowAudioPlayer((v) => !v) }}
                 aria-label={showAudioPlayer ? 'Hide audio player' : 'Listen to article'}
                 aria-pressed={showAudioPlayer}
+                ref={cursorOriginRef}
               >
                 <span className="listen-btn-icon-swap">
                   <span
@@ -1183,7 +1166,12 @@ export default function BlogPost() {
                   </span>
                 </span>
               </button>
-              <button className={`share-btn-icon ${linkCopied ? 'copied' : ''}`} onClick={() => { haptics.soft(); setShowShareModal(true) }} aria-label="Share">
+              <button
+                className={`share-btn-icon ${linkCopied ? 'copied' : ''}`}
+                onClick={() => { haptics.soft(); setShowShareModal(true) }}
+                aria-label="Share"
+                ref={cursorOriginRef}
+              >
                 <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="7.25 5.75 10 3 12.75 5.75" />
                   <line x1="10" y1="13" x2="10" y2="3" />
@@ -1340,12 +1328,12 @@ export default function BlogPost() {
         {linkCopied && (
           <motion.div
             className="toast"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: -16, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -16, x: '-50%' }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
             Copied

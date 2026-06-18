@@ -77,6 +77,10 @@ function ShelfCarouselSlide({
           src={item.url}
           alt={item.caption || item.fileName || 'Shelf image'}
           draggable={false}
+          loading="eager"
+          // @ts-expect-error -- fetchpriority is a valid img attribute but React types lag
+          fetchpriority="high"
+          decoding="async"
           onClick={(e) => {
             e.stopPropagation()
             onImageClick?.(item)

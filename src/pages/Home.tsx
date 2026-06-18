@@ -1150,71 +1150,6 @@ function EditModeIndicator() {
 }
 
 
-// Loading skeleton
-function LoadingSkeleton() {
-  return (
-    <div className="container">
-      {/* Skeleton Header */}
-      <div className="skeleton-header">
-        <div className="skeleton-nav">
-          <div className="skeleton-nav-item" />
-          <div className="skeleton-nav-item" />
-          <div className="skeleton-nav-item" />
-          <div className="skeleton-nav-item" />
-        </div>
-        <div className="skeleton-header-right">
-          <div className="skeleton-location" />
-          <div className="skeleton-theme-btn" />
-        </div>
-      </div>
-
-      <div className="loading-skeleton">
-        {/* Profile Section */}
-        <div className="skeleton-profile">
-          <div className="skeleton-avatar" />
-          <div className="skeleton-text skeleton-name" />
-          <div className="skeleton-text skeleton-title" />
-        </div>
-
-        {/* About Section */}
-        <div className="skeleton-section">
-          <div className="skeleton-text skeleton-heading" />
-          <div className="skeleton-text skeleton-paragraph" />
-          <div className="skeleton-text skeleton-paragraph skeleton-paragraph-short" />
-          <div className="skeleton-social-links">
-            <div className="skeleton-social-link" />
-            <div className="skeleton-social-link" />
-            <div className="skeleton-social-link" />
-          </div>
-        </div>
-
-        {/* Skills Section */}
-        <div className="skeleton-section">
-          <div className="skeleton-text skeleton-heading" />
-          <div className="skeleton-accordion" />
-          <div className="skeleton-accordion" />
-          <div className="skeleton-accordion" />
-          <div className="skeleton-accordion" />
-        </div>
-
-        {/* Work Section */}
-        <div className="skeleton-section">
-          <div className="skeleton-text skeleton-heading" />
-          <div className="skeleton-work-item" />
-          <div className="skeleton-work-item" />
-          <div className="skeleton-work-item" />
-        </div>
-
-        {/* Experience Section */}
-        <div className="skeleton-section">
-          <div className="skeleton-text skeleton-heading" />
-          <div className="skeleton-experience-row" />
-          <div className="skeleton-experience-row" />
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // Main content component (wrapped with EditModeProvider)
 function HomeContent() {
@@ -1246,15 +1181,29 @@ function HomeContent() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [skills, projects, experiences])
 
-  // Show loading skeleton while fetching data from Convex
+  // Eagerly warm the browser image cache for shelf photos the moment the
+  // shelf query resolves — so by the time the user scrolls down to the
+  // carousel the images are already decoded and paint instantly.
+  useEffect(() => {
+    if (!shelfItems) return
+    shelfItems.forEach((item: { type?: string; url?: string | null }) => {
+      if (item.type === 'image' && item.url) {
+        const img = new Image()
+        img.src = item.url
+      }
+    })
+  }, [shelfItems])
+
+  // While the Convex data is loading just render nothing — the real
+  // content fades in via its own stagger-in animations once ready, no
+  // skeleton placeholder.
   if (profile === undefined || about === undefined || skills === undefined ||
       projects === undefined || experiences === undefined || footer === undefined) {
-    return <LoadingSkeleton />
+    return null
   }
 
-  // If no data exists in Convex, show loading (data should be seeded)
   if (!profile || !about || !footer) {
-    return <LoadingSkeleton />
+    return null
   }
 
   // Use data from Convex directly

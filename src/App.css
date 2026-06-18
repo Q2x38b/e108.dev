@@ -3512,6 +3512,12 @@
   display: inline-flex;
   align-items: center;
   margin-right: 2px;
+  color: var(--text-tertiary);
+  /* Match the rest of the footer text exactly. Parent opacity composes
+     with framer-motion's inline opacity on the SVG (which is locked to 1
+     while the draw animation runs), so this lands at the same value as
+     .footer-time / .footer-copyright. */
+  opacity: 0.7;
   /* small nudge so the EJ visually sits on the same baseline as the
      tabular time numerals next to it */
   transform: translateY(1px);
@@ -3596,6 +3602,8 @@
 
 /* Listen Button Small */
 .listen-btn-small {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3606,7 +3614,30 @@
   border-radius: 8px;
   color: var(--bg);
   cursor: pointer;
-  transition: transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), background-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), opacity 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), border-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.listen-btn-small > * {
+  position: relative;
+  z-index: 1;
+}
+
+.listen-btn-small::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  transform-origin: var(--x, 50%) var(--y, 50%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.7, 0.2), opacity 0.2s cubic-bezier(0.4, 0, 0.7, 0.2);
+}
+
+[data-theme="light"] .listen-btn-small::before {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .listen-btn-small svg {
@@ -3631,15 +3662,22 @@
   margin: 0;
 }
 
-@media (hover: hover) {
-  .listen-btn-small:hover {
-    opacity: 0.85;
-    transform: scale(1.05);
+@media (hover: hover) and (pointer: fine) {
+  .listen-btn-small:hover::before {
+    transform: scale(1);
+    opacity: 1;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
   }
+}
+
+.listen-btn-small:active {
+  transform: scale(0.94);
 }
 
 /* Share Button Icon */
 .share-btn-icon {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3651,7 +3689,30 @@
   border-radius: 8px;
   color: var(--bg);
   cursor: pointer;
-  transition: transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), background-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), opacity 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), border-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.share-btn-icon > * {
+  position: relative;
+  z-index: 1;
+}
+
+.share-btn-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  transform-origin: var(--x, 50%) var(--y, 50%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.7, 0.2), opacity 0.2s cubic-bezier(0.4, 0, 0.7, 0.2);
+}
+
+[data-theme="light"] .share-btn-icon::before {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .share-btn-icon svg {
@@ -3664,29 +3725,42 @@
   color: white;
 }
 
-@media (hover: hover) {
-  .share-btn-icon:hover {
-    opacity: 0.85;
-    transform: scale(1.05);
+@media (hover: hover) and (pointer: fine) {
+  .share-btn-icon:hover::before {
+    transform: scale(1);
+    opacity: 1;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
   }
 }
 
-/* Toast Notification */
+.share-btn-icon:active {
+  transform: scale(0.94);
+}
+
+/* Toast Notification — styled like the header nav-tooltip, slightly
+   bigger, anchored to the top center of the viewport. */
 .toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  top: 28px;
+  left: 50%;
   z-index: 1000;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.8rem;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #2d2d2d;
+  color: #fdfdfc;
+  border-radius: 8px;
+  font-size: 0.8125rem;
   font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .toast {
+  background: var(--text);
+  color: var(--bg);
 }
 
 .toast svg {
@@ -3769,13 +3843,6 @@
   overflow: hidden;
   cursor: pointer;
   text-align: left;
-  transition: transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-}
-
-@media (hover: hover) {
-  .share-preview-card:hover {
-    transform: scale(0.98);
-  }
 }
 
 .share-preview-image {
@@ -3882,17 +3949,25 @@
   position: relative;
 }
 
+.share-option.is-active .share-option-icon {
+  background: var(--text);
+  color: var(--bg);
+}
+
 .share-more-dropdown {
   position: absolute;
-  bottom: 100%;
-  right: 0;
-  margin-bottom: 8px;
+  /* Anchor to the More icon's vertical center (icon center sits at 36px
+     from wrapper top: 12px button padding + 24px to icon center). */
+  top: 36px;
+  left: calc(100% + 8px);
+  transform-origin: left center;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
   min-width: 180px;
   overflow: hidden;
+  z-index: 10;
 }
 
 .share-more-dropdown button {
@@ -4586,54 +4661,54 @@
   z-index: 99;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 20px;
-  min-width: 200px;
-  max-width: 280px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-}
-
-.toc-popup-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  letter-spacing: 0.5px;
-  margin-bottom: 16px;
-}
-
-.toc-header-icon {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
+  border-radius: 10px;
+  padding: 6px;
+  min-width: 180px;
+  max-width: 260px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
 }
 
 .toc-popup-nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .toc-popup-item {
+  position: relative;
+  /* New stacking context so ::before can sit at z:-1 (behind text) */
+  isolation: isolate;
   display: block;
   width: 100%;
   text-align: left;
   background: none;
   border: none;
-  padding: 8px 12px;
-  margin: 0 -12px;
-  width: calc(100% + 24px);
-  font-size: 1rem;
-  font-weight: 400;
+  padding: 6px 10px;
+  font-size: 0.8125rem;
+  font-weight: 460;
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), background-color 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), color 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), opacity 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), border-color 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  letter-spacing: -0.005em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-radius: 8px;
+  border-radius: 6px;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.toc-popup-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 6px;
+  background: var(--hover-bg);
+  transform-origin: var(--x, 50%) var(--y, 50%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.7, 0.2), opacity 0.2s cubic-bezier(0.4, 0, 0.7, 0.2);
 }
 
 .toc-popup-item.active {
@@ -4642,15 +4717,24 @@
 }
 
 .toc-popup-item-sub {
-  padding-left: 24px;
-  font-size: 0.9rem;
+  padding-left: 20px;
+  font-size: 0.75rem;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .toc-popup-item:hover {
     color: var(--text);
-    background: var(--hover-bg);
   }
+
+  .toc-popup-item:hover::before {
+    transform: scale(1);
+    opacity: 1;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease-out;
+  }
+}
+
+.toc-popup-item:active {
+  transform: scale(0.97);
 }
 
 /* Legacy TOC styles (kept for compatibility) */
