@@ -189,6 +189,17 @@ export function Footer({
           </div>
 
           <div className="footer-actions">
+            {showSignature && (
+              <span className="footer-signature-inline">
+                <Signature
+                  text="EJ"
+                  fontSize={48}
+                  duration={1.2}
+                  displayHeight={20}
+                  className="signature-svg"
+                />
+              </span>
+            )}
             <span className="footer-time">{formatTime(time)}</span>
 
             {showEditControls && editModeContext && (
@@ -255,17 +266,6 @@ export function Footer({
           </div>
         )}
 
-        {showSignature && (
-          <div className="footer-signature">
-            <Signature
-              text="EJ"
-              fontSize={48}
-              duration={1.2}
-              displayHeight={36}
-              className="signature-svg"
-            />
-          </div>
-        )}
       </footer>
       <AnimatePresence>
         {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}

@@ -126,41 +126,16 @@
   }
 }
 
-.header-name-btn {
-  transition: transform 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-}
-
-.header-name-btn:active {
-  transform: scale(0.96);
-}
-
-/* Only paint the pressed-down background while the pointer is still
-   over the button. Drag-off cleanly cancels the press visual. */
-@media (hover: hover) and (pointer: fine) {
-  .header-name-btn:hover:active::before {
-    background: rgba(255, 255, 255, 0.1);
-    scale: 0.96;
-    opacity: 1;
-    transition: scale 0.12s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-  }
-}
-
 [data-theme="light"] .header-name-btn::before {
   background: rgba(0, 0, 0, 0.04);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  [data-theme="light"] .header-name-btn:hover:active::before {
-    background: rgba(0, 0, 0, 0.06);
-  }
-}
-
 .header-name {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   color: var(--text);
   margin: 0;
-  line-height: 1.25rem;
+  line-height: 1.2rem;
   letter-spacing: -.00563rem;
 }
 
@@ -3533,12 +3508,13 @@
   align-items: center;
 }
 
-.footer-signature {
-  display: flex;
-  justify-content: center;
-  padding: 10px 0 8px;
-  position: relative;
-  z-index: 1;
+.footer-signature-inline {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 2px;
+  /* small nudge so the EJ visually sits on the same baseline as the
+     tabular time numerals next to it */
+  transform: translateY(1px);
 }
 
 .signature-img {
@@ -3559,10 +3535,6 @@
 }
 
 @media (max-width: 520px) {
-  .footer-signature {
-    padding: 8px 0 6px;
-  }
-
   .signature-img {
     height: 30px;
   }
