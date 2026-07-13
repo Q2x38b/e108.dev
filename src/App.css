@@ -33,6 +33,7 @@
   margin: 0 auto;
   padding: 72px 24px 80px;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* Header */
@@ -1177,6 +1178,7 @@
   max-width: 420px;
   width: calc(100% - 32px);
   max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   overflow: hidden;
   box-shadow:
     0px 0px 0px 1px rgba(0, 0, 0, 0.06),
@@ -1309,7 +1311,13 @@
   color: var(--text);
   text-decoration: none;
   font-weight: 450;
-  transition: all 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  transition: background-color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.work-modal-link:active {
+  transform: scale(0.97);
 }
 
 .work-modal-link svg {
@@ -1978,6 +1986,7 @@
   position: relative;
   padding: 0;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -2394,6 +2403,7 @@
   margin: 0 auto;
   padding: 48px 24px 80px;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .blog-header {
@@ -2520,7 +2530,12 @@
   border: 1px solid var(--border);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.add-post-btn:active {
+  transform: scale(0.94);
 }
 
 .add-post-btn:hover {
@@ -3464,6 +3479,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
   max-width: 640px;
   margin: 0 auto;
   padding: 32px 24px 80px;
@@ -4281,7 +4297,7 @@
 /* Floating Audio Player */
 .audio-player {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -4356,10 +4372,13 @@
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
   height: 100%;
   background: var(--text);
   border-radius: 2px;
-  transition: width 0.1s ease;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.1s linear;
 }
 
 .audio-player-close {
@@ -4636,7 +4655,6 @@
   border-radius: 1px;
   transition: background 0.2s ease, opacity 0.2s ease, transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   transform-origin: center;
-  will-change: transform, background;
 }
 
 .toc-line-minimal.active {
@@ -5313,7 +5331,7 @@
 /* Edit Mode Indicator */
 .edit-mode-indicator {
   position: fixed;
-  bottom: 80px;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent-color, #3b82f6);
@@ -6125,6 +6143,7 @@
 /* Editor Page Layout */
 .blog-editor-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
 }
 
@@ -7734,8 +7753,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  transition: color 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   color: var(--text-tertiary);
+}
+
+.view-toggle-btn:active {
+  transform: scale(0.9);
 }
 
 .view-toggle-btn.active {
@@ -7805,6 +7829,7 @@
   font-size: 0.85rem;
   color: var(--text-tertiary);
   margin-top: 4px;
+  font-variant-numeric: tabular-nums;
 }
 
 .blog-card-image {
@@ -8018,7 +8043,12 @@
   border: 1px solid var(--border);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.shelf-admin-btn:active {
+  transform: scale(0.94);
 }
 
 .shelf-admin-btn:hover {
@@ -9444,7 +9474,7 @@
 /* Floating navigation panel */
 .floating-panel {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -9754,7 +9784,6 @@
   transform: scale(0.25);
   filter: blur(4px);
   transition: opacity 300ms ease-in-out, transform 300ms ease-in-out, filter 300ms ease-in-out;
-  will-change: opacity, transform, filter;
 }
 
 .shelf-icon-anim.is-shown {
@@ -9938,7 +9967,7 @@
 
 .shelf-expand-caption {
   position: fixed;
-  bottom: 32px;
+  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   /* framer drives transform (x: '-50%' + y) — don't set it here */
   z-index: 10000;

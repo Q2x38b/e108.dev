@@ -315,7 +315,7 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
         ) : (
           <>
             <div className="audio-player-progress" onClick={handleSeek}>
-              <div className="audio-player-progress-bar" style={{ width: `${progress}%` }} />
+              <div className="audio-player-progress-bar" style={{ transform: `scaleX(${progress / 100})` }} />
             </div>
             {duration > 0 && (
               <span className="audio-player-time">

@@ -71,7 +71,7 @@ export function IconPicker({ isOpen, onClose, onSelect }: IconPickerProps) {
           >
             <div className="icon-picker-header">
               <h3>Select Icon</h3>
-              <button onClick={onClose} className="icon-picker-close">
+              <button onClick={onClose} className="icon-picker-close" aria-label="Close icon picker">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -120,6 +120,7 @@ export function IconPicker({ isOpen, onClose, onSelect }: IconPickerProps) {
                     className="icon-picker-item"
                     onClick={() => handleIconSelect(iconName)}
                     title={iconName}
+                    aria-label={iconName}
                   >
                     <IconComponent className="w-5 h-5" />
                   </button>

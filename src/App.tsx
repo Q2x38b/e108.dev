@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { MotionConfig } from 'framer-motion'
 import { Agentation } from 'agentation'
 import Home from './pages/Home'
 import BlogList from './pages/BlogList'
@@ -8,7 +9,7 @@ import './App.css'
 
 function App() {
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/blog" element={<BlogList />} />
@@ -17,7 +18,7 @@ function App() {
         <Route path="/blog/:shortId" element={<BlogPost />} />
       </Routes>
       {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
-    </>
+    </MotionConfig>
   )
 }
 

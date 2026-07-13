@@ -642,7 +642,7 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
           className="profile-expand-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          exit={{ opacity: 0, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
           transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
           onClick={() => !isProfileDragging && setProfileExpanded(false)}
         >
@@ -650,14 +650,14 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
             className="profile-expand-content"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] } }}
             transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
             onClick={(e) => e.stopPropagation()}
             style={{ pointerEvents: isProfileDragging ? 'none' : 'auto' }}
           >
             <motion.div
               className="profile-expand-image-wrapper"
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
               drag
@@ -996,7 +996,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             className="work-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             onClick={() => setSelectedId(null)}
           >
@@ -1004,7 +1004,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
               className={`work-modal ${selectedProject.images && selectedProject.images.length > 0 ? 'work-modal-with-images' : ''}`}
               initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
               transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
