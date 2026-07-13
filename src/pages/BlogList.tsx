@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
-import { useQuery } from 'convex/react'
+import { usePaginatedQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn } from '../contexts/AuthContext'
 import { useTheme } from './Home'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Footer } from '../components/Footer'
 import { useHaptics } from '../hooks/useHaptics'
@@ -33,13 +33,14 @@ const fadeInUp = {
 const STAGGER_EASE = [0.23, 1, 0.32, 1] as const
 const STAGGER_DURATION = 0.4
 
+// Slim summary returned by the paginated list query — the full post
+// body is only fetched by the individual post route.
 interface Post {
   _id: string
   title: string
   subtitle?: string
   slug: string
   shortId?: string
-  content: string
   excerpt?: string
   titleImage?: string
   published: boolean
@@ -47,6 +48,8 @@ interface Post {
   createdAt: number
   updatedAt: number
 }
+
+const POSTS_PER_PAGE = 12
 
 // Helper to get the display date (prefer publishedAt over createdAt)
 function getDisplayDate(post: Post): number {
@@ -73,16 +76,28 @@ function formatDateCompact(timestamp: number) {
 export default function BlogList() {
   // Initialize theme (ensures data-theme is set when landing directly on this page)
   useTheme()
-  const posts = useQuery(api.posts.list)
+  const { results: posts, status, loadMore } = usePaginatedQuery(
+    api.posts.listPage,
+    {},
+    { initialNumItems: POSTS_PER_PAGE }
+  )
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [searchQuery, setSearchQuery] = useState('')
   const haptics = useHaptics()
+
+  // Search filters client-side, so pull in the remaining pages while a
+  // query is active to keep results complete.
+  useEffect(() => {
+    if (searchQuery.trim() && status === 'CanLoadMore') {
+      loadMore(100)
+    }
+  }, [searchQuery, status, loadMore])
 
   // Filter and sort posts based on search query (sorted by publishedAt desc)
   const filteredPosts = useMemo(() => {
     if (!posts) return []
 
-    let result = posts as Post[]
+    let result = posts as unknown as Post[]
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
@@ -93,7 +108,7 @@ export default function BlogList() {
     }
 
     // Sort by publishedAt (or createdAt as fallback) descending
-    return result.sort((a, b) => getDisplayDate(b) - getDisplayDate(a))
+    return [...result].sort((a, b) => getDisplayDate(b) - getDisplayDate(a))
   }, [posts, searchQuery])
 
   return (
@@ -171,7 +186,7 @@ export default function BlogList() {
       </div>
 
       <main className="blog-list-content">
-        {posts === undefined ? null : filteredPosts.length === 0 ? (
+        {status === 'LoadingFirstPage' ? null : filteredPosts.length === 0 ? (
           <p className="blog-empty">{searchQuery ? 'No posts found.' : 'No posts yet.'}</p>
         ) : viewMode === 'card' ? (
           /* Card View */
@@ -182,7 +197,7 @@ export default function BlogList() {
                 variants={fadeInUp}
                 initial="hidden"
                 animate="visible"
-                transition={{ duration: STAGGER_DURATION, delay: 0.2 + index * 0.05, ease: STAGGER_EASE }}
+                transition={{ duration: STAGGER_DURATION, delay: Math.min(0.2 + index * 0.05, 0.6), ease: STAGGER_EASE }}
               >
                 <Link to={`/blog/${post.shortId}`} className="blog-card">
                   <div className="blog-card-content">
@@ -210,7 +225,7 @@ export default function BlogList() {
                 variants={fadeInUp}
                 initial="hidden"
                 animate="visible"
-                transition={{ duration: STAGGER_DURATION, delay: 0.2 + index * 0.03, ease: STAGGER_EASE }}
+                transition={{ duration: STAGGER_DURATION, delay: Math.min(0.2 + index * 0.03, 0.6), ease: STAGGER_EASE }}
               >
                 <Link to={`/blog/${post.shortId}`} className="blog-table-row">
                   <span className="blog-table-title">{post.title}</span>
@@ -218,6 +233,18 @@ export default function BlogList() {
                 </Link>
               </motion.div>
             ))}
+          </div>
+        )}
+
+        {status === 'CanLoadMore' && !searchQuery && (
+          <div className="blog-load-more">
+            <button
+              className="see-all-btn"
+              onClick={() => { haptics.soft(); loadMore(POSTS_PER_PAGE) }}
+              ref={cursorOriginRef}
+            >
+              <span className="see-all-label">Load more</span>
+            </button>
           </div>
         )}
       </main>

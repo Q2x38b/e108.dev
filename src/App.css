@@ -859,14 +859,13 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  line-height: 1;
 }
 
 .section-title-with-icon svg {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  position: relative;
-  top: 1px;
 }
 
 /* Short centered divider between sections */
@@ -1297,8 +1296,6 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
 }
 
 .work-modal-link {
@@ -4942,6 +4939,12 @@
 .see-all-btn svg {
   width: 12px;
   height: 12px;
+}
+
+/* Centered "Load more" row under the paginated blog list */
+.blog-load-more {
+  display: flex;
+  justify-content: center;
 }
 
 /* Listen Button Large */
@@ -9782,8 +9785,8 @@
 }
 
 .shelf-carousel.swiper {
-  width: 240px;
-  height: 300px;
+  width: 200px;
+  height: 250px;
   overflow: visible;
 }
 
@@ -9969,8 +9972,8 @@
 
 @media (max-width: 520px) {
   .shelf-carousel.swiper {
-    width: 200px;
-    height: 250px;
+    width: 170px;
+    height: 212px;
   }
 
   .shelf-carousel-slide-quote blockquote {

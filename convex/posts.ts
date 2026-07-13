@@ -1,5 +1,14 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
+import type { Doc } from "./_generated/dataModel";
+
+// Slim list-view projection — drops the heavy `content`/`contentJson`
+// bodies so list routes only download the fields they actually render.
+function toListItem(post: Doc<"posts">) {
+  const { content: _content, contentJson: _contentJson, ...rest } = post;
+  return rest;
+}
 
 // Generate a short random ID (8 characters, alphanumeric)
 function generateShortId(): string {
@@ -28,6 +37,20 @@ export const listAll = query({
   handler: async (ctx) => {
     const posts = await ctx.db.query("posts").order("desc").collect();
     return posts;
+  },
+});
+
+// Paginated list for the blog index — fetches one page of slim
+// post summaries at a time instead of every post with its full body.
+export const listPage = query({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    const result = await ctx.db
+      .query("posts")
+      .withIndex("by_published", (q) => q.eq("published", true))
+      .order("desc")
+      .paginate(args.paginationOpts);
+    return { ...result, page: result.page.map(toListItem) };
   },
 });
 
@@ -133,7 +156,7 @@ export const listWithViews = query({
           .query("views")
           .withIndex("by_post", (q) => q.eq("postId", post._id))
           .collect();
-        return { ...post, viewCount: views.length };
+        return { ...toListItem(post), viewCount: views.length };
       })
     );
 
