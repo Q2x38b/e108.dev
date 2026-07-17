@@ -9720,13 +9720,13 @@
 }
 
 /* Segmented shape: arrows keep the pill curve on their outer edge and
-   square off (7px) on the edge facing the play button. */
+   a softer rounded corner on the edge facing the play button. */
 .shelf-carousel-controls .shelf-carousel-ctrl:first-child {
-  border-radius: 999px 7px 7px 999px;
+  border-radius: 999px 10px 10px 999px;
 }
 
 .shelf-carousel-controls .shelf-carousel-ctrl:last-child {
-  border-radius: 7px 999px 999px 7px;
+  border-radius: 10px 999px 999px 10px;
 }
 
 .shelf-carousel-ctrl svg {
