@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import BlogList from './pages/BlogList'
 import BlogPost from './pages/BlogPost'
 import BlogEditor from './pages/BlogEditor'
+import { BottomBlur } from './components/BottomBlur'
 import './App.css'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/blog/edit/:shortId" element={<BlogEditor />} />
         <Route path="/blog/:shortId" element={<BlogPost />} />
       </Routes>
+      <BottomBlur />
       {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
     </MotionConfig>
   )

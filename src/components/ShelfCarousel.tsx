@@ -418,6 +418,10 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 boxShadow: '0 24px 60px -16px rgba(0, 0, 0, 0)',
                 transition: { type: 'spring', stiffness: 320, damping: 34 },
               }}
+              // Un-hide the card the moment the return morph lands, while
+              // the clone still covers it exactly — clearing on unmount
+              // instead leaves a blank frame (the "blip").
+              onLayoutAnimationComplete={() => setClosingId(null)}
             />,
             expandedItem.caption ? (
               <motion.p

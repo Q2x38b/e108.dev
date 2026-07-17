@@ -869,6 +869,32 @@
   flex-shrink: 0;
 }
 
+/* Progressive bottom-of-page blur (layers rendered by BottomBlur.tsx).
+   Desktop only; page containers reserve extra bottom padding at the same
+   breakpoint so the footer clears the heavily-blurred strip. */
+.bottom-page-blur {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 80px;
+  z-index: 60;
+  pointer-events: none;
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .bottom-page-blur {
+    display: block;
+  }
+
+  .container,
+  .blog-container,
+  .blog-list-layout {
+    padding-bottom: 140px;
+  }
+}
+
 /* Short centered divider between sections */
 .section-divider {
   width: 60px;
@@ -9720,13 +9746,16 @@
 }
 
 /* Segmented shape: arrows keep the pill curve on their outer edge and
-   a softer rounded corner on the edge facing the play button. */
+   a softer rounded corner on the edge facing the play button.
+   Outer radius must be exactly half the button height (13px on 26px) —
+   an oversized value like 999px makes the browser rescale ALL corners
+   down proportionally, crushing the inner 10px corners to ~0. */
 .shelf-carousel-controls .shelf-carousel-ctrl:first-child {
-  border-radius: 999px 10px 10px 999px;
+  border-radius: 13px 10px 10px 13px;
 }
 
 .shelf-carousel-controls .shelf-carousel-ctrl:last-child {
-  border-radius: 10px 999px 999px 10px;
+  border-radius: 10px 13px 13px 10px;
 }
 
 .shelf-carousel-ctrl svg {

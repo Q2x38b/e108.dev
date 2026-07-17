@@ -1344,8 +1344,6 @@ export default function BlogPost() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <div className="blog-blur-bottom" />
     </div>
   )
 }
