@@ -1504,6 +1504,15 @@
   letter-spacing: -0.005rem;
 }
 
+/* On small screens .section gets overflow: hidden; the markers extend
+   4px past the rail (left: -20px on 16px padding), so widen the rail
+   enough that the dots stay inside the clip box. */
+@media (max-width: 520px) {
+  .timeline {
+    padding-left: 22px;
+  }
+}
+
 /* Skills - minimal grid cards */
 .skills-grid {
   display: grid;
@@ -9682,10 +9691,14 @@
   margin-bottom: 0;
 }
 
+/* Rounded pill wrapping prev / play / next */
 .shelf-carousel-controls {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--hover-bg);
 }
 
 .shelf-carousel-ctrl {
@@ -9697,12 +9710,12 @@
   height: 26px;
   padding: 0;
   border: none;
-  border-radius: 6px;
+  border-radius: 999px;
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
   overflow: hidden;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -9723,8 +9736,8 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  border-radius: 6px;
-  background: var(--hover-bg);
+  border-radius: 999px;
+  background: var(--border);
   transform-origin: var(--x, 50%) var(--y, 50%);
   transform: scale(0);
   opacity: 0;
@@ -9743,11 +9756,11 @@
   }
 }
 
-/* Play / Pause: persistent background + left-to-right progress fill */
+/* Play / Pause: left-to-right progress fill (pill provides the background) */
 .shelf-carousel-play {
   width: 30px;
-  background: var(--hover-bg);
-  color: var(--text-tertiary);
+  background: transparent;
+  color: var(--text-secondary);
 }
 
 .shelf-carousel-progress {
@@ -9760,7 +9773,7 @@
   z-index: 0;
   pointer-events: none;
   transition: transform 90ms linear;
-  border-radius: 6px;
+  border-radius: 999px;
 }
 
 [data-theme="dark"] .shelf-carousel-progress {
