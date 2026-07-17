@@ -9710,13 +9710,23 @@
   height: 26px;
   padding: 0;
   border: none;
-  border-radius: 999px;
+  border-radius: 7px;
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
   overflow: hidden;
   transition: color 0.15s ease, transform 0.15s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Segmented shape: arrows keep the pill curve on their outer edge and
+   square off (7px) on the edge facing the play button. */
+.shelf-carousel-controls .shelf-carousel-ctrl:first-child {
+  border-radius: 999px 7px 7px 999px;
+}
+
+.shelf-carousel-controls .shelf-carousel-ctrl:last-child {
+  border-radius: 7px 999px 999px 7px;
 }
 
 .shelf-carousel-ctrl svg {
@@ -9736,7 +9746,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  border-radius: 999px;
+  border-radius: inherit;
   background: var(--border);
   transform-origin: var(--x, 50%) var(--y, 50%);
   transform: scale(0);
@@ -9773,7 +9783,7 @@
   z-index: 0;
   pointer-events: none;
   transition: transform 90ms linear;
-  border-radius: 999px;
+  border-radius: inherit;
 }
 
 [data-theme="dark"] .shelf-carousel-progress {
