@@ -189,6 +189,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
   const [isPlaying, setIsPlaying] = useState(true)
   const [progress, setProgress] = useState(0)
   const [expandedItem, setExpandedItem] = useState<ShelfItem | null>(null)
+  // Keeps the source card image hidden while the zoomed clone flies back,
+  // so the two never overlap during the close morph.
+  const [closingId, setClosingId] = useState<string | null>(null)
   const wasPlayingBeforeExpand = useRef(false)
 
   const handleImageClick = (item: ShelfItem) => {
@@ -197,11 +200,13 @@ export function ShelfCarousel({ className }: { className?: string }) {
     if (swiperRef.current && isPlaying) {
       swiperRef.current.autoplay.stop()
     }
+    setClosingId(null)
     setExpandedItem(item)
   }
 
   const closeExpanded = () => {
     haptics.soft()
+    setClosingId(expandedItem?._id ?? null)
     setExpandedItem(null)
     if (swiperRef.current && wasPlayingBeforeExpand.current) {
       swiperRef.current.autoplay.start()
@@ -358,7 +363,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
               <ShelfCarouselSlide
                 item={item}
                 onImageClick={handleImageClick}
-                isExpanded={expandedItem?._id === item._id}
+                isExpanded={expandedItem?._id === item._id || closingId === item._id}
               />
             </SwiperSlide>
           ))}
@@ -383,14 +388,14 @@ export function ShelfCarousel({ className }: { className?: string }) {
       )}
 
       {createPortal(
-        <AnimatePresence>
+        <AnimatePresence onExitComplete={() => setClosingId(null)}>
           {expandedItem && expandedItem.type === 'image' && expandedItem.url && [
             <motion.div
               key="shelf-expand-backdrop"
               className="shelf-expand-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } }}
               transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
               onClick={closeExpanded}
             />,
@@ -403,6 +408,10 @@ export function ShelfCarousel({ className }: { className?: string }) {
               draggable={false}
               onClick={(e) => e.stopPropagation()}
               transition={{ type: 'spring', stiffness: 240, damping: 32 }}
+              exit={{
+                boxShadow: '0 24px 60px -16px rgba(0, 0, 0, 0)',
+                transition: { type: 'spring', stiffness: 320, damping: 34 },
+              }}
             />,
             expandedItem.caption ? (
               <motion.p
