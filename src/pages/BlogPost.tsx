@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { AnimatePresence, motion } from 'framer-motion'
+import { play } from 'cuelume'
 import { Footer } from '../components/Footer'
 import { useHaptics } from '../hooks/useHaptics'
 
@@ -362,6 +363,7 @@ function CopyButton({ text }: { text: string }) {
   const handleCopy = async () => {
     haptics.rigid()
     await navigator.clipboard.writeText(text)
+    play('success')
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -972,6 +974,7 @@ export default function BlogPost() {
   const copyLink = useCallback(() => {
     haptics.rigid()
     navigator.clipboard.writeText(window.location.href)
+    play('success')
     setLinkCopied(true)
     setTimeout(() => setLinkCopied(false), 2000)
   }, [haptics])

@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
+import { bind as bindSounds } from 'cuelume'
 import { Agentation } from 'agentation'
 import Home from './pages/Home'
 import BlogList from './pages/BlogList'
@@ -8,6 +10,12 @@ import BlogEditor from './pages/BlogEditor'
 import './App.css'
 
 function App() {
+  // Delegated listeners for data-cuelume-* hover ticks; imperative
+  // play() calls live next to their haptic counterparts.
+  useEffect(() => {
+    bindSounds()
+  }, [])
+
   return (
     <MotionConfig reducedMotion="user">
       <Routes>

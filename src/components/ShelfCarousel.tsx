@@ -5,6 +5,7 @@ import { Autoplay, EffectCards } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperType } from 'swiper'
 import { useQuery } from 'convex/react'
+import { play } from 'cuelume'
 import { api } from '../../convex/_generated/api'
 import { useHaptics } from '../hooks/useHaptics'
 import { useAuth } from '../contexts/AuthContext'
@@ -196,6 +197,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
 
   const handleImageClick = (item: ShelfItem) => {
     haptics.selection()
+    play('bloom')
     wasPlayingBeforeExpand.current = isPlaying
     if (swiperRef.current && isPlaying) {
       swiperRef.current.autoplay.stop()
@@ -206,6 +208,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
 
   const closeExpanded = () => {
     haptics.soft()
+    play('droplet')
     setClosingId(expandedItem?._id ?? null)
     setExpandedItem(null)
     if (swiperRef.current && wasPlayingBeforeExpand.current) {
@@ -243,16 +246,19 @@ export function ShelfCarousel({ className }: { className?: string }) {
 
   const handlePrev = () => {
     haptics.soft()
+    play('page')
     swiperRef.current?.slidePrev()
   }
 
   const handleNext = () => {
     haptics.soft()
+    play('page')
     swiperRef.current?.slideNext()
   }
 
   const togglePlay = () => {
     haptics.selection()
+    play('toggle')
     const swiper = swiperRef.current
     if (!swiper) return
     if (isPlaying) {

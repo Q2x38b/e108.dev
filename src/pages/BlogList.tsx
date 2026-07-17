@@ -5,6 +5,7 @@ import { SignedIn } from '../contexts/AuthContext'
 import { useTheme } from './Home'
 import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { play } from 'cuelume'
 import { Footer } from '../components/Footer'
 import { useHaptics } from '../hooks/useHaptics'
 
@@ -159,7 +160,7 @@ export default function BlogList() {
         <div className="blog-view-toggle" role="group" aria-label="View mode">
           <button
             className={`view-toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
-            onClick={() => { haptics.selection(); setViewMode('card') }}
+            onClick={() => { haptics.selection(); play('toggle'); setViewMode('card') }}
             aria-label="Card view"
             aria-pressed={viewMode === 'card'}
           >
@@ -172,7 +173,7 @@ export default function BlogList() {
           </button>
           <button
             className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
-            onClick={() => { haptics.selection(); setViewMode('list') }}
+            onClick={() => { haptics.selection(); play('toggle'); setViewMode('list') }}
             aria-label="List view"
             aria-pressed={viewMode === 'list'}
           >
@@ -240,7 +241,7 @@ export default function BlogList() {
           <div className="blog-load-more">
             <button
               className="see-all-btn"
-              onClick={() => { haptics.soft(); loadMore(POSTS_PER_PAGE) }}
+              onClick={() => { haptics.soft(); play('loading'); loadMore(POSTS_PER_PAGE) }}
               ref={cursorOriginRef}
             >
               <span className="see-all-label">Load more</span>

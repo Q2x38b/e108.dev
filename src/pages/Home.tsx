@@ -36,6 +36,7 @@ function profileLinkOriginRef(el: HTMLElement | null) {
   el.addEventListener('pointerleave', update)
 }
 import { useQuery } from 'convex/react'
+import { play } from 'cuelume'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
@@ -212,6 +213,7 @@ function AccordionGroup({
 
   const handleToggle = (id: string) => {
     haptics.selection()
+    play(id === openId ? 'droplet' : 'bloom')
     onToggle(id)
   }
 
@@ -397,6 +399,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
   // Mobile: simple toggle between light and dark
   const handleMobileToggle = () => {
     haptics.selection()
+    play('toggle')
     // Toggle based on resolved theme (what's actually showing)
     setPreference(resolvedTheme === 'light' ? 'dark' : 'light')
   }
@@ -464,6 +467,7 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
                 className={`theme-dropdown-item ${preference === option.value ? 'active' : ''}`}
                 onClick={() => {
                   haptics.selection()
+                  play('toggle')
                   setPreference(option.value)
                   setIsOpen(false)
                 }}
@@ -559,7 +563,13 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
 
   const handleProfileClick = () => {
     haptics.soft()
+    play('bloom')
     setProfileExpanded(true)
+  }
+
+  const handleProfileClose = () => {
+    play('droplet')
+    setProfileExpanded(false)
   }
 
   // Lock body scroll when modal is open and reset drag position
@@ -604,21 +614,21 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
         </EditableSection>
 
         <nav className="header-nav">
-          <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing" ref={cursorOriginRef} draggable={false}>
+          <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing" ref={cursorOriginRef} draggable={false} data-cuelume-hover="tick">
             <svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
               <line x1="17" y1="17" x2="12" y2="17" fill="none" />
               <path d="m3,17l1-4.5L12.914,3.586c.781-.781,2.047-.781,2.828,0l.672.672c.781.781.781,2.047,0,2.828l-8.914,8.914-4.5,1Z" />
             </svg>
             <div className="nav-tooltip">Writing</div>
           </Link>
-          <button type="button" className="header-nav-btn nav-tooltip-btn" aria-label="Shelf" onClick={handleShelfClick} ref={cursorOriginRef}>
+          <button type="button" className="header-nav-btn nav-tooltip-btn" aria-label="Shelf" onClick={handleShelfClick} ref={cursorOriginRef} data-cuelume-hover="tick">
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
               <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
             </svg>
             <div className="nav-tooltip">Shelf</div>
           </button>
-          <button className="header-nav-btn location-btn" aria-label="Location" ref={cursorOriginRef}>
+          <button className="header-nav-btn location-btn" aria-label="Location" ref={cursorOriginRef} data-cuelume-hover="tick">
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0zm-8 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fillRule="evenodd" />
             </svg>
@@ -644,7 +654,7 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
           transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-          onClick={() => !isProfileDragging && setProfileExpanded(false)}
+          onClick={() => !isProfileDragging && handleProfileClose()}
         >
           <motion.div
             className="profile-expand-content"
@@ -970,7 +980,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                         <button
                           key={project._id}
                           className="work-entry"
-                          onClick={() => { haptics.soft(); setSelectedId(project.name) }}
+                          onClick={() => { haptics.soft(); play('bloom'); setSelectedId(project.name) }}
                           onMouseEnter={preloadImages}
                           onFocus={preloadImages}
                         >
@@ -998,7 +1008,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            onClick={() => setSelectedId(null)}
+            onClick={() => { play('droplet'); setSelectedId(null) }}
           >
             <motion.div
               className={`work-modal ${selectedProject.images && selectedProject.images.length > 0 ? 'work-modal-with-images' : ''}`}
@@ -1010,7 +1020,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             >
               <button
                 className="work-modal-close"
-                onClick={() => { haptics.soft(); setSelectedId(null) }}
+                onClick={() => { haptics.soft(); play('droplet'); setSelectedId(null) }}
                 aria-label="Close"
               >
                 <svg viewBox="0 0 24 24" fill="none">
