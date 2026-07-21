@@ -164,6 +164,93 @@ export const reorderSkills = mutation({
   },
 });
 
+// ===== STACK =====
+export const getStack = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("stackItems").withIndex("by_order").collect();
+  },
+});
+
+export const updateStackItem = mutation({
+  args: {
+    token: v.string(),
+    id: v.id("stackItems"),
+    name: v.string(),
+    category: v.string(),
+    note: v.optional(v.string()),
+    url: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    if (!await requireAuth(ctx, args.token)) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.id, {
+      name: args.name,
+      category: args.category,
+      note: args.note ?? "",
+      url: args.url ?? "",
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const createStackItem = mutation({
+  args: {
+    token: v.string(),
+    name: v.string(),
+    category: v.string(),
+    note: v.optional(v.string()),
+    url: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    if (!await requireAuth(ctx, args.token)) {
+      throw new Error("Unauthorized");
+    }
+
+    const items = await ctx.db.query("stackItems").collect();
+    const maxOrder = items.reduce((max, i) => Math.max(max, i.order), -1);
+
+    await ctx.db.insert("stackItems", {
+      name: args.name,
+      category: args.category,
+      note: args.note ?? "",
+      url: args.url ?? "",
+      order: maxOrder + 1,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const deleteStackItem = mutation({
+  args: {
+    token: v.string(),
+    id: v.id("stackItems"),
+  },
+  handler: async (ctx, args) => {
+    if (!await requireAuth(ctx, args.token)) {
+      throw new Error("Unauthorized");
+    }
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const reorderStackItems = mutation({
+  args: {
+    token: v.string(),
+    orderedIds: v.array(v.id("stackItems")),
+  },
+  handler: async (ctx, args) => {
+    if (!await requireAuth(ctx, args.token)) {
+      throw new Error("Unauthorized");
+    }
+
+    for (let i = 0; i < args.orderedIds.length; i++) {
+      await ctx.db.patch(args.orderedIds[i], { order: i });
+    }
+  },
+});
+
 // ===== PROJECTS =====
 export const getProjects = query({
   handler: async (ctx) => {

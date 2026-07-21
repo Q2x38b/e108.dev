@@ -58,6 +58,16 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_order", ["order"]),
 
+  // Stack - tools/apps/hardware the user uses, grouped by category
+  stackItems: defineTable({
+    name: v.string(),
+    category: v.string(),
+    note: v.optional(v.string()), // Short "what I use it for" line
+    url: v.optional(v.string()),
+    order: v.number(),
+    updatedAt: v.number(),
+  }).index("by_order", ["order"]),
+
   // Projects/Work - multiple entries with ordering
   projects: defineTable({
     name: v.string(),

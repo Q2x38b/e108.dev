@@ -41,7 +41,7 @@ import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
 import { EditableSection } from '../components/EditableSection'
-import { ProfileEditor, AboutEditor, SkillEditor, ProjectEditor, ExperienceEditor, ShelfEditor } from '../components/editors'
+import { ProfileEditor, AboutEditor, SkillEditor, StackEditor, ProjectEditor, ExperienceEditor, ShelfEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
 import { Footer } from '../components/Footer'
 import { Carousel_002 } from '../components/ui/skiper-ui/skiper48'
@@ -850,6 +850,136 @@ function Skills({ skills, onEdit }: { skills: SkillData[]; onEdit: () => void })
   )
 }
 
+interface StackItemData {
+  _id: string
+  name: string
+  category: string
+  note?: string
+  url?: string
+  order: number
+}
+
+// "My Stack" — filterable tile grid of tools/apps/hardware.
+// Category chips animate a shared pill background; tiles spring-shuffle
+// between filters via layout animations.
+function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }) {
+  const [activeCategory, setActiveCategory] = useState('All')
+  const haptics = useHaptics()
+  const { isAuthenticated } = useAuth()
+
+  const categories = ['All', ...Array.from(new Set(items.map(i => i.category).filter(Boolean)))]
+  const visibleItems = activeCategory === 'All'
+    ? items
+    : items.filter(i => i.category === activeCategory)
+
+  // Hide from visitors until populated; show a hint to the signed-in owner
+  if (items.length === 0 && !isAuthenticated) return null
+
+  const handleFilter = (category: string) => {
+    if (category === activeCategory) return
+    haptics.selection()
+    play('toggle')
+    setActiveCategory(category)
+  }
+
+  return (
+    <EditableSection sectionId="stack" onEdit={onEdit}>
+      <section id="stack" className="section stagger-in stagger-in-7">
+        <h2 className="section-title section-title-with-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" />
+            <polyline points="2 12 12 17 22 12" />
+            <polyline points="2 17 12 22 22 17" />
+          </svg>
+          My Stack
+        </h2>
+
+        {items.length === 0 ? (
+          <p className="stack-empty-hint">No stack items yet — double-click to add what you use.</p>
+        ) : (
+          <>
+            {categories.length > 2 && (
+              <div className="stack-filter" role="tablist" aria-label="Filter stack by category">
+                {categories.map((category) => {
+                  const isActive = category === activeCategory
+                  return (
+                    <button
+                      key={category}
+                      role="tab"
+                      aria-selected={isActive}
+                      className={`stack-filter-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => handleFilter(category)}
+                    >
+                      {isActive && (
+                        <motion.span
+                          layoutId="stack-filter-pill"
+                          className="stack-filter-pill"
+                          transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
+                        />
+                      )}
+                      <span className="stack-filter-label">{category}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            <motion.div className="stack-grid" layout>
+              <AnimatePresence mode="popLayout" initial={false}>
+                {visibleItems.map((item) => {
+                  const hasUrl = item.url && (item.url.startsWith('http://') || item.url.startsWith('https://'))
+                  const content = (
+                    <>
+                      <span className="stack-item-name">
+                        {item.name}
+                        {hasUrl && (
+                          <svg className="stack-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M7 17L17 7M17 7H7M17 7V17" />
+                          </svg>
+                        )}
+                      </span>
+                      {item.note && <span className="stack-item-note">{item.note}</span>}
+                    </>
+                  )
+                  const motionProps = {
+                    layout: true,
+                    initial: { opacity: 0, scale: 0.95 },
+                    animate: { opacity: 1, scale: 1 },
+                    exit: { opacity: 0, scale: 0.95 },
+                    transition: {
+                      layout: { type: 'spring' as const, duration: 0.4, bounce: 0 },
+                      opacity: { duration: 0.15, ease: 'easeOut' as const },
+                      scale: { duration: 0.15, ease: 'easeOut' as const }
+                    }
+                  }
+
+                  return hasUrl ? (
+                    <motion.a
+                      key={item._id}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="stack-item stack-item-link"
+                      onClick={() => haptics.soft()}
+                      {...motionProps}
+                    >
+                      {content}
+                    </motion.a>
+                  ) : (
+                    <motion.div key={item._id} className="stack-item" {...motionProps}>
+                      {content}
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
+            </motion.div>
+          </>
+        )}
+      </section>
+    </EditableSection>
+  )
+}
+
 interface ProjectLink {
   label: string
   url: string
@@ -1170,6 +1300,7 @@ function HomeContent() {
   const profile = useQuery(api.content.getProfile)
   const about = useQuery(api.content.getAbout)
   const skills = useQuery(api.content.getSkills)
+  const stack = useQuery(api.content.getStack)
   const projects = useQuery(api.content.getProjects)
   const experiences = useQuery(api.content.getExperiences)
   const footer = useQuery(api.content.getFooter)
@@ -1179,6 +1310,7 @@ function HomeContent() {
   const [editingProfile, setEditingProfile] = useState(false)
   const [editingAbout, setEditingAbout] = useState(false)
   const [editingSkills, setEditingSkills] = useState(false)
+  const [editingStack, setEditingStack] = useState(false)
   const [editingProjects, setEditingProjects] = useState(false)
   const [editingExperiences, setEditingExperiences] = useState(false)
   const [editingShelf, setEditingShelf] = useState(false)
@@ -1208,7 +1340,8 @@ function HomeContent() {
   // content fades in via its own stagger-in animations once ready, no
   // skeleton placeholder.
   if (profile === undefined || about === undefined || skills === undefined ||
-      projects === undefined || experiences === undefined || footer === undefined) {
+      stack === undefined || projects === undefined || experiences === undefined ||
+      footer === undefined) {
     return null
   }
 
@@ -1220,6 +1353,7 @@ function HomeContent() {
   const profileData = profile
   const aboutData = about
   const skillsData = skills
+  const stackData = stack
   const projectsData = projects
   const experiencesData = experiences
   const footerData = footer
@@ -1259,6 +1393,10 @@ function HomeContent() {
         skills={skillsData as SkillData[]}
         onEdit={() => { setEditingSkills(true); setEditingSection('skills') }}
       />
+      <Stack
+        items={stackData as StackItemData[]}
+        onEdit={() => { setEditingStack(true); setEditingSection('stack') }}
+      />
       <EditableSection sectionId="shelf" onEdit={() => { setEditingShelf(true); setEditingSection('shelf') }}>
         <ShelfCarousel />
       </EditableSection>
@@ -1282,6 +1420,12 @@ function HomeContent() {
           <SkillEditor
             skills={skills}
             onClose={() => handleCloseEditor(setEditingSkills)}
+          />
+        )}
+        {editingStack && (
+          <StackEditor
+            items={stackData as StackItemData[]}
+            onClose={() => handleCloseEditor(setEditingStack)}
           />
         )}
         {editingProjects && projects.length > 0 && (

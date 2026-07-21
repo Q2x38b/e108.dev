@@ -1,6 +1,7 @@
 export { ProfileEditor } from './ProfileEditor'
 export { AboutEditor } from './AboutEditor'
 export { SkillEditor } from './SkillEditor'
+export { StackEditor } from './StackEditor'
 export { ProjectEditor } from './ProjectEditor'
 export { ExperienceEditor } from './ExperienceEditor'
 export { ShelfEditor } from './ShelfEditor'
