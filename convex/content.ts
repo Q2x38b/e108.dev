@@ -179,6 +179,7 @@ export const updateStackItem = mutation({
     category: v.string(),
     note: v.optional(v.string()),
     url: v.optional(v.string()),
+    iconUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -190,6 +191,7 @@ export const updateStackItem = mutation({
       category: args.category,
       note: args.note ?? "",
       url: args.url ?? "",
+      iconUrl: args.iconUrl ?? "",
       updatedAt: Date.now(),
     });
   },
@@ -202,6 +204,7 @@ export const createStackItem = mutation({
     category: v.string(),
     note: v.optional(v.string()),
     url: v.optional(v.string()),
+    iconUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -216,6 +219,7 @@ export const createStackItem = mutation({
       category: args.category,
       note: args.note ?? "",
       url: args.url ?? "",
+      iconUrl: args.iconUrl ?? "",
       order: maxOrder + 1,
       updatedAt: Date.now(),
     });

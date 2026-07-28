@@ -64,6 +64,7 @@ export default defineSchema({
     category: v.string(),
     note: v.optional(v.string()), // Short "what I use it for" line
     url: v.optional(v.string()),
+    iconUrl: v.optional(v.string()), // Custom icon; falls back to site favicon
     order: v.number(),
     updatedAt: v.number(),
   }).index("by_order", ["order"]),

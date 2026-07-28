@@ -856,7 +856,36 @@ interface StackItemData {
   category: string
   note?: string
   url?: string
+  iconUrl?: string
   order: number
+}
+
+// Framed app icon for a stack tile — custom icon URL first, then the
+// site favicon (derived from the item's URL), then a monogram fallback.
+function StackItemIcon({ name, iconUrl, url }: { name: string; iconUrl?: string; url?: string }) {
+  const [failed, setFailed] = useState(false)
+
+  let domain: string | null = null
+  if (url) {
+    try { domain = new URL(url).hostname } catch { domain = null }
+  }
+  const src = iconUrl || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : null)
+
+  return (
+    <span className="stack-item-icon" aria-hidden="true">
+      {src && !failed ? (
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          draggable={false}
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <span className="stack-item-monogram">{name.charAt(0).toUpperCase()}</span>
+      )}
+    </span>
+  )
 }
 
 // "My Stack" — filterable tile grid of tools/apps/hardware.
@@ -930,15 +959,18 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
                   const hasUrl = item.url && (item.url.startsWith('http://') || item.url.startsWith('https://'))
                   const content = (
                     <>
-                      <span className="stack-item-name">
-                        {item.name}
-                        {hasUrl && (
-                          <svg className="stack-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M7 17L17 7M17 7H7M17 7V17" />
-                          </svg>
-                        )}
+                      <StackItemIcon name={item.name} iconUrl={item.iconUrl} url={item.url} />
+                      <span className="stack-item-text">
+                        <span className="stack-item-name">
+                          {item.name}
+                          {hasUrl && (
+                            <svg className="stack-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M7 17L17 7M17 7H7M17 7V17" />
+                            </svg>
+                          )}
+                        </span>
+                        {item.note && <span className="stack-item-note">{item.note}</span>}
                       </span>
-                      {item.note && <span className="stack-item-note">{item.note}</span>}
                     </>
                   )
                   const motionProps = {

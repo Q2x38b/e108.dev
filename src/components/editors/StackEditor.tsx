@@ -11,6 +11,7 @@ interface StackItemData {
   category: string
   note?: string
   url?: string
+  iconUrl?: string
   order: number
 }
 
@@ -26,7 +27,7 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
   const deleteStackItem = useMutation(api.content.deleteStackItem)
 
   const [localItems, setLocalItems] = useState(
-    items.map(i => ({ ...i, note: i.note ?? '', url: i.url ?? '', isNew: false }))
+    items.map(i => ({ ...i, note: i.note ?? '', url: i.url ?? '', iconUrl: i.iconUrl ?? '', isNew: false }))
   )
   const [saving, setSaving] = useState(false)
 
@@ -35,7 +36,7 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
     new Set([...items.map(i => i.category), ...localItems.map(i => i.category)].filter(Boolean))
   )
 
-  const handleChange = (index: number, field: 'name' | 'category' | 'note' | 'url', value: string) => {
+  const handleChange = (index: number, field: 'name' | 'category' | 'note' | 'url' | 'iconUrl', value: string) => {
     const updated = [...localItems]
     updated[index] = { ...updated[index], [field]: value }
     setLocalItems(updated)
@@ -48,6 +49,7 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
       category: '',
       note: '',
       url: '',
+      iconUrl: '',
       order: localItems.length,
       isNew: true
     }])
@@ -78,7 +80,8 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
             name: item.name.trim(),
             category: item.category.trim(),
             note: item.note.trim(),
-            url: item.url.trim()
+            url: item.url.trim(),
+            iconUrl: item.iconUrl.trim()
           })
         } else {
           const original = items.find(i => i._id === item._id)
@@ -86,7 +89,8 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
             original.name !== item.name ||
             original.category !== item.category ||
             (original.note ?? '') !== item.note ||
-            (original.url ?? '') !== item.url
+            (original.url ?? '') !== item.url ||
+            (original.iconUrl ?? '') !== item.iconUrl
           )) {
             await updateStackItem({
               token: sessionToken,
@@ -94,7 +98,8 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
               name: item.name.trim(),
               category: item.category.trim(),
               note: item.note.trim(),
-              url: item.url.trim()
+              url: item.url.trim(),
+              iconUrl: item.iconUrl.trim()
             })
           }
         }
@@ -182,17 +187,31 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
                   autoComplete="off"
                 />
               </div>
-              <div className="editor-field">
-                <label htmlFor={`stack-url-${index}`}>URL</label>
-                <input
-                  id={`stack-url-${index}`}
-                  type="url"
-                  value={item.url}
-                  onChange={(e) => handleChange(index, 'url', e.target.value)}
-                  placeholder="https:// (optional)"
-                  spellCheck="false"
-                  autoComplete="off"
-                />
+              <div className="editor-row">
+                <div className="editor-field">
+                  <label htmlFor={`stack-url-${index}`}>URL</label>
+                  <input
+                    id={`stack-url-${index}`}
+                    type="url"
+                    value={item.url}
+                    onChange={(e) => handleChange(index, 'url', e.target.value)}
+                    placeholder="https:// (optional)"
+                    spellCheck="false"
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="editor-field">
+                  <label htmlFor={`stack-icon-${index}`}>Icon URL</label>
+                  <input
+                    id={`stack-icon-${index}`}
+                    type="url"
+                    value={item.iconUrl}
+                    onChange={(e) => handleChange(index, 'iconUrl', e.target.value)}
+                    placeholder="Optional — defaults to site favicon"
+                    spellCheck="false"
+                    autoComplete="off"
+                  />
+                </div>
               </div>
               <button
                 type="button"
