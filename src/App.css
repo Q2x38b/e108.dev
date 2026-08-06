@@ -1457,6 +1457,23 @@
   margin-top: 12px;
 }
 
+.timeline-company-group {
+  position: relative;
+}
+
+/* Trunk between company nodes: continues the rail from this group's
+   avatar down through the flex gap to the next group's avatar, so every
+   entry hangs off one connected tree rooted at the top (current) node. */
+.timeline-company-group:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 26px;
+  bottom: -26px;
+  width: 0;
+  border-left: 1.5px solid var(--border);
+}
+
 .timeline-company-header {
   display: flex;
   align-items: center;
