@@ -1261,6 +1261,18 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
     return 0
   })
 
+  // Group consecutive entries at the same company into one tree node —
+  // the company is the parent, roles hang off it via elbow connectors.
+  const groups: { company: string; roles: ExperienceData[] }[] = []
+  for (const exp of sortedExperiences) {
+    const last = groups[groups.length - 1]
+    if (last && last.company === exp.company) {
+      last.roles.push(exp)
+    } else {
+      groups.push({ company: exp.company, roles: [exp] })
+    }
+  }
+
   return (
     <EditableSection sectionId="experience" onEdit={onEdit}>
       <section id="experience" className="section stagger-in stagger-in-5">
@@ -1272,30 +1284,50 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
           Timeline
         </h2>
         <div className="timeline">
-          {sortedExperiences.map((exp) => {
-            const isPending = !exp.date
-
-            return (
-              <div key={exp._id} className={`timeline-item ${isPending ? 'pending' : ''}`}>
-                {isPending ? (
-                  <svg className="timeline-marker" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" aria-hidden="true">
-                    <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-                  </svg>
-                ) : (
-                  <svg className="timeline-marker" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" aria-hidden="true">
-                    <path d="m10,2C5.589,2,2,5.589,2,10s3.589,8,8,8,8-3.589,8-8S14.411,2,10,2Zm0,11c-1.657,0-3-1.343-3-3s1.343-3,3-3,3,1.343,3,3-1.343,3-3,3Z" fill="currentColor" strokeWidth="0"/>
-                  </svg>
-                )}
-                <div className="timeline-content">
-                  <div className="timeline-header">
-                    <span className="timeline-company">{exp.company}</span>
-                    <span className="timeline-date">{exp.date || 'Upcoming'}</span>
-                  </div>
-                  <span className="timeline-role">{exp.role}</span>
-                </div>
+          {groups.map((group) => (
+            <div key={group.roles[0]._id} className="timeline-company-group">
+              <div className="timeline-company-header">
+                <span className="timeline-company-avatar" aria-hidden="true">
+                  {group.company.charAt(0).toUpperCase()}
+                </span>
+                <span className="timeline-company-name">{group.company}</span>
               </div>
-            )
-          })}
+              <div className="timeline-roles">
+                {group.roles.map((exp, roleIndex) => {
+                  const isPending = !exp.date
+                  const isLast = roleIndex === group.roles.length - 1
+
+                  return (
+                    <div
+                      key={exp._id}
+                      className={`timeline-role ${isPending ? 'pending' : ''} ${isLast ? 'last' : ''}`}
+                    >
+                      <svg className="timeline-role-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5" />
+                        <path d="M16 2v4" />
+                        <path d="M8 2v4" />
+                        <path d="M3 10h5" />
+                        <path d="M17.5 17.5 16 16.3V14" />
+                        <circle cx="16" cy="16" r="6" />
+                      </svg>
+                      <div className="timeline-role-content">
+                        <span className="timeline-role-title">{exp.role}</span>
+                        <span className="timeline-role-meta">
+                          <span className="timeline-role-date">{exp.date || 'Upcoming'}</span>
+                          {exp.details && (
+                            <>
+                              <span className="timeline-role-sep" aria-hidden="true" />
+                              <span className="timeline-role-detail">{exp.details}</span>
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </EditableSection>
