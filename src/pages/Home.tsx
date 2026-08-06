@@ -1253,6 +1253,56 @@ interface ExperienceData {
   order: number
 }
 
+// Per-role icons, keyed off company/role keywords
+const RoleIcons: { [key: string]: React.ReactNode } = {
+  school: (
+    <svg className="timeline-role-icon" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M10.488,12.39c-.459,.236-.974,.36-1.488,.36s-1.031-.125-1.489-.361l-4.011-2.064v3.676c0,1.805,2.767,2.75,5.5,2.75s5.5-.945,5.5-2.75v-3.676l-4.012,2.065Z" fill="currentColor" />
+      <path d="M16.719,9.226c-.026-.806,.056-1.611,.216-2.402,.018-.13,.065-.191,.065-.449,0-.601-.332-1.146-.866-1.421L9.802,1.694c-.502-.259-1.102-.258-1.604,0L1.866,4.955c-.534,.275-.866,.819-.866,1.42s.332,1.146,.866,1.421l6.332,3.259c.251,.129,.526,.194,.802,.194s.551-.065,.802-.194l5.451-2.806c-.019,.341-.045,.682-.034,1.024,.024,.772,.126,1.546,.301,2.301,.08,.347,.389,.581,.729,.581,.057,0,.113-.006,.17-.02,.403-.093,.655-.496,.562-.899-.152-.66-.241-1.336-.262-2.011Z" fill="currentColor" />
+    </svg>
+  ),
+  dining: (
+    <svg className="timeline-role-icon" viewBox="0 0 20 20" aria-hidden="true">
+      <circle cx="10" cy="3" r="2" fill="currentColor" strokeWidth="0" />
+      <path d="m4,6c4.056,1.336,8.056,1.331,12,0" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="8" y1="18" x2="8.5" y2="7" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line x1="12" y1="18" x2="11.5" y2="7" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <rect x="9" y="8" width="2" height="4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" fill="currentColor" />
+    </svg>
+  ),
+  law: (
+    <svg className="timeline-role-icon" viewBox="0 0 18 18" aria-hidden="true">
+      <path fillRule="evenodd" clipRule="evenodd" d="M3.55972 3.16175C3.68759 3.06047 3.84924 3 4.02502 3H13.975C14.1557 3 14.3214 3.0639 14.4509 3.17032C14.5015 3.21183 14.5468 3.26004 14.5853 3.314C14.623 3.3667 14.6541 3.42448 14.6773 3.48612L17.0393 9.3912C17.2265 9.8591 17.1289 10.4546 16.6835 10.8189C15.1125 12.1035 13.0415 12.0971 11.3633 10.835C10.8943 10.4824 10.77 9.87124 10.9619 9.38154L12.8755 4.5H5.12454L7.03805 9.38148C7.22996 9.87119 7.10568 10.4824 6.63674 10.835C4.95849 12.0971 2.88757 12.1036 1.31662 10.819C0.871273 10.4547 0.773549 9.85915 0.960722 9.39126L3.32285 3.4859C3.34381 3.43018 3.37122 3.37762 3.40416 3.32912C3.44749 3.26519 3.50011 3.20889 3.55972 3.16175ZM12.7226 9L13.9821 5.78707L15.2672 9H12.7226ZM4.01793 5.78707L2.73277 9H5.27738L4.01793 5.78707Z" fill="currentColor" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M9.75 1.75C9.75 1.33579 9.41421 1 9 1C8.58579 1 8.25 1.33579 8.25 1.75V13.25C8.25 14.2165 7.46649 15 6.5 15H4.75C4.33579 15 4 15.3358 4 15.75C4 16.1642 4.33579 16.5 4.75 16.5H6.5H9H11.5H13.25C13.6642 16.5 14 16.1642 14 15.75C14 15.3358 13.6642 15 13.25 15H11.5C10.5335 15 9.75 14.2165 9.75 13.25V1.75Z" fill="currentColor" />
+    </svg>
+  ),
+  future: (
+    <svg className="timeline-role-icon" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11,14H7v3.5c0,.202,.122,.385,.309,.462,.187,.079,.401,.035,.545-.108l1.146-1.146,1.146,1.146c.096,.096,.224,.146,.354,.146,.064,0,.13-.012,.191-.038,.187-.077,.309-.26,.309-.462v-3.5Z" fill="currentColor" />
+      <path d="M15.994,12.25h.006V2.25c0-.414-.336-.75-.75-.75H4.75c-1.517,0-2.75,1.233-2.75,2.75V14c0,1.378,1.122,2.5,2.5,2.5h.75c.414,0,.75-.336,.75-.75s-.336-.75-.75-.75h-.75c-.551,0-1-.449-1-1s.449-1,1-1H14.106c-.155,.629-.174,1.339-.014,2h-1.342c-.414,0-.75,.336-.75,.75s.336,.75,.75,.75h2.5c.286,0,.547-.163,.673-.419,.126-.256,.096-.562-.079-.789-.523-.679-.434-2.013,.003-2.589,.101-.133,.146-.293,.146-.454Zm-10.244-1.75c-.414,0-.75-.336-.75-.75s.336-.75,.75-.75,.75,.336,.75,.75-.336,.75-.75,.75Zm0-2.5c-.414,0-.75-.336-.75-.75s.336-.75,.75-.75,.75,.336,.75,.75-.336,.75-.75,.75Zm0-2.5c-.414,0-.75-.336-.75-.75s.336-.75,.75-.75,.75,.336,.75,.75-.336,.75-.75,.75Z" fill="currentColor" />
+    </svg>
+  ),
+  default: (
+    <svg className="timeline-role-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5" />
+      <path d="M16 2v4" />
+      <path d="M8 2v4" />
+      <path d="M3 10h5" />
+      <path d="M17.5 17.5 16 16.3V14" />
+      <circle cx="16" cy="16" r="6" />
+    </svg>
+  ),
+}
+
+function getRoleIconKey(company: string, role: string, isPending: boolean): string {
+  const text = `${company} ${role}`.toLowerCase()
+  if (isPending || text.includes('future') || text.includes('aspiring')) return 'future'
+  if (text.includes('law') || text.includes('legal')) return 'law'
+  if (text.includes('cantina') || text.includes('restaurant') || text.includes('server') || text.includes('bartend')) return 'dining'
+  if (text.includes('school') || text.includes('college') || text.includes('university') || text.includes('student')) return 'school'
+  return 'default'
+}
+
 function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
   // Sort: pending (no date) first, then by date descending
   const sortedExperiences = [...experiences].sort((a, b) => {
@@ -1302,14 +1352,7 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
                       key={exp._id}
                       className={`timeline-role ${isPending ? 'pending' : ''} ${isLast ? 'last' : ''}`}
                     >
-                      <svg className="timeline-role-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5" />
-                        <path d="M16 2v4" />
-                        <path d="M8 2v4" />
-                        <path d="M3 10h5" />
-                        <path d="M17.5 17.5 16 16.3V14" />
-                        <circle cx="16" cy="16" r="6" />
-                      </svg>
+                      {RoleIcons[getRoleIconKey(exp.company, exp.role, isPending)]}
                       <div className="timeline-role-content">
                         <span className="timeline-role-title">{exp.role}</span>
                         <span className="timeline-role-meta">
