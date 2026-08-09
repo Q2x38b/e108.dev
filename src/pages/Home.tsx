@@ -860,15 +860,22 @@ interface StackItemData {
   order: number
 }
 
-// Framed app icon for a stack tile — custom icon URL first, then the
+// Hostname without the www. prefix — shown as the muted mono label on the right
+function stackDomain(url?: string): string | null {
+  if (!url) return null
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return null
+  }
+}
+
+// Framed app icon for a stack row — custom icon URL first, then the
 // site favicon (derived from the item's URL), then a monogram fallback.
 function StackItemIcon({ name, iconUrl, url }: { name: string; iconUrl?: string; url?: string }) {
   const [failed, setFailed] = useState(false)
 
-  let domain: string | null = null
-  if (url) {
-    try { domain = new URL(url).hostname } catch { domain = null }
-  }
+  const domain = stackDomain(url)
   const src = iconUrl || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : null)
 
   return (
@@ -957,20 +964,20 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
               <AnimatePresence mode="popLayout" initial={false}>
                 {visibleItems.map((item) => {
                   const hasUrl = item.url && (item.url.startsWith('http://') || item.url.startsWith('https://'))
+                  const domain = hasUrl ? stackDomain(item.url) : null
                   const content = (
                     <>
                       <StackItemIcon name={item.name} iconUrl={item.iconUrl} url={item.url} />
                       <span className="stack-item-text">
-                        <span className="stack-item-name">
-                          {item.name}
-                          {hasUrl && (
-                            <svg className="stack-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M7 17L17 7M17 7H7M17 7V17" />
-                            </svg>
-                          )}
-                        </span>
-                        {item.note && <span className="stack-item-note">{item.note}</span>}
+                        <span className="stack-item-name">{item.name}</span>
+                        {item.note && (
+                          <>
+                            <span className="stack-item-slash" aria-hidden="true">/</span>
+                            <span className="stack-item-note">{item.note}</span>
+                          </>
+                        )}
                       </span>
+                      {domain && <span className="stack-item-domain">{domain}</span>}
                     </>
                   )
                   const motionProps = {
@@ -1250,6 +1257,8 @@ interface ExperienceData {
   role: string
   date: string
   details?: string
+  startYear?: number
+  startMonth?: number
   order: number
 }
 
@@ -1294,11 +1303,28 @@ function getCompanyIconKey(company: string, role: string, isPending: boolean): s
 }
 
 function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
-  // Sort: pending (no date) first, then by date descending
+  // Sort: pending (no date) first, then newest first. startYear/startMonth are
+  // hidden ordering hints set in the editor; when absent we fall back to the
+  // first year mentioned in the display date, then to the manual order.
+  const startYearOf = (exp: ExperienceData): number | null => {
+    if (exp.startYear) return exp.startYear
+    const match = exp.date.match(/\d{4}/)
+    return match ? parseInt(match[0], 10) : null
+  }
+
   const sortedExperiences = [...experiences].sort((a, b) => {
     if (!a.date && b.date) return -1
     if (a.date && !b.date) return 1
-    return 0
+
+    const yearA = startYearOf(a)
+    const yearB = startYearOf(b)
+    if (yearA !== null && yearB !== null && yearA !== yearB) return yearB - yearA
+
+    const monthA = a.startMonth ?? 0
+    const monthB = b.startMonth ?? 0
+    if (monthA !== monthB) return monthB - monthA
+
+    return a.order - b.order
   })
 
   // Group consecutive entries at the same company into one tree node —

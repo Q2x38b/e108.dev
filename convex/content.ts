@@ -383,6 +383,8 @@ export const updateExperience = mutation({
     role: v.string(),
     date: v.string(),
     details: v.optional(v.string()),
+    startYear: v.optional(v.number()),
+    startMonth: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -394,6 +396,8 @@ export const updateExperience = mutation({
       role: args.role,
       date: args.date,
       details: args.details ?? "",
+      startYear: args.startYear,
+      startMonth: args.startMonth,
       updatedAt: Date.now(),
     });
   },
@@ -406,6 +410,8 @@ export const createExperience = mutation({
     role: v.string(),
     date: v.string(),
     details: v.optional(v.string()),
+    startYear: v.optional(v.number()),
+    startMonth: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -420,6 +426,8 @@ export const createExperience = mutation({
       role: args.role,
       date: args.date,
       details: args.details ?? "",
+      startYear: args.startYear,
+      startMonth: args.startMonth,
       order: maxOrder + 1,
       updatedAt: Date.now(),
     });

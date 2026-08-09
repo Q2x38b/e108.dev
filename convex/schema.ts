@@ -93,6 +93,8 @@ export default defineSchema({
     role: v.string(),
     date: v.string(),
     details: v.optional(v.string()), // Job description/details shown when accordion is expanded
+    startYear: v.optional(v.number()), // Hidden — sorting only
+    startMonth: v.optional(v.number()), // Hidden — 1-12, orders entries within a year
     order: v.number(),
     updatedAt: v.number(),
   }).index("by_order", ["order"]),
