@@ -98,8 +98,17 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   width: fit-content;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Verified badge beside the name */
+.header-name-badge {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--accent-color);
 }
 
 .header-name-btn > * {
