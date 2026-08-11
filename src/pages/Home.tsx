@@ -925,10 +925,9 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
     <EditableSection sectionId="stack" onEdit={onEdit}>
       <section id="stack" className="section stagger-in stagger-in-7">
         <h2 className="section-title section-title-with-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="12 2 2 7 12 12 22 7 12 2" />
-            <polyline points="2 12 12 17 22 12" />
-            <polyline points="2 17 12 22 22 17" />
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m3.034,12.231c-.111.475.072,1.01.555,1.286l5.83,3.332c.36.206.801.206,1.161,0l5.83-3.332c.483-.276.667-.811.555-1.286" />
+            <path d="m10.58,3.154l5.83,3.332c.786.449.786,1.582,0,2.031l-5.83,3.332c-.36.205-.801.205-1.161,0l-5.83-3.332c-.786-.449-.786-1.582,0-2.031l5.83-3.332c.36-.205.801-.205,1.161,0Z" />
           </svg>
           My Stack
         </h2>
