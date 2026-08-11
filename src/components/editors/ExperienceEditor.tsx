@@ -10,15 +10,8 @@ interface ExperienceData {
   role: string
   date: string
   details?: string
-  startYear?: number
-  startMonth?: number
   order: number
 }
-
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-]
 
 interface ExperienceEditorProps {
   experiences: ExperienceData[]
@@ -31,15 +24,10 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
   const createExperience = useMutation(api.content.createExperience)
   const deleteExperience = useMutation(api.content.deleteExperience)
 
-  const [localExperiences, setLocalExperiences] = useState(experiences.map(e => ({
-    ...e,
-    startYear: e.startYear ? String(e.startYear) : '',
-    startMonth: e.startMonth ? String(e.startMonth) : '',
-    isNew: false
-  })))
+  const [localExperiences, setLocalExperiences] = useState(experiences.map(e => ({ ...e, isNew: false })))
   const [saving, setSaving] = useState(false)
 
-  const handleChange = (index: number, field: 'company' | 'role' | 'date' | 'details' | 'startYear' | 'startMonth', value: string) => {
+  const handleChange = (index: number, field: 'company' | 'role' | 'date' | 'details', value: string) => {
     const updated = [...localExperiences]
     updated[index] = { ...updated[index], [field]: value }
     setLocalExperiences(updated)
@@ -52,8 +40,6 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
       role: '',
       date: '',
       details: '',
-      startYear: '',
-      startMonth: '',
       order: localExperiences.length,
       isNew: true
     }])
@@ -75,11 +61,6 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
         }
       }
 
-      const parseNum = (v: string) => {
-        const n = parseInt(v, 10)
-        return Number.isFinite(n) ? n : undefined
-      }
-
       // Update existing and create new experiences
       for (const exp of localExperiences) {
         if (exp.isNew) {
@@ -88,9 +69,7 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
             company: exp.company,
             role: exp.role,
             date: exp.date,
-            details: exp.details || '',
-            startYear: parseNum(exp.startYear),
-            startMonth: parseNum(exp.startMonth)
+            details: exp.details || ''
           })
         } else {
           const original = experiences.find(e => e._id === exp._id)
@@ -98,9 +77,7 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
             original.company !== exp.company ||
             original.role !== exp.role ||
             original.date !== exp.date ||
-            (original.details || '') !== (exp.details || '') ||
-            (original.startYear ? String(original.startYear) : '') !== exp.startYear ||
-            (original.startMonth ? String(original.startMonth) : '') !== exp.startMonth
+            (original.details || '') !== (exp.details || '')
           )) {
             await updateExperience({
               token: sessionToken,
@@ -108,9 +85,7 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
               company: exp.company,
               role: exp.role,
               date: exp.date,
-              details: exp.details || '',
-              startYear: parseNum(exp.startYear),
-              startMonth: parseNum(exp.startMonth)
+              details: exp.details || ''
             })
           }
         }
@@ -192,34 +167,6 @@ export function ExperienceEditor({ experiences, onClose }: ExperienceEditorProps
                   spellCheck="false"
                   autoComplete="off"
                 />
-              </div>
-              <div className="editor-row">
-                <div className="editor-field">
-                  <label htmlFor={`exp-sort-year-${index}`}>Start Year (sorting only, hidden)</label>
-                  <input
-                    id={`exp-sort-year-${index}`}
-                    type="number"
-                    min="1900"
-                    max="2100"
-                    value={exp.startYear}
-                    onChange={(e) => handleChange(index, 'startYear', e.target.value)}
-                    placeholder="2025"
-                    autoComplete="off"
-                  />
-                </div>
-                <div className="editor-field">
-                  <label htmlFor={`exp-sort-month-${index}`}>Start Month (sorting only, hidden)</label>
-                  <select
-                    id={`exp-sort-month-${index}`}
-                    value={exp.startMonth}
-                    onChange={(e) => handleChange(index, 'startMonth', e.target.value)}
-                  >
-                    <option value="">—</option>
-                    {MONTHS.map((month, m) => (
-                      <option key={month} value={m + 1}>{month}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
               <div className="editor-field">
                 <label htmlFor={`exp-details-${index}`}>Details (shown when expanded)</label>

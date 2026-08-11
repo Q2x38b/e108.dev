@@ -269,6 +269,7 @@ export const updateProject = mutation({
     name: v.string(),
     description: v.string(),
     year: v.string(),
+    month: v.optional(v.number()),
     details: v.string(),
     tech: v.array(v.string()),
     url: v.optional(v.string()),
@@ -288,6 +289,7 @@ export const updateProject = mutation({
       name: args.name,
       description: args.description,
       year: args.year,
+      month: args.month,
       details: args.details,
       tech: args.tech,
       updatedAt: Date.now(),
@@ -305,6 +307,7 @@ export const createProject = mutation({
     name: v.string(),
     description: v.string(),
     year: v.string(),
+    month: v.optional(v.number()),
     details: v.string(),
     tech: v.array(v.string()),
     url: v.optional(v.string()),
@@ -327,6 +330,7 @@ export const createProject = mutation({
       name: args.name,
       description: args.description,
       year: args.year,
+      month: args.month,
       details: args.details,
       tech: args.tech,
       order: maxOrder + 1,
@@ -383,8 +387,6 @@ export const updateExperience = mutation({
     role: v.string(),
     date: v.string(),
     details: v.optional(v.string()),
-    startYear: v.optional(v.number()),
-    startMonth: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -396,8 +398,6 @@ export const updateExperience = mutation({
       role: args.role,
       date: args.date,
       details: args.details ?? "",
-      startYear: args.startYear,
-      startMonth: args.startMonth,
       updatedAt: Date.now(),
     });
   },
@@ -410,8 +410,6 @@ export const createExperience = mutation({
     role: v.string(),
     date: v.string(),
     details: v.optional(v.string()),
-    startYear: v.optional(v.number()),
-    startMonth: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     if (!await requireAuth(ctx, args.token)) {
@@ -426,8 +424,6 @@ export const createExperience = mutation({
       role: args.role,
       date: args.date,
       details: args.details ?? "",
-      startYear: args.startYear,
-      startMonth: args.startMonth,
       order: maxOrder + 1,
       updatedAt: Date.now(),
     });

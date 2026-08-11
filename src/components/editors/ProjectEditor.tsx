@@ -10,11 +10,17 @@ interface ProjectLink {
   url: string
 }
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
+
 interface ProjectData {
   _id: string
   name: string
   description: string
   year: string
+  month?: number
   details: string
   tech: string[]
   url?: string
@@ -41,6 +47,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
   const [localProjects, setLocalProjects] = useState(projects.map(p => ({
     ...p,
     techString: p.tech.join(', '),
+    month: p.month ? String(p.month) : '',
     links: p.links || [],
     images: p.images || [],
     noModal: p.noModal ?? false,
@@ -138,6 +145,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
       name: '',
       description: '',
       year: new Date().getFullYear().toString(),
+      month: '',
       details: '',
       tech: [],
       techString: '',
@@ -187,6 +195,11 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
       }
 
       // Update existing and create new projects
+      const parseMonth = (v: string) => {
+        const n = parseInt(v, 10)
+        return Number.isFinite(n) ? n : undefined
+      }
+
       for (const project of localProjects) {
         const tech = project.techString.split(',').map(t => t.trim()).filter(Boolean)
         const links = project.links.filter(l => l.label.trim() && l.url.trim())
@@ -198,6 +211,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
             name: project.name,
             description: project.description,
             year: project.year,
+            month: parseMonth(project.month),
             details: project.details,
             tech,
             url: project.url || undefined,
@@ -214,6 +228,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
               name: project.name,
               description: project.description,
               year: project.year,
+              month: parseMonth(project.month),
               details: project.details,
               tech,
               url: project.url || undefined,
@@ -277,6 +292,18 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
                     onChange={(e) => handleChange(index, 'year', e.target.value)}
                     placeholder="2025"
                   />
+                </div>
+                <div className="editor-field editor-field-small">
+                  <label>Month (sorting only, hidden)</label>
+                  <select
+                    value={project.month}
+                    onChange={(e) => handleChange(index, 'month', e.target.value)}
+                  >
+                    <option value="">—</option>
+                    {MONTHS.map((month, m) => (
+                      <option key={month} value={m + 1}>{month}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="editor-field">

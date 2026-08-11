@@ -1032,6 +1032,7 @@ interface ProjectData {
   name: string
   description: string
   year: string
+  month?: number
   details: string
   tech: string[]
   url?: string
@@ -1073,6 +1074,17 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
 
   // Sort years in descending order (most recent first)
   const sortedYears = Object.keys(projectsByYear).sort((a, b) => parseInt(b) - parseInt(a))
+
+  // Within a year, newest month first. `month` is a hidden editor-only field —
+  // projects without one keep their manual order below the dated ones.
+  for (const year of sortedYears) {
+    projectsByYear[year].sort((a, b) => {
+      const monthA = a.month ?? 0
+      const monthB = b.month ?? 0
+      if (monthA !== monthB) return monthB - monthA
+      return a.order - b.order
+    })
+  }
 
   return (
     <>
@@ -1260,8 +1272,6 @@ interface ExperienceData {
   role: string
   date: string
   details?: string
-  startYear?: number
-  startMonth?: number
   order: number
 }
 
@@ -1306,28 +1316,11 @@ function getCompanyIconKey(company: string, role: string, isPending: boolean): s
 }
 
 function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
-  // Sort: pending (no date) first, then newest first. startYear/startMonth are
-  // hidden ordering hints set in the editor; when absent we fall back to the
-  // first year mentioned in the display date, then to the manual order.
-  const startYearOf = (exp: ExperienceData): number | null => {
-    if (exp.startYear) return exp.startYear
-    const match = exp.date.match(/\d{4}/)
-    return match ? parseInt(match[0], 10) : null
-  }
-
+  // Sort: pending (no date) first, then by date descending
   const sortedExperiences = [...experiences].sort((a, b) => {
     if (!a.date && b.date) return -1
     if (a.date && !b.date) return 1
-
-    const yearA = startYearOf(a)
-    const yearB = startYearOf(b)
-    if (yearA !== null && yearB !== null && yearA !== yearB) return yearB - yearA
-
-    const monthA = a.startMonth ?? 0
-    const monthB = b.startMonth ?? 0
-    if (monthA !== monthB) return monthB - monthA
-
-    return a.order - b.order
+    return 0
   })
 
   // Group consecutive entries at the same company into one tree node —
