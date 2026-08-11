@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
 import { bind as bindSounds } from 'cuelume'
 import { Agentation } from 'agentation'
+import { Analytics } from '@vercel/analytics/react'
 import Home from './pages/Home'
 import BlogList from './pages/BlogList'
 import BlogPost from './pages/BlogPost'
@@ -27,6 +28,7 @@ function App() {
         <Route path="/blog/:shortId" element={<BlogPost />} />
       </Routes>
       <BottomBlur />
+      <Analytics />
       {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
     </MotionConfig>
   )
