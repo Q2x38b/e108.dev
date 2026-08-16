@@ -9870,8 +9870,16 @@
   transform: scaleX(0);
   z-index: 0;
   pointer-events: none;
-  transition: transform 90ms linear;
   border-radius: inherit;
+}
+
+.shelf-carousel-progress.is-running {
+  animation: shelf-progress-fill linear forwards;
+}
+
+@keyframes shelf-progress-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
 [data-theme="dark"] .shelf-carousel-progress {
@@ -9915,6 +9923,8 @@
 }
 
 .shelf-carousel-wrapper {
+  --shelf-card-w: 200px;
+  --shelf-card-h: 250px;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -9924,17 +9934,25 @@
   overflow: visible;
 }
 
-.shelf-carousel.swiper {
-  width: 200px;
-  height: 250px;
-  overflow: visible;
-}
-
-.shelf-carousel.swiper .swiper-wrapper {
+/* 3D cover-flow stage: cards fan out from the centred active card */
+.shelf-coverflow {
+  position: relative;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  width: var(--shelf-card-w);
+  height: var(--shelf-card-h);
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  touch-action: pan-y;
 }
 
-.shelf-carousel-swiper-slide {
+.shelf-card {
+  position: absolute;
+  width: var(--shelf-card-w);
+  height: var(--shelf-card-h);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   border-radius: 18px;
   overflow: hidden;
   background: var(--background, #fff);
@@ -9944,7 +9962,7 @@
     0 10px 30px -12px rgba(0, 0, 0, 0.18);
 }
 
-[data-theme="dark"] .shelf-carousel-swiper-slide {
+[data-theme="dark"] .shelf-card {
   background: var(--background-secondary, #161616);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.3),
@@ -10111,9 +10129,9 @@
 }
 
 @media (max-width: 520px) {
-  .shelf-carousel.swiper {
-    width: 170px;
-    height: 212px;
+  .shelf-carousel-wrapper {
+    --shelf-card-w: 170px;
+    --shelf-card-h: 212px;
   }
 
   .shelf-carousel-slide-quote blockquote {

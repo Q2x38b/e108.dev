@@ -1,16 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Autoplay, EffectCards } from 'swiper/modules'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import type { Swiper as SwiperType } from 'swiper'
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
 import { useQuery } from 'convex/react'
 import { play } from 'cuelume'
 import { api } from '../../convex/_generated/api'
 import { useHaptics } from '../hooks/useHaptics'
 import { useAuth } from '../contexts/AuthContext'
-import 'swiper/css'
-import 'swiper/css/effect-cards'
 
 
 // Cursor-origin tracker for the scale-in hover background on prev/next buttons
@@ -63,11 +58,9 @@ function isDarkBg(color?: string) {
 
 function ShelfCarouselSlide({
   item,
-  onImageClick,
   isExpanded,
 }: {
   item: ShelfItem
-  onImageClick?: (item: ShelfItem) => void
   isExpanded?: boolean
 }) {
   if (item.type === 'image' && item.url) {
@@ -82,14 +75,7 @@ function ShelfCarouselSlide({
           // @ts-expect-error -- fetchpriority is a valid img attribute but React types lag
           fetchpriority="high"
           decoding="async"
-          onClick={(e) => {
-            e.stopPropagation()
-            onImageClick?.(item)
-          }}
-          style={{
-            cursor: 'pointer',
-            visibility: isExpanded ? 'hidden' : 'visible',
-          }}
+          style={{ visibility: isExpanded ? 'hidden' : 'visible' }}
         />
       </div>
     )
@@ -185,23 +171,24 @@ export function ShelfCarousel({ className }: { className?: string }) {
   const items = useQuery(api.shelf.list) as ShelfItem[] | undefined
   const haptics = useHaptics()
   const { isAuthenticated } = useAuth()
-  const swiperRef = useRef<SwiperType | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
-  const [progress, setProgress] = useState(0)
   const [expandedItem, setExpandedItem] = useState<ShelfItem | null>(null)
   // Keeps the source card image hidden while the zoomed clone flies back,
   // so the two never overlap during the close morph.
   const [closingId, setClosingId] = useState<string | null>(null)
-  const wasPlayingBeforeExpand = useRef(false)
+  const isDragging = useRef(false)
+
+  const count = items?.length ?? 0
+
+  // Wrap so autoplay loops forever, matching the previous Swiper behaviour
+  const step = (delta: number) => {
+    setActiveIndex((prev) => (count ? (prev + delta + count) % count : 0))
+  }
 
   const handleImageClick = (item: ShelfItem) => {
     haptics.selection()
     play('bloom')
-    wasPlayingBeforeExpand.current = isPlaying
-    if (swiperRef.current && isPlaying) {
-      swiperRef.current.autoplay.stop()
-    }
     setClosingId(null)
     setExpandedItem(item)
   }
@@ -211,10 +198,18 @@ export function ShelfCarousel({ className }: { className?: string }) {
     play('droplet')
     setClosingId(expandedItem?._id ?? null)
     setExpandedItem(null)
-    if (swiperRef.current && wasPlayingBeforeExpand.current) {
-      swiperRef.current.autoplay.start()
-    }
   }
+
+  // Autoplay: one timer per slide. Pausing or opening the lightbox simply
+  // stops scheduling the next advance (and the CSS progress bar pauses too).
+  const autoplayActive = isPlaying && count > 1 && !expandedItem
+  useEffect(() => {
+    if (!autoplayActive) return
+    const id = window.setTimeout(() => {
+      setActiveIndex((prev) => (prev + 1) % count)
+    }, AUTOPLAY_DELAY)
+    return () => window.clearTimeout(id)
+  }, [autoplayActive, activeIndex, count])
 
   // Lock body scroll + close on Escape while modal is open
   useEffect(() => {
@@ -247,27 +242,40 @@ export function ShelfCarousel({ className }: { className?: string }) {
   const handlePrev = () => {
     haptics.soft()
     play('page')
-    swiperRef.current?.slidePrev()
+    step(-1)
   }
 
   const handleNext = () => {
     haptics.soft()
     play('page')
-    swiperRef.current?.slideNext()
+    step(1)
   }
 
   const togglePlay = () => {
     haptics.selection()
     play('toggle')
-    const swiper = swiperRef.current
-    if (!swiper) return
-    if (isPlaying) {
-      swiper.autoplay.stop()
-      setIsPlaying(false)
-    } else {
-      swiper.autoplay.start()
-      setIsPlaying(true)
+    setIsPlaying((v) => !v)
+  }
+
+  // Flick or drag past a short threshold moves one card, like the old swipe
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    const { offset, velocity } = info
+    if (offset.x < -40 || velocity.x < -350) handleNext()
+    else if (offset.x > 40 || velocity.x > 350) handlePrev()
+    // Cleared on the next tick so the click that follows pointerup — which
+    // fires synchronously after this — is still treated as part of the drag.
+    window.setTimeout(() => { isDragging.current = false }, 0)
+  }
+
+  const handleCardClick = (item: ShelfItem, index: number) => {
+    if (isDragging.current) return
+    if (index !== activeIndex) {
+      haptics.soft()
+      play('page')
+      setActiveIndex(index)
+      return
     }
+    if (item.type === 'image') handleImageClick(item)
   }
 
   return (
@@ -294,8 +302,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
               aria-pressed={!isPlaying}
             >
               <span
-                className="shelf-carousel-progress"
-                style={{ transform: `scaleX(${progress})` }}
+                key={activeIndex}
+                className={`shelf-carousel-progress ${autoplayActive ? 'is-running' : ''}`}
+                style={{ animationDuration: `${AUTOPLAY_DELAY}ms` }}
                 aria-hidden="true"
               />
               <span className="shelf-carousel-ctrl-icon">
@@ -338,42 +347,51 @@ export function ShelfCarousel({ className }: { className?: string }) {
         transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
         className="shelf-carousel-wrapper"
       >
-        <Swiper
-          grabCursor
-          loop={items.length > 2}
-          effect="cards"
-          speed={650}
-          cardsEffect={{
-            slideShadows: false,
-            perSlideOffset: 16,
-            perSlideRotate: 3,
-            rotate: true,
-          }}
-          modules={[Autoplay, EffectCards]}
-          autoplay={multipleItems ? { delay: AUTOPLAY_DELAY, disableOnInteraction: false } : false}
-          onSwiper={(s) => { swiperRef.current = s }}
-          onSlideChange={(s) => {
-            setActiveIndex(s.realIndex)
-            setProgress(0)
-          }}
-          onAutoplayTimeLeft={(_s, _time, p) => {
-            // Swiper provides p going from 1 → 0 over the delay.
-            // Store as elapsed (0 → 1) so the bar fills left-to-right.
-            setProgress(1 - p)
-          }}
-          onAutoplayStop={() => setProgress(0)}
-          className="shelf-carousel"
+        <motion.div
+          className="shelf-coverflow"
+          drag={multipleItems ? 'x' : false}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.12}
+          onDragStart={() => { isDragging.current = true }}
+          onDragEnd={handleDragEnd}
         >
-          {items.map((item) => (
-            <SwiperSlide key={item._id} className="shelf-carousel-swiper-slide">
-              <ShelfCarouselSlide
-                item={item}
-                onImageClick={handleImageClick}
-                isExpanded={expandedItem?._id === item._id || closingId === item._id}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+          {items.map((item, i) => {
+            // Shortest path around the loop, so cards never sweep the long
+            // way when the index wraps past the end.
+            let offset = i - activeIndex
+            if (offset > count / 2) offset -= count
+            if (offset < -count / 2) offset += count
+
+            const absOffset = Math.abs(offset)
+            const isActive = offset === 0
+            // Cards two deep are invisible, which is also where the wrap
+            // teleport happens — so the jump is never seen.
+            const opacity = absOffset === 0 ? 1 : absOffset === 1 ? 0.7 : 0
+
+            return (
+              <motion.div
+                key={item._id}
+                className="shelf-card"
+                initial={false}
+                animate={{
+                  x: `${offset * 42}%`,
+                  rotateY: isActive ? 0 : offset < 0 ? 38 : -38,
+                  z: isActive ? 50 : -absOffset * 60,
+                  scale: isActive ? 1 : 1 - absOffset * 0.08,
+                  opacity,
+                }}
+                transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                style={{ zIndex: 100 - absOffset, pointerEvents: absOffset > 1 ? 'none' : 'auto' }}
+                onClick={() => handleCardClick(item, i)}
+              >
+                <ShelfCarouselSlide
+                  item={item}
+                  isExpanded={expandedItem?._id === item._id || closingId === item._id}
+                />
+              </motion.div>
+            )
+          })}
+        </motion.div>
       </motion.div>
       )}
 
