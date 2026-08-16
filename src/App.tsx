@@ -9,6 +9,7 @@ import BlogList from './pages/BlogList'
 import BlogPost from './pages/BlogPost'
 import BlogEditor from './pages/BlogEditor'
 import { BottomBlur } from './components/BottomBlur'
+import { CustomCursor } from './components/CustomCursor'
 import './App.css'
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Route path="/blog/:shortId" element={<BlogPost />} />
       </Routes>
       <BottomBlur />
+      <CustomCursor />
       <Analytics />
       {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
     </MotionConfig>

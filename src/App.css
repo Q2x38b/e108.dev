@@ -10346,3 +10346,66 @@
     transition-property: background-color, border-color, color;
   }
 }
+
+/* Custom cursor — the native one is hidden only once the replacement
+   mounts (the .custom-cursor-active class is added from JS). */
+.custom-cursor {
+  --cursor-color: var(--text);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  display: none;
+  transform-origin: top left;
+  will-change: transform;
+  /* Keeps the arrow readable over photos and dark cards */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.28));
+}
+
+.custom-cursor svg {
+  display: block;
+  /* Scale/press feedback lives on the svg so it never fights the
+     transform the pointer handler writes on the wrapper. */
+  transform: scale(1);
+  opacity: 0;
+  transition: transform 140ms var(--ease-out), opacity 140ms var(--ease-out);
+}
+
+.custom-cursor.is-visible svg {
+  opacity: 1;
+}
+
+.custom-cursor.is-pressed svg {
+  transform: scale(0.85);
+}
+
+.custom-cursor.is-over-text svg {
+  opacity: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .custom-cursor {
+    display: block;
+  }
+
+  /* Explicit cursor rules elsewhere (pointer, grab, …) would win over
+     inheritance, so every element is overridden. */
+  html.custom-cursor-active,
+  html.custom-cursor-active * {
+    cursor: none !important;
+  }
+
+  /* …except text entry, which keeps its caret affordance. */
+  html.custom-cursor-active input,
+  html.custom-cursor-active textarea,
+  html.custom-cursor-active [contenteditable="true"] {
+    cursor: text !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-cursor svg {
+    transition-property: opacity;
+  }
+}
