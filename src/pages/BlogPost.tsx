@@ -9,7 +9,7 @@ import rehypeSlug from 'rehype-slug'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useDragControls, useReducedMotion } from 'framer-motion'
 import { play } from 'cuelume'
 import { Footer } from '../components/Footer'
 import { useHaptics } from '../hooks/useHaptics'
@@ -172,6 +172,13 @@ interface AudioPlayerProps {
   onClose: () => void
 }
 
+// Detachable island: drag the handle up past this distance and the player
+// pops free of its dock, collapsing to a compact capsule.
+const DETACH_THRESHOLD = 88
+// Releasing a detached player with the pointer inside this bottom strip
+// snaps it back into the dock.
+const HOME_ZONE_HEIGHT = 120
+
 function AudioPlayer({ content, onClose }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -179,6 +186,12 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
+  const [isDetached, setIsDetached] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isOverHome, setIsOverHome] = useState(false)
+  const dragAreaRef = useRef<HTMLDivElement>(null)
+  const dragControls = useDragControls()
+  const reduced = useReducedMotion()
   const haptics = useHaptics()
 
   const ttsRef = useRef<WebSpeechTTS | null>(null)
@@ -260,14 +273,64 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  const isWithinHomeZone = (event: PointerEvent | MouseEvent | TouchEvent) => {
+    const pointerY = 'clientY' in event ? event.clientY : 0
+    return pointerY >= window.innerHeight - HOME_ZONE_HEIGHT
+  }
+
+  const startDrag = (event: React.PointerEvent<Element>) => {
+    dragControls.start(event, { snapToCursor: false })
+  }
+
   return (
-    <motion.div
-      className="audio-player"
-      initial={{ y: 50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: 50, opacity: 0 }}
-      transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-    >
+    <div ref={dragAreaRef} className="audio-player-zone">
+      <span
+        className={`audio-player-dock ${isDetached && isDragging ? 'visible' : ''} ${isOverHome ? 'over' : ''}`}
+        aria-hidden="true"
+      />
+      <motion.div
+        className="audio-player"
+        data-detached={isDetached ? 'true' : undefined}
+        drag
+        dragListener={false}
+        dragControls={dragControls}
+        dragConstraints={
+          isDetached ? dragAreaRef : { top: 0, right: 0, bottom: 0, left: 0 }
+        }
+        dragTransition={{ bounceStiffness: 400, bounceDamping: 15 }}
+        dragElastic={0.7}
+        whileDrag={{ cursor: 'grabbing' }}
+        onDragStart={() => setIsDragging(true)}
+        onDrag={(event, info) => {
+          if (!isDetached && info.offset.y < -DETACH_THRESHOLD) {
+            haptics.soft()
+            setIsDetached(true)
+          }
+          if (isDetached) setIsOverHome(isWithinHomeZone(event))
+        }}
+        onDragEnd={(event) => {
+          setIsDragging(false)
+          if (isDetached && isWithinHomeZone(event)) {
+            haptics.soft()
+            setIsDetached(false)
+          }
+          setIsOverHome(false)
+        }}
+        initial={{ y: 50, opacity: 0 }}
+        animate={isDetached ? { opacity: 1 } : { x: 0, y: 0, opacity: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={
+          reduced
+            ? { duration: 0 }
+            : { type: 'spring', damping: 25, stiffness: 300 }
+        }
+      >
+        <button
+          type="button"
+          className="audio-player-handle"
+          aria-label={isDetached ? 'Drag player, release near the bottom to dock' : 'Drag up to detach player'}
+          onPointerDown={startDrag}
+        />
       <button
         className="audio-player-btn"
         onClick={togglePlayPause}
@@ -310,30 +373,45 @@ function AudioPlayer({ content, onClose }: AudioPlayerProps) {
         )}
       </button>
 
-      <div className="audio-player-middle">
-        {loadingProgress ? (
-          <span className="audio-player-loading-text">{loadingProgress}</span>
-        ) : (
-          <>
-            <div className="audio-player-progress" onClick={handleSeek}>
-              <div className="audio-player-progress-bar" style={{ transform: `scaleX(${progress / 100})` }} />
-            </div>
-            {duration > 0 && (
-              <span className="audio-player-time">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
+        <motion.div
+          className={`audio-player-collapse ${isDetached ? 'collapsed' : ''}`}
+          animate={{
+            width: isDetached ? 0 : 'auto',
+            opacity: isDetached ? 0 : 1,
+            marginLeft: isDetached ? -12 : 0,
+          }}
+          transition={
+            reduced
+              ? { duration: 0 }
+              : { type: 'spring', duration: 0.4, bounce: 0.1 }
+          }
+        >
+          <div className="audio-player-middle">
+            {loadingProgress ? (
+              <span className="audio-player-loading-text">{loadingProgress}</span>
+            ) : (
+              <>
+                <div className="audio-player-progress" onClick={handleSeek}>
+                  <div className="audio-player-progress-bar" style={{ transform: `scaleX(${progress / 100})` }} />
+                </div>
+                {duration > 0 && (
+                  <span className="audio-player-time">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </span>
+                )}
+              </>
             )}
-          </>
-        )}
-      </div>
+          </div>
+        </motion.div>
 
-      <button className="audio-player-close" onClick={() => { haptics.soft(); onClose() }} aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </motion.div>
+        <button className="audio-player-close" onClick={() => { haptics.soft(); onClose() }} aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </motion.div>
+    </div>
   )
 }
 
