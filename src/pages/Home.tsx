@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, animate, useReducedMotion, type PanInfo } from 'framer-motion'
+import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, animate, type PanInfo } from 'framer-motion'
 
 // Cursor origin helper for button hover animations
 function setCursorOrigin(el: HTMLElement, e: PointerEvent) {
@@ -1314,47 +1314,6 @@ function getCompanyIconKey(company: string, role: string, isPending: boolean): s
   return 'default'
 }
 
-// Hook rail: one accent-colored dashed line that springs down the timeline's
-// spine and curves into whichever row is being read. At rest it points at the
-// most recent entry; the dash length reads as depth into the past.
-const HOOK_CORNER = 6
-
-function TimelineHook({ from, y, visible }: { from: number; y: number | null; visible: boolean }) {
-  const reduced = useReducedMotion()
-  const travel = reduced
-    ? { duration: 0 }
-    : { type: 'spring' as const, stiffness: 420, damping: 34, mass: 0.7 }
-
-  return (
-    <motion.span
-      aria-hidden
-      className="timeline-hook"
-      initial={false}
-      animate={{ opacity: visible && y !== null ? 1 : 0 }}
-      transition={reduced ? { duration: 0 } : { duration: 0.2 }}
-    >
-      <motion.span
-        className="timeline-hook-line"
-        initial={false}
-        animate={{ top: from, height: Math.max(0, (y ?? 0) - HOOK_CORNER - from) }}
-        transition={travel}
-      />
-      <motion.svg
-        className="timeline-hook-elbow"
-        initial={false}
-        animate={{ top: (y ?? 0) - HOOK_CORNER }}
-        transition={travel}
-        width="18"
-        height="7"
-        viewBox="0 0 18 7"
-        fill="none"
-      >
-        <path d="M0.5 0a6 6 0 0 0 6 6H18" stroke="currentColor" strokeDasharray="2 2" />
-      </motion.svg>
-    </motion.span>
-  )
-}
-
 function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
   // Sort: pending (no date) first, then by date descending
   const sortedExperiences = [...experiences].sort((a, b) => {
@@ -1363,9 +1322,8 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
     return 0
   })
 
-  // Group consecutive entries at the same company: the company header is a row,
-  // each role beneath it is a row, and every row gets a flat index so the hook
-  // can travel across group boundaries.
+  // Group consecutive entries at the same company into one tree node —
+  // the company is the parent, roles hang off it via elbow connectors.
   const groups: { company: string; roles: ExperienceData[] }[] = []
   for (const exp of sortedExperiences) {
     const last = groups[groups.length - 1]
@@ -1375,49 +1333,6 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
       groups.push({ company: exp.company, roles: [exp] })
     }
   }
-
-  let rowCursor = 0
-  const indexedGroups = groups.map((group) => ({
-    company: group.company,
-    headerIndex: rowCursor++,
-    roles: group.roles.map((exp) => ({ exp, index: rowCursor++ })),
-  }))
-
-  const listRef = useRef<HTMLDivElement>(null)
-  const rowRefs = useRef<(HTMLElement | null)[]>([])
-  const [centers, setCenters] = useState<number[]>([])
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
-
-  useEffect(() => {
-    const list = listRef.current
-    if (!list) return
-
-    const measure = () => {
-      const listTop = list.getBoundingClientRect().top
-      setCenters(
-        rowRefs.current.map((el) =>
-          el ? el.getBoundingClientRect().top - listTop + el.offsetHeight / 2 : 0,
-        ),
-      )
-    }
-
-    const observer = new ResizeObserver(measure)
-    observer.observe(list)
-    return () => observer.disconnect()
-  }, [experiences.length])
-
-  const activeIndex = hoverIndex ?? 0
-  const firstCenter = centers[0] ?? 0
-  const lastCenter = centers[centers.length - 1] ?? 0
-  const hookY = centers[activeIndex] ?? null
-
-  const rowProps = (index: number) => ({
-    ref: (el: HTMLElement | null) => {
-      rowRefs.current[index] = el
-    },
-    onMouseEnter: () => setHoverIndex(index),
-    'data-hooked': index === activeIndex || undefined,
-  })
 
   return (
     <EditableSection sectionId="experience" onEdit={onEdit}>
@@ -1429,32 +1344,34 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
           </svg>
           Timeline
         </h2>
-        <div ref={listRef} className="timeline" onMouseLeave={() => setHoverIndex(null)}>
-          <span
-            className="timeline-rail"
-            aria-hidden="true"
-            style={{ top: firstCenter, height: Math.max(0, lastCenter - firstCenter) }}
-          />
-          <TimelineHook from={firstCenter} y={hookY} visible={centers.length > 0} />
-          {indexedGroups.map((group) => (
-            <div key={group.roles[0].exp._id} className="timeline-company-group">
-              <div className="timeline-company-header" {...rowProps(group.headerIndex)}>
+        <div className="timeline">
+          {groups.map((group) => (
+            <div key={group.roles[0]._id} className="timeline-company-group">
+              <div className="timeline-company-header">
                 <span className="timeline-company-avatar" aria-hidden="true">
-                  {CompanyIcons[getCompanyIconKey(group.company, group.roles[0].exp.role, !group.roles[0].exp.date)] ??
+                  {CompanyIcons[getCompanyIconKey(group.company, group.roles[0].role, !group.roles[0].date)] ??
                     group.company.charAt(0).toUpperCase()}
                 </span>
                 <span className="timeline-company-name">{group.company}</span>
               </div>
               <div className="timeline-roles">
-                {group.roles.map(({ exp, index }) => {
+                {group.roles.map((exp, roleIndex) => {
                   const isPending = !exp.date
+                  const isLast = roleIndex === group.roles.length - 1
 
                   return (
                     <div
                       key={exp._id}
-                      className={`timeline-role ${isPending ? 'pending' : ''}`}
-                      {...rowProps(index)}
+                      className={`timeline-role ${isPending ? 'pending' : ''} ${isLast ? 'last' : ''}`}
                     >
+                      <svg className="timeline-role-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5" />
+                        <path d="M16 2v4" />
+                        <path d="M8 2v4" />
+                        <path d="M3 10h5" />
+                        <path d="M17.5 17.5 16 16.3V14" />
+                        <circle cx="16" cy="16" r="6" />
+                      </svg>
                       <div className="timeline-role-content">
                         <span className="timeline-role-title">{exp.role}</span>
                         <span className="timeline-role-meta">
