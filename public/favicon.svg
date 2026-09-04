@@ -1,15 +1,13 @@
-<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <style>
     .fg { stroke: #000000; }
     @media (prefers-color-scheme: dark) {
       .fg { stroke: #ffffff; }
     }
   </style>
-  <path
-    class="fg"
-    d="M620 260H790V700C790 820 710 900 590 900H500C380 900 300 820 300 700C300 580 380 500 500 500H610"
-    stroke-width="90"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
+  <g class="fg" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24 28H54" />
+    <path d="M24 50H54" />
+    <path d="M24 72H62C70 72 76 66 76 56" />
+  </g>
 </svg>

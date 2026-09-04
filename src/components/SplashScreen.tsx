@@ -21,25 +21,25 @@ export function SplashScreen() {
         <motion.div
           className="splash"
           initial={false}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: EASE }}
+          // The mark fades first; the frosted surface dissolves just after
+          exit={{ opacity: 0, transition: { duration: 0.4, delay: 0.22, ease: EASE } }}
           aria-hidden="true"
         >
           <motion.svg
             className="splash-mark"
-            viewBox="0 0 1024 1024"
+            viewBox="0 0 100 100"
             fill="none"
+            stroke="currentColor"
+            strokeWidth="14"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             initial={false}
-            exit={{ opacity: 0, scale: 1.08, filter: 'blur(8px)' }}
-            transition={{ duration: 0.35, ease: EASE }}
+            exit={{ opacity: 0, scale: 0.94, filter: 'blur(6px)', transition: { duration: 0.3, ease: EASE } }}
           >
-            <path
-              d="M620 260H790V700C790 820 710 900 590 900H500C380 900 300 820 300 700C300 580 380 500 500 500H610"
-              stroke="currentColor"
-              strokeWidth="90"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            {/* Rising Hook: the E's three bars, the lowest turning up into the J */}
+            <path d="M24 28H54" />
+            <path d="M24 50H54" />
+            <path d="M24 72H62C70 72 76 66 76 56" />
           </motion.svg>
         </motion.div>
       )}
