@@ -41,6 +41,9 @@ interface ShelfItem {
 }
 
 const AUTOPLAY_DELAY = 4500
+// Gap between neighbouring cards, as a fraction of a card's width. One card
+// of drag travel equals this many pixels.
+const CARD_SPACING = 0.42
 
 const DARK_BG_VALUES = new Set([
   '#2d3748',
@@ -201,6 +204,12 @@ export function ShelfCarousel({ className }: { className?: string }) {
   // so the two never overlap during the close morph.
   const [closingId, setClosingId] = useState<string | null>(null)
   const isDragging = useRef(false)
+  // Live scrub: while the pointer is down the deck tracks it 1:1, stepping
+  // the active index each time the drag crosses a card boundary.
+  const [isScrubbing, setIsScrubbing] = useState(false)
+  const [dragFrac, setDragFrac] = useState(0)
+  const coverflowRef = useRef<HTMLDivElement>(null)
+  const scrub = useRef({ startIndex: 0, nearest: 0, stepPx: 84 })
 
   const count = items?.length ?? 0
 
@@ -231,7 +240,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
 
   // Autoplay: one timer per slide. Pausing, opening the lightbox, or
   // switching to the gallery grid stops scheduling the next advance.
-  const autoplayActive = isPlaying && count > 1 && !expandedItem && view === 'slideshow'
+  const autoplayActive = isPlaying && count > 1 && !expandedItem && view === 'slideshow' && !isScrubbing
   useEffect(() => {
     if (!autoplayActive) return
     const id = window.setTimeout(() => {
@@ -286,11 +295,44 @@ export function ShelfCarousel({ className }: { className?: string }) {
     setIsPlaying((v) => !v)
   }
 
-  // Flick or drag past a short threshold moves one card, like the old swipe
+  const wrapIndex = (n: number) => (count ? ((n % count) + count) % count : 0)
+
+  const handleDragStart = () => {
+    isDragging.current = true
+    const width = coverflowRef.current?.offsetWidth ?? 200
+    scrub.current = {
+      startIndex: activeIndex,
+      nearest: activeIndex,
+      stepPx: Math.max(width * CARD_SPACING, 40),
+    }
+    setIsScrubbing(true)
+  }
+
+  // Dragging walks through as many cards as the travel covers, ticking
+  // once per card as the nearest slot changes under the pointer.
+  const handleDrag = (_: unknown, info: PanInfo) => {
+    const { startIndex, stepPx } = scrub.current
+    const virtual = startIndex - info.offset.x / stepPx
+    const nearest = Math.round(virtual)
+    if (nearest !== scrub.current.nearest) {
+      scrub.current.nearest = nearest
+      haptics.soft()
+      setActiveIndex(wrapIndex(nearest))
+    }
+    setDragFrac(virtual - nearest)
+  }
+
   const handleDragEnd = (_: unknown, info: PanInfo) => {
-    const { offset, velocity } = info
-    if (offset.x < -40 || velocity.x < -350) handleNext()
-    else if (offset.x > 40 || velocity.x > 350) handlePrev()
+    const { startIndex, nearest, stepPx } = scrub.current
+    const virtual = startIndex - info.offset.x / stepPx
+    // A flick carries at most one card past where the pointer let go
+    const projected = virtual - (info.velocity.x / stepPx) * 0.12
+    const target = Math.max(nearest - 1, Math.min(nearest + 1, Math.round(projected)))
+    if (target !== nearest) haptics.soft()
+    if (target !== startIndex) play('page')
+    setActiveIndex(wrapIndex(target))
+    setDragFrac(0)
+    setIsScrubbing(false)
     // Cleared on the next tick so the click that follows pointerup — which
     // fires synchronously after this — is still treated as part of the drag.
     window.setTimeout(() => { isDragging.current = false }, 0)
@@ -423,25 +465,31 @@ export function ShelfCarousel({ className }: { className?: string }) {
         className="shelf-carousel-wrapper"
       >
         <motion.div
+          ref={coverflowRef}
           className="shelf-coverflow"
           drag={multipleItems ? 'x' : false}
           dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.12}
-          onDragStart={() => { isDragging.current = true }}
+          dragElastic={0}
+          dragMomentum={false}
+          onDragStart={handleDragStart}
+          onDrag={handleDrag}
           onDragEnd={handleDragEnd}
         >
           {items.map((item, i) => {
             // Shortest path around the loop, so cards never sweep the long
             // way when the index wraps past the end.
-            let offset = i - activeIndex
-            if (offset > count / 2) offset -= count
-            if (offset < -count / 2) offset += count
+            let slot = i - activeIndex
+            if (slot > count / 2) slot -= count
+            if (slot < -count / 2) slot += count
 
+            // Continuous position: the wrapped slot, minus however far the
+            // pointer has scrubbed past the nearest card (0 when idle).
+            const offset = slot - dragFrac
             const absOffset = Math.abs(offset)
-            const isActive = offset === 0
-            // Cards two deep are invisible, which is also where the wrap
-            // teleport happens — so the jump is never seen.
-            const opacity = absOffset === 0 ? 1 : absOffset === 1 ? 0.7 : 0
+            const lean = Math.max(-1, Math.min(1, offset))
+            // Fades to 0.7 one card out and to nothing two cards out — which
+            // is also where the wrap teleport happens, so the jump is never seen.
+            const opacity = absOffset <= 1 ? 1 - absOffset * 0.3 : Math.max(0, 0.7 * (2 - absOffset))
 
             return (
               <motion.div
@@ -449,14 +497,15 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 className="shelf-card"
                 initial={false}
                 animate={{
-                  x: `${offset * 42}%`,
-                  rotateY: isActive ? 0 : offset < 0 ? 38 : -38,
-                  z: isActive ? 50 : -absOffset * 60,
-                  scale: isActive ? 1 : 1 - absOffset * 0.08,
+                  x: `${offset * CARD_SPACING * 100}%`,
+                  rotateY: -lean * 38,
+                  z: 50 - Math.min(absOffset, 1) * 110 - Math.max(absOffset - 1, 0) * 60,
+                  scale: 1 - absOffset * 0.08,
                   opacity,
                 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-                style={{ zIndex: 100 - absOffset, pointerEvents: absOffset > 1 ? 'none' : 'auto' }}
+                // 1:1 under the pointer; springs back into a slot on release
+                transition={isScrubbing ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 25 }}
+                style={{ zIndex: 100 - Math.round(absOffset * 10), pointerEvents: absOffset > 1.5 ? 'none' : 'auto' }}
                 onClick={() => handleCardClick(item, i)}
               >
                 <ShelfCarouselSlide

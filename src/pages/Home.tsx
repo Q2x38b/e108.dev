@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { flushSync } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, animate, type PanInfo } from 'framer-motion'
 
@@ -40,6 +41,7 @@ import { play } from 'cuelume'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
+import { useSplash } from '../contexts/SplashContext'
 import { EditableSection } from '../components/EditableSection'
 import { ProfileEditor, AboutEditor, SkillEditor, StackEditor, ProjectEditor, ExperienceEditor, ShelfEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
@@ -275,9 +277,26 @@ function AccordionGroup({
 type ThemePreference = 'light' | 'dark' | 'system'
 type ResolvedTheme = 'light' | 'dark'
 
+// Viewport point the theme reveal expands from
+type ThemeOrigin = { x: number; y: number }
+
+function resolveTheme(preference: ThemePreference): ResolvedTheme {
+  if (preference !== 'system') return preference
+  if (typeof window === 'undefined') return 'light'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+// Centre of an element in viewport px — used as the reveal origin
+function centerOf(el: Element | null | undefined): ThemeOrigin | undefined {
+  if (!el) return undefined
+  const rect = el.getBoundingClientRect()
+  if (rect.width === 0 && rect.height === 0) return undefined
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+}
+
 // Theme hook
 export function useTheme() {
-  const [preference, setPreference] = useState<ThemePreference>(() => {
+  const [preference, setPreferenceState] = useState<ThemePreference>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme-preference')
       if (saved === 'dark' || saved === 'light' || saved === 'system') return saved
@@ -286,14 +305,7 @@ export function useTheme() {
     return 'system'
   })
 
-  const getSystemTheme = (): ResolvedTheme => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    }
-    return 'light'
-  }
-
-  const resolvedTheme: ResolvedTheme = preference === 'system' ? getSystemTheme() : preference
+  const resolvedTheme = resolveTheme(preference)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', resolvedTheme)
@@ -305,15 +317,60 @@ export function useTheme() {
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = () => {
-      document.documentElement.setAttribute('data-theme', getSystemTheme())
+      document.documentElement.setAttribute('data-theme', resolveTheme('system'))
     }
 
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [preference])
 
-  const toggle = () => {
-    setPreference(resolvedTheme === 'light' ? 'dark' : 'light')
+  // Circle-blur reveal: the new theme expands as a blurred circle from the
+  // control that asked for it. Falls back to an instant swap when nothing
+  // changes visually, motion is reduced, or view transitions are missing.
+  const setPreference = (next: ThemePreference, origin?: ThemeOrigin) => {
+    const root = document.documentElement
+
+    const commit = () => {
+      // Freeze transitions during the flip — every surface changing at once
+      // with transitions still running reads as a glitch.
+      root.classList.add('disable-transitions')
+      flushSync(() => setPreferenceState(next))
+      root.setAttribute('data-theme', resolveTheme(next))
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => root.classList.remove('disable-transitions')),
+      )
+    }
+
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => { finished: Promise<void> }
+    }
+    const changes = resolveTheme(next) !== resolvedTheme
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!changes || reduce || !doc.startViewTransition) {
+      commit()
+      return
+    }
+
+    const point = origin ?? centerOf(document.activeElement)
+    root.style.setProperty(
+      '--theme-vt-origin',
+      point
+        ? `${((point.x / window.innerWidth) * 100).toFixed(1)}% ${((point.y / window.innerHeight) * 100).toFixed(1)}%`
+        : '50% 0%',
+    )
+    root.dataset.themeVt = 'circle-blur'
+    doc.startViewTransition(commit).finished.finally(() => {
+      delete root.dataset.themeVt
+    })
+  }
+
+  // Takes a click event directly (`onClick={toggle}`) or an explicit origin,
+  // so the reveal expands from whichever control fired it.
+  const toggle = (originOrEvent?: ThemeOrigin | { currentTarget: Element }) => {
+    const origin = originOrEvent && 'currentTarget' in originOrEvent
+      ? centerOf(originOrEvent.currentTarget)
+      : originOrEvent
+    setPreference(resolvedTheme === 'light' ? 'dark' : 'light', origin)
   }
 
   return { theme: resolvedTheme, preference, setPreference, toggle }
@@ -322,7 +379,7 @@ export function useTheme() {
 // Theme dropdown component
 function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
   preference: ThemePreference
-  setPreference: (theme: ThemePreference) => void
+  setPreference: (theme: ThemePreference, origin?: ThemeOrigin) => void
   resolvedTheme: 'light' | 'dark'
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -397,11 +454,11 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
   const currentIcon = preference === 'system' ? monitorIcon : preference === 'dark' ? moonIcon : sunIcon
 
   // Mobile: simple toggle between light and dark
-  const handleMobileToggle = () => {
+  const handleMobileToggle = (e: React.MouseEvent<HTMLElement>) => {
     haptics.selection()
     play('toggle')
     // Toggle based on resolved theme (what's actually showing)
-    setPreference(resolvedTheme === 'light' ? 'dark' : 'light')
+    setPreference(resolvedTheme === 'light' ? 'dark' : 'light', centerOf(e.currentTarget))
   }
 
   // Mobile: render simple toggle
@@ -465,10 +522,10 @@ function ThemeDropdown({ preference, setPreference, resolvedTheme }: {
               <button
                 key={option.value}
                 className={`theme-dropdown-item ${preference === option.value ? 'active' : ''}`}
-                onClick={() => {
+                onClick={(e) => {
                   haptics.selection()
                   play('toggle')
-                  setPreference(option.value)
+                  setPreference(option.value, centerOf(e.currentTarget))
                   setIsOpen(false)
                 }}
                 aria-label={`${option.label} theme`}
@@ -515,7 +572,7 @@ const profileExpandLinks = [
 
 function Header({ preference, setPreference, resolvedTheme, location, profileImageUrl, profileName, profileTitle, onEditProfile }: {
   preference: ThemePreference
-  setPreference: (theme: ThemePreference) => void
+  setPreference: (theme: ThemePreference, origin?: ThemeOrigin) => void
   resolvedTheme: 'light' | 'dark'
   location: string
   profileImageUrl: string
@@ -906,6 +963,11 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
   const haptics = useHaptics()
   const { isAuthenticated } = useAuth()
 
+  // The first render trickles the rows in like the blog list. Once a filter
+  // has been used, rows entering the list use the quicker fade so they don't
+  // fight the spring shuffle of the rows already in place.
+  const [hasFiltered, setHasFiltered] = useState(false)
+
   const categories = ['All', ...Array.from(new Set(items.map(i => i.category).filter(Boolean)))]
   const visibleItems = activeCategory === 'All'
     ? items
@@ -918,6 +980,7 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
     if (category === activeCategory) return
     haptics.selection()
     play('toggle')
+    setHasFiltered(true)
     setActiveCategory(category)
   }
 
@@ -925,9 +988,10 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
     <EditableSection sectionId="stack" onEdit={onEdit}>
       <section id="stack" className="section stagger-in stagger-in-7">
         <h2 className="section-title section-title-with-icon">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m3.034,12.231c-.111.475.072,1.01.555,1.286l5.83,3.332c.36.206.801.206,1.161,0l5.83-3.332c.483-.276.667-.811.555-1.286" />
-            <path d="m10.58,3.154l5.83,3.332c.786.449.786,1.582,0,2.031l-5.83,3.332c-.36.205-.801.205-1.161,0l-5.83-3.332c-.786-.449-.786-1.582,0-2.031l5.83-3.332c.36-.205.801-.205,1.161,0Z" />
+          <svg viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+            <path d="M2.251,13.306c-.26,0-.517-.081-.732-.236-.325-.234-.519-.613-.519-1.014V5.944c0-.401,.194-.78,.519-1.014,.325-.234,.747-.299,1.126-.172l.842,.281c.393,.131,.605,.556,.474,.949-.131,.392-.556,.604-.949,.474l-.513-.171v5.419l.513-.171c.394-.131,.818,.081,.949,.474,.131,.393-.081,.818-.474,.949l-.842,.281c-.128,.043-.262,.064-.394,.064Z" />
+            <path d="M6.25,15.25c-.243,0-.484-.071-.693-.21-.348-.232-.556-.621-.556-1.04V4c0-.419,.208-.808,.556-1.04,.35-.232,.789-.273,1.174-.114l.808,.336c.382,.159,.563,.599,.404,.981s-.598,.562-.981,.404l-.461-.192V13.625l.461-.192c.384-.159,.822,.022,.981,.404,.159,.382-.021,.822-.404,.981l-.808,.336c-.155,.064-.319,.096-.481,.096Z" />
+            <path d="M15.983,3.551L10.774,1.146c-.389-.179-.836-.148-1.198,.082-.361,.231-.576,.625-.576,1.053V15.719c0,.428,.215,.822,.576,1.053,.205,.131,.438,.198,.673,.198,.178,0,.357-.039,.525-.116l5.209-2.404c.618-.285,1.017-.909,1.017-1.589V5.14c0-.68-.399-1.304-1.017-1.589Z" />
           </svg>
           My Stack
         </h2>
@@ -963,8 +1027,8 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
             )}
 
             <motion.div className="stack-grid" layout>
-              <AnimatePresence mode="popLayout" initial={false}>
-                {visibleItems.map((item) => {
+              <AnimatePresence mode="popLayout">
+                {visibleItems.map((item, index) => {
                   const hasUrl = item.url && (item.url.startsWith('http://') || item.url.startsWith('https://'))
                   const domain = hasUrl ? stackDomain(item.url) : null
                   const content = (
@@ -982,16 +1046,29 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
                       {domain && <span className="stack-item-domain">{domain}</span>}
                     </>
                   )
+                  const isInitialLoad = !hasFiltered
                   const motionProps = {
                     layout: true,
-                    initial: { opacity: 0, scale: 0.95 },
-                    animate: { opacity: 1, scale: 1 },
+                    initial: isInitialLoad
+                      ? { opacity: 0, y: 8, scale: 0.98, filter: 'blur(8px)' }
+                      : { opacity: 0, scale: 0.95 },
+                    animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
                     exit: { opacity: 0, scale: 0.95 },
-                    transition: {
-                      layout: { type: 'spring' as const, duration: 0.4, bounce: 0 },
-                      opacity: { duration: 0.15, ease: 'easeOut' as const },
-                      scale: { duration: 0.15, ease: 'easeOut' as const }
-                    }
+                    transition: isInitialLoad
+                      ? {
+                          // Trails the section's own stagger-in (0.3s) so the
+                          // heading lands first, then the rows trickle in.
+                          duration: 0.4,
+                          delay: Math.min(0.35 + index * 0.05, 0.8),
+                          ease: [0.23, 1, 0.32, 1] as const,
+                          layout: { type: 'spring' as const, duration: 0.4, bounce: 0 },
+                        }
+                      : {
+                          layout: { type: 'spring' as const, duration: 0.4, bounce: 0 },
+                          opacity: { duration: 0.15, ease: 'easeOut' as const },
+                          scale: { duration: 0.15, ease: 'easeOut' as const },
+                          filter: { duration: 0 },
+                        }
                   }
 
                   return hasUrl ? (
@@ -1314,12 +1391,27 @@ function getCompanyIconKey(company: string, role: string, isPending: boolean): s
   return 'default'
 }
 
+// "2024 - Now", "2023 – 2025", "2022": first year is the start, last is the
+// end. Open-ended ranges get a far-future end so they sort above closed ones.
+function dateBounds(date: string): { start: number; end: number } {
+  const years = (date.match(/\d{4}/g) ?? []).map(Number)
+  const openEnded = /\b(now|present|current|ongoing|today)\b/i.test(date)
+  const start = years[0] ?? 0
+  const end = openEnded ? 9999 : (years[years.length - 1] ?? start)
+  return { start, end }
+}
+
 function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
-  // Sort: pending (no date) first, then by date descending
+  // Sort: pending (no date) first, then open-ended ranges ("2026 - Now"),
+  // then by end year newest-first. Ties break on start year, then order.
   const sortedExperiences = [...experiences].sort((a, b) => {
     if (!a.date && b.date) return -1
     if (a.date && !b.date) return 1
-    return 0
+    const da = dateBounds(a.date)
+    const db = dateBounds(b.date)
+    if (da.end !== db.end) return db.end - da.end
+    if (da.start !== db.start) return db.start - da.start
+    return a.order - b.order
   })
 
   // Group consecutive entries at the same company into one tree node —
@@ -1421,6 +1513,7 @@ function EditModeIndicator() {
 function HomeContent() {
   const { theme: resolvedTheme, preference, setPreference } = useTheme()
   const { setEditingSection } = useEditMode()
+  const { isSplashing, markPageReady } = useSplash()
 
   // Fetch all content from Convex
   const profile = useQuery(api.content.getProfile)
@@ -1447,7 +1540,7 @@ function HomeContent() {
     const id = window.location.hash.slice(1)
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [skills, projects, experiences])
+  }, [skills, projects, experiences, isSplashing])
 
   // Eagerly warm the browser image cache for shelf photos the moment the
   // shelf query resolves — so by the time the user scrolls down to the
@@ -1462,12 +1555,20 @@ function HomeContent() {
     })
   }, [shelfItems])
 
-  // While the Convex data is loading just render nothing — the real
-  // content fades in via its own stagger-in animations once ready, no
-  // skeleton placeholder.
-  if (profile === undefined || about === undefined || skills === undefined ||
-      stack === undefined || projects === undefined || experiences === undefined ||
-      footer === undefined) {
+  const dataLoaded =
+    profile !== undefined && about !== undefined && skills !== undefined &&
+    stack !== undefined && projects !== undefined && experiences !== undefined &&
+    footer !== undefined
+
+  // Tell the splash it can lift; the queries above keep loading behind it.
+  useEffect(() => {
+    if (dataLoaded) markPageReady()
+  }, [dataLoaded, markPageReady])
+
+  // While the Convex data is loading (or the splash is still up) render
+  // nothing — the real content fades in via its own stagger-in animations
+  // the moment the splash lifts, no skeleton placeholder.
+  if (!dataLoaded || isSplashing) {
     return null
   }
 

@@ -192,6 +192,30 @@ button {
   transition: none !important;
 }
 
+/* Theme toggle: circle-blur reveal. The new theme expands as a blurred
+   circle from the control that asked for it. useTheme sets data-theme-vt
+   and --theme-vt-origin on <html> for the life of the view transition. */
+html[data-theme-vt="circle-blur"]::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-theme-vt="circle-blur"]::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation: theme-circle-blur-reveal 700ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes theme-circle-blur-reveal {
+  from {
+    clip-path: circle(0% at var(--theme-vt-origin, 50% 0%));
+    filter: blur(8px);
+  }
+  to {
+    clip-path: circle(150% at var(--theme-vt-origin, 50% 0%));
+    filter: blur(0px);
+  }
+}
+
 /* Tabular figures for numbers that shouldn't shift layout */
 .tabular-nums {
   font-variant-numeric: tabular-nums;

@@ -16,6 +16,28 @@
   animation: staggerIn 0.4s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
+/* Held at their first frame while the splash is up so they all play
+   together the moment it lifts (class managed by SplashContext). */
+html.is-splashing .stagger-in {
+  animation-play-state: paused;
+}
+
+/* Favicon splash — sits under the custom cursor, above everything else */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.splash-mark {
+  width: 44px;
+  height: 44px;
+}
+
 .stagger-in-1 { animation-delay: 0s; }
 .stagger-in-2 { animation-delay: 0.05s; }
 .stagger-in-3 { animation-delay: 0.1s; }
@@ -1846,6 +1868,7 @@
 
 .footer-copyright {
   font-size: 0.8rem;
+  font-weight: 500;
   color: var(--text-tertiary);
   opacity: 0.7;
   cursor: default;
@@ -1853,6 +1876,7 @@
 
 .footer-sep {
   font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-tertiary);
   opacity: 0.7;
   margin: 0 8px;
@@ -1860,6 +1884,7 @@
 
 .footer-link {
   font-size: 0.8rem;
+  font-weight: 500;
   color: var(--text-tertiary);
   opacity: 0.7;
   text-decoration: none;
@@ -1881,7 +1906,7 @@
 
 .footer-quote {
   font-size: 0.8rem;
-  font-style: italic;
+  font-weight: 500;
   color: var(--text-tertiary);
   opacity: 0.7;
 }
@@ -1894,6 +1919,7 @@
 
 .footer-time {
   font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
   opacity: 0.7;
@@ -10402,7 +10428,7 @@
 }
 
 /* Framed icon — same treatment as the shelf picture frames:
-   bg-colored matte, hairline border, soft layered shadow */
+   bg-colored matte and a soft layered shadow, no hairline border */
 .stack-item-icon {
   display: flex;
   align-items: center;
@@ -10413,7 +10439,6 @@
   padding: 3px;
   border-radius: 7px;
   background: var(--background, #fff);
-  border: 1px solid var(--border);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.04),
     0 4px 10px -8px rgba(0, 0, 0, 0.16);

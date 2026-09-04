@@ -9,8 +9,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
     <meta name="description" content="Personal portfolio - Student • Developer" />
     <title>e108</title>
+    <script>
+      // Resolve the theme before first paint so neither the splash nor the
+      // page flashes light on a dark system. is-splashing holds every
+      // .stagger-in at its first frame until the splash lifts.
+      (function () {
+        try {
+          var p = localStorage.getItem('theme-preference');
+          var dark = p === 'dark' || (p !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        } catch (e) {}
+        document.documentElement.classList.add('is-splashing');
+      })();
+    </script>
+    <style>
+      /* Static splash: shown while the bundle downloads, replaced in place
+         by SplashScreen.tsx once React mounts. Mirrors .splash in App.css. */
+      #splash-static { position: fixed; inset: 0; z-index: 100000; display: grid; place-items: center; background: #fdfdfc; }
+      #splash-static svg { width: 44px; height: 44px; stroke: #171717; animation: splash-mark-in 0.5s cubic-bezier(0.23, 1, 0.32, 1) both; }
+      [data-theme="dark"] #splash-static { background: #141414; }
+      [data-theme="dark"] #splash-static svg { stroke: #e5e5e5; }
+      @keyframes splash-mark-in {
+        from { opacity: 0; transform: scale(0.96); filter: blur(8px); }
+        to { opacity: 1; transform: none; filter: blur(0); }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash-static" aria-hidden="true">
+      <svg viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M620 260H790V700C790 820 710 900 590 900H500C380 900 300 820 300 700C300 580 380 500 500 500H610" stroke-width="90" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import { play } from 'cuelume'
 import { Footer } from '../components/Footer'
 import { useHaptics } from '../hooks/useHaptics'
+import { useSplash } from '../contexts/SplashContext'
 
 // Tracks pointer entry/exit on an element so its ::before hover
 // background can scale out from the cursor origin.
@@ -85,6 +86,12 @@ export default function BlogList() {
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [searchQuery, setSearchQuery] = useState('')
   const haptics = useHaptics()
+  const { isSplashing, markPageReady } = useSplash()
+
+  // First page in hand → the splash can lift
+  useEffect(() => {
+    if (status !== 'LoadingFirstPage') markPageReady()
+  }, [status, markPageReady])
 
   // Search filters client-side, so pull in the remaining pages while a
   // query is active to keep results complete.
@@ -187,7 +194,7 @@ export default function BlogList() {
       </div>
 
       <main className="blog-list-content">
-        {status === 'LoadingFirstPage' ? null : filteredPosts.length === 0 ? (
+        {status === 'LoadingFirstPage' || isSplashing ? null : filteredPosts.length === 0 ? (
           <p className="blog-empty">{searchQuery ? 'No posts found.' : 'No posts yet.'}</p>
         ) : viewMode === 'card' ? (
           /* Card View */

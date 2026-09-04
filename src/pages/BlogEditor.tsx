@@ -4,6 +4,7 @@ import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from './Home'
+import { useSplash } from '../contexts/SplashContext'
 import type { JSONContent } from '@tiptap/core'
 import { BlockEditor } from '../components/editor/BlockEditor'
 import { PreviewModal } from '../components/editor/PreviewModal'
@@ -27,7 +28,13 @@ export default function BlogEditor() {
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
   const { isAuthenticated } = useAuth()
+  const { markPageReady } = useSplash()
   const isEditing = !!shortId
+
+  // The editor has no first-paint data dependency; lift the splash at once
+  useEffect(() => {
+    markPageReady()
+  }, [markPageReady])
 
   // Redirect unauthenticated users to blog list
   useEffect(() => {

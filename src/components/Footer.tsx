@@ -252,9 +252,8 @@ export function Footer({
               aria-label="Back to top"
               ref={cursorOriginRef}
             >
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="10" y1="17" x2="10" y2="3" />
-                <polyline points="15 8 10 3 5 8" />
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="10.25 7.75 6 3.5 1.75 7.75" />
               </svg>
             </button>
           </div>
@@ -262,7 +261,7 @@ export function Footer({
 
         {showQuote && (
           <div className="footer-quote-row">
-            <span className="footer-quote">The only limit is yourself</span>
+            <span className="footer-quote">“The only limit is yourself”</span>
           </div>
         )}
 
