@@ -22,14 +22,18 @@ html.is-splashing .stagger-in {
   animation-play-state: paused;
 }
 
-/* Favicon splash — sits under the custom cursor, above everything else */
+/* Favicon splash — sits under the custom cursor, above everything else.
+   Same frosted surface as the bottom page blur: a translucent tint over
+   a heavy backdrop blur. */
 .splash {
   position: fixed;
   inset: 0;
   z-index: 100000;
   display: grid;
   place-items: center;
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: var(--text);
 }
 
@@ -9894,6 +9898,14 @@ html.is-splashing .stagger-in {
 
 .shelf-carousel-header h2.section-title {
   margin-bottom: 0;
+}
+
+/* Right side of the shelf header: the transport pill and, beside it in
+   its own pill, the view toggle — a neighbour, not a member. */
+.shelf-carousel-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Rounded pill wrapping prev / play / next */

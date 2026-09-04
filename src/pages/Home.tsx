@@ -1026,8 +1026,13 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
               </div>
             )}
 
-            <motion.div className="stack-grid" layout>
-              <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={activeCategory}
+                className="stack-grid"
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.12, ease: [0.23, 1, 0.32, 1] }}
+              >
                 {visibleItems.map((item, index) => {
                   const hasUrl = item.url && (item.url.startsWith('http://') || item.url.startsWith('https://'))
                   const domain = hasUrl ? stackDomain(item.url) : null
@@ -1046,29 +1051,16 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
                       {domain && <span className="stack-item-domain">{domain}</span>}
                     </>
                   )
-                  const isInitialLoad = !hasFiltered
+                  // Same trickle as the blog list. First render trails the
+                  // section's stagger-in (0.3s) so the heading lands first;
+                  // a filter change re-streams the list top-down, quicker.
+                  const delay = hasFiltered
+                    ? Math.min(index * 0.03, 0.3)
+                    : Math.min(0.35 + index * 0.05, 0.8)
                   const motionProps = {
-                    layout: true,
-                    initial: isInitialLoad
-                      ? { opacity: 0, y: 8, scale: 0.98, filter: 'blur(8px)' }
-                      : { opacity: 0, scale: 0.95 },
+                    initial: { opacity: 0, y: 8, scale: 0.98, filter: 'blur(8px)' },
                     animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
-                    exit: { opacity: 0, scale: 0.95 },
-                    transition: isInitialLoad
-                      ? {
-                          // Trails the section's own stagger-in (0.3s) so the
-                          // heading lands first, then the rows trickle in.
-                          duration: 0.4,
-                          delay: Math.min(0.35 + index * 0.05, 0.8),
-                          ease: [0.23, 1, 0.32, 1] as const,
-                          layout: { type: 'spring' as const, duration: 0.4, bounce: 0 },
-                        }
-                      : {
-                          layout: { type: 'spring' as const, duration: 0.4, bounce: 0 },
-                          opacity: { duration: 0.15, ease: 'easeOut' as const },
-                          scale: { duration: 0.15, ease: 'easeOut' as const },
-                          filter: { duration: 0 },
-                        }
+                    transition: { duration: 0.4, delay, ease: [0.23, 1, 0.32, 1] as const },
                   }
 
                   return hasUrl ? (
@@ -1089,8 +1081,8 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
                     </motion.div>
                   )
                 })}
-              </AnimatePresence>
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
           </>
         )}
       </section>

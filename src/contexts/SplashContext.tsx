@@ -8,13 +8,20 @@ const MIN_HOLD_MS = 1000
 const MAX_HOLD_MS = 3200
 
 interface SplashState {
+  /** The overlay should be on screen (drops when the page may lift it). */
+  showSplash: boolean
+  /** True until the overlay has fully faded out — pages render nothing before then. */
   isSplashing: boolean
   markPageReady: () => void
+  /** Called by the overlay once its exit animation has finished. */
+  finishSplash: () => void
 }
 
 const SplashContext = createContext<SplashState>({
+  showSplash: false,
   isSplashing: false,
   markPageReady: () => {},
+  finishSplash: () => {},
 })
 
 export function SplashProvider({ children }: { children: ReactNode }) {
@@ -31,18 +38,25 @@ export function SplashProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const isSplashing = !((pageReady && minElapsed) || maxElapsed)
+  const [done, setDone] = useState(false)
+
+  const showSplash = !((pageReady && minElapsed) || maxElapsed)
+  const isSplashing = !done
 
   // index.html sets this class before first paint so every .stagger-in
-  // holds at its first frame; dropping it here lets them all play together
-  // the moment the splash starts to lift.
+  // holds at its first frame; dropping it once the overlay is fully gone
+  // lets them all play together on a clean stage.
   useEffect(() => {
     document.documentElement.classList.toggle('is-splashing', isSplashing)
   }, [isSplashing])
 
   const markPageReady = useCallback(() => setPageReady(true), [])
+  const finishSplash = useCallback(() => setDone(true), [])
 
-  const value = useMemo(() => ({ isSplashing, markPageReady }), [isSplashing, markPageReady])
+  const value = useMemo(
+    () => ({ showSplash, isSplashing, markPageReady, finishSplash }),
+    [showSplash, isSplashing, markPageReady, finishSplash],
+  )
 
   return <SplashContext.Provider value={value}>{children}</SplashContext.Provider>
 }

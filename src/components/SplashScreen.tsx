@@ -9,15 +9,15 @@ const EASE = [0.23, 1, 0.32, 1] as const
 // instant the HTML parses (before the bundle has even downloaded); this
 // component takes over on mount, pixel-for-pixel, and owns the exit.
 export function SplashScreen() {
-  const { isSplashing } = useSplash()
+  const { showSplash, finishSplash } = useSplash()
 
   useEffect(() => {
     document.getElementById('splash-static')?.remove()
   }, [])
 
   return createPortal(
-    <AnimatePresence>
-      {isSplashing && (
+    <AnimatePresence onExitComplete={finishSplash}>
+      {showSplash && (
         <motion.div
           className="splash"
           initial={false}

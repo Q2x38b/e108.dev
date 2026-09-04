@@ -119,6 +119,9 @@ export default function BlogList() {
     return [...result].sort((a, b) => getDisplayDate(b) - getDisplayDate(a))
   }, [posts, searchQuery])
 
+  // Nothing behind the splash; the whole page staggers in once it's gone
+  if (isSplashing) return null
+
   return (
     <div className="blog-list-layout">
       <header className="blog-header stagger-in stagger-in-1">
@@ -194,7 +197,7 @@ export default function BlogList() {
       </div>
 
       <main className="blog-list-content">
-        {status === 'LoadingFirstPage' || isSplashing ? null : filteredPosts.length === 0 ? (
+        {status === 'LoadingFirstPage' ? null : filteredPosts.length === 0 ? (
           <p className="blog-empty">{searchQuery ? 'No posts found.' : 'No posts yet.'}</p>
         ) : viewMode === 'card' ? (
           /* Card View */

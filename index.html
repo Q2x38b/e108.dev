@@ -25,9 +25,9 @@
     <style>
       /* Static splash: shown while the bundle downloads, replaced in place
          by SplashScreen.tsx once React mounts. Mirrors .splash in App.css. */
-      #splash-static { position: fixed; inset: 0; z-index: 100000; display: grid; place-items: center; background: #fdfdfc; }
+      #splash-static { position: fixed; inset: 0; z-index: 100000; display: grid; place-items: center; background: rgba(253, 253, 252, 0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
       #splash-static svg { width: 44px; height: 44px; stroke: #171717; animation: splash-mark-in 0.5s cubic-bezier(0.23, 1, 0.32, 1) both; }
-      [data-theme="dark"] #splash-static { background: #141414; }
+      [data-theme="dark"] #splash-static { background: rgba(20, 20, 20, 0.72); }
       [data-theme="dark"] #splash-static svg { stroke: #e5e5e5; }
       @keyframes splash-mark-in {
         from { opacity: 0; transform: scale(0.96); filter: blur(8px); }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
 import { useQuery } from 'convex/react'
@@ -210,6 +210,11 @@ export function ShelfCarousel({ className }: { className?: string }) {
   const [dragFrac, setDragFrac] = useState(0)
   const coverflowRef = useRef<HTMLDivElement>(null)
   const scrub = useRef({ startIndex: 0, nearest: 0, stepPx: 84 })
+  // Gallery tiles flow down CSS columns, so DOM order would trickle the
+  // left column first. Measure where each tile actually landed and stagger
+  // by visual rank (top to bottom, left to right) instead.
+  const galleryRef = useRef<HTMLDivElement>(null)
+  const [galleryDelays, setGalleryDelays] = useState<number[] | null>(null)
 
   const count = items?.length ?? 0
 
@@ -248,6 +253,22 @@ export function ShelfCarousel({ className }: { className?: string }) {
     }, AUTOPLAY_DELAY)
     return () => window.clearTimeout(id)
   }, [autoplayActive, activeIndex, count])
+
+  useLayoutEffect(() => {
+    if (view !== 'gallery' || !galleryRef.current) {
+      setGalleryDelays(null)
+      return
+    }
+    const origin = galleryRef.current.getBoundingClientRect()
+    const placed = Array.from(galleryRef.current.children).map((child, i) => {
+      const r = child.getBoundingClientRect()
+      return { i, top: Math.round(r.top - origin.top), left: r.left - origin.left }
+    })
+    placed.sort((a, b) => a.top - b.top || a.left - b.left)
+    const delays: number[] = []
+    placed.forEach((tile, rank) => { delays[tile.i] = Math.min(rank * 0.04, 0.6) })
+    setGalleryDelays(delays)
+  }, [view, count])
 
   // Lock body scroll + close on Escape while modal is open
   useEffect(() => {
@@ -352,12 +373,18 @@ export function ShelfCarousel({ className }: { className?: string }) {
   return (
     <section id="shelf" className={`section shelf-carousel-section stagger-in stagger-in-7 ${className || ''}`}>
       <div className="shelf-carousel-header">
-        <h2 className="section-title">Shelf</h2>
+        <h2 className="section-title section-title-with-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+            <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+            <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+          </svg>
+          Shelf
+        </h2>
 
         {items.length > 0 && (
-          <div className="shelf-carousel-controls">
+          <div className="shelf-carousel-actions">
             {multipleItems && view === 'slideshow' && (
-            <>
+            <div className="shelf-carousel-controls">
             <button
               type="button"
               className="shelf-carousel-ctrl shelf-carousel-step"
@@ -404,8 +431,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
             >
               <ChevronRight />
             </button>
-            </>
+            </div>
             )}
+            <div className="shelf-carousel-controls">
             <button
               type="button"
               className="shelf-carousel-ctrl shelf-carousel-step shelf-carousel-view-toggle"
@@ -429,6 +457,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 </span>
               </span>
             </button>
+            </div>
           </div>
         )}
       </div>
@@ -438,15 +467,16 @@ export function ShelfCarousel({ className }: { className?: string }) {
           Double-click here to add shelf items.
         </div>
       ) : view === 'gallery' ? (
-      <div className="shelf-gallery">
+      <div className="shelf-gallery" ref={galleryRef}>
         {items.map((item, i) => (
           <motion.div
             key={`gallery-${item._id}`}
             className={`shelf-gallery-item ${item.type === 'image' ? 'is-image' : ''}`}
             variants={galleryFadeInUp}
             initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.6), ease: [0.23, 1, 0.32, 1] }}
+            // Held hidden until the layout pass has ranked every tile
+            animate={galleryDelays ? 'visible' : 'hidden'}
+            transition={{ duration: 0.4, delay: galleryDelays?.[i] ?? 0, ease: [0.23, 1, 0.32, 1] }}
             onClick={() => { if (item.type === 'image') handleImageClick(item) }}
           >
             <ShelfCarouselSlide
