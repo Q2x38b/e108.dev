@@ -167,12 +167,35 @@ const PauseIcon = () => (
   </svg>
 )
 
+const GalleryViewIcon = () => (
+  <svg viewBox="0 0 20 20" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="3" width="7" height="6" rx="1" ry="1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" fill="currentColor" />
+    <rect x="14" y="6" width="3" height="10" rx="1" ry="1" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+    <rect x="5" y="13" width="5" height="4" rx="1" ry="1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" fill="currentColor" />
+  </svg>
+)
+
+const SlideshowViewIcon = () => (
+  <svg viewBox="0 0 20 20" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="5" width="14" height="10" rx="1.5" ry="1.5" transform="translate(-2 18) rotate(-90)" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" fill="currentColor" />
+    <line x1="17" y1="15" x2="17" y2="5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+  </svg>
+)
+
+// Matches the blog list's trickle-in: small lift, slight scale-up,
+// blur clearing as each card arrives in place.
+const galleryFadeInUp = {
+  hidden: { opacity: 0, y: 8, scale: 0.98, filter: 'blur(8px)' },
+  visible: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
+}
+
 export function ShelfCarousel({ className }: { className?: string }) {
   const items = useQuery(api.shelf.list) as ShelfItem[] | undefined
   const haptics = useHaptics()
   const { isAuthenticated } = useAuth()
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
+  const [view, setView] = useState<'slideshow' | 'gallery'>('slideshow')
   const [expandedItem, setExpandedItem] = useState<ShelfItem | null>(null)
   // Keeps the source card image hidden while the zoomed clone flies back,
   // so the two never overlap during the close morph.
@@ -188,21 +211,27 @@ export function ShelfCarousel({ className }: { className?: string }) {
 
   const handleImageClick = (item: ShelfItem) => {
     haptics.selection()
-    play('bloom')
+    play('loading')
     setClosingId(null)
     setExpandedItem(item)
   }
 
   const closeExpanded = () => {
     haptics.soft()
-    play('droplet')
+    play('release')
     setClosingId(expandedItem?._id ?? null)
     setExpandedItem(null)
   }
 
-  // Autoplay: one timer per slide. Pausing or opening the lightbox simply
-  // stops scheduling the next advance (and the CSS progress bar pauses too).
-  const autoplayActive = isPlaying && count > 1 && !expandedItem
+  const toggleView = () => {
+    haptics.selection()
+    play('toggle')
+    setView((v) => (v === 'slideshow' ? 'gallery' : 'slideshow'))
+  }
+
+  // Autoplay: one timer per slide. Pausing, opening the lightbox, or
+  // switching to the gallery grid stops scheduling the next advance.
+  const autoplayActive = isPlaying && count > 1 && !expandedItem && view === 'slideshow'
   useEffect(() => {
     if (!autoplayActive) return
     const id = window.setTimeout(() => {
@@ -283,8 +312,10 @@ export function ShelfCarousel({ className }: { className?: string }) {
       <div className="shelf-carousel-header">
         <h2 className="section-title">Shelf</h2>
 
-        {multipleItems && (
+        {items.length > 0 && (
           <div className="shelf-carousel-controls">
+            {multipleItems && view === 'slideshow' && (
+            <>
             <button
               type="button"
               className="shelf-carousel-ctrl shelf-carousel-step"
@@ -331,6 +362,31 @@ export function ShelfCarousel({ className }: { className?: string }) {
             >
               <ChevronRight />
             </button>
+            </>
+            )}
+            <button
+              type="button"
+              className="shelf-carousel-ctrl shelf-carousel-step shelf-carousel-view-toggle"
+              onClick={toggleView}
+              aria-label={view === 'slideshow' ? 'Gallery view' : 'Slideshow view'}
+              aria-pressed={view === 'gallery'}
+              ref={cursorOriginRef}
+            >
+              <span className="shelf-carousel-ctrl-icon">
+                <span
+                  className={`shelf-icon-anim shelf-icon-anim-overlay ${view === 'gallery' ? 'is-shown' : ''}`}
+                  aria-hidden={view !== 'gallery'}
+                >
+                  <SlideshowViewIcon />
+                </span>
+                <span
+                  className={`shelf-icon-anim ${view === 'gallery' ? '' : 'is-shown'}`}
+                  aria-hidden={view === 'gallery'}
+                >
+                  <GalleryViewIcon />
+                </span>
+              </span>
+            </button>
           </div>
         )}
       </div>
@@ -339,6 +395,25 @@ export function ShelfCarousel({ className }: { className?: string }) {
         <div className="shelf-carousel-empty">
           Double-click here to add shelf items.
         </div>
+      ) : view === 'gallery' ? (
+      <div className="shelf-gallery">
+        {items.map((item, i) => (
+          <motion.div
+            key={`gallery-${item._id}`}
+            className={`shelf-gallery-item ${item.type === 'image' ? 'is-image' : ''}`}
+            variants={galleryFadeInUp}
+            initial="hidden"
+            animate="visible"
+            transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.6), ease: [0.23, 1, 0.32, 1] }}
+            onClick={() => { if (item.type === 'image') handleImageClick(item) }}
+          >
+            <ShelfCarouselSlide
+              item={item}
+              isExpanded={expandedItem?._id === item._id || closingId === item._id}
+            />
+          </motion.div>
+        ))}
+      </div>
       ) : (
       <motion.div
         initial={{ opacity: 0, translateY: 16 }}
@@ -395,7 +470,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
       </motion.div>
       )}
 
-      {items.length > 0 && (
+      {items.length > 0 && view === 'slideshow' && (
       <div className="shelf-carousel-description" aria-live="polite">
         <AnimatePresence mode="wait" initial={false}>
           <motion.p

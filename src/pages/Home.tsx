@@ -213,7 +213,7 @@ function AccordionGroup({
 
   const handleToggle = (id: string) => {
     haptics.selection()
-    play(id === openId ? 'droplet' : 'bloom')
+    play(id === openId ? 'release' : 'press')
     onToggle(id)
   }
 
@@ -563,12 +563,12 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
 
   const handleProfileClick = () => {
     haptics.soft()
-    play('bloom')
+    play('press')
     setProfileExpanded(true)
   }
 
   const handleProfileClose = () => {
-    play('droplet')
+    play('release')
     setProfileExpanded(false)
   }
 
@@ -1163,7 +1163,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                         <button
                           key={project._id}
                           className="work-entry"
-                          onClick={() => { haptics.soft(); play('bloom'); setSelectedId(project.name) }}
+                          onClick={() => { haptics.soft(); play('press'); setSelectedId(project.name) }}
                           onMouseEnter={preloadImages}
                           onFocus={preloadImages}
                         >
@@ -1191,7 +1191,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            onClick={() => { play('droplet'); setSelectedId(null) }}
+            onClick={() => { play('release'); setSelectedId(null) }}
           >
             <motion.div
               className={`work-modal ${selectedProject.images && selectedProject.images.length > 0 ? 'work-modal-with-images' : ''}`}
@@ -1203,7 +1203,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
             >
               <button
                 className="work-modal-close"
-                onClick={() => { haptics.soft(); play('droplet'); setSelectedId(null) }}
+                onClick={() => { haptics.soft(); play('release'); setSelectedId(null) }}
                 aria-label="Close"
               >
                 <svg viewBox="0 0 24 24" fill="none">

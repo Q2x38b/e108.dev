@@ -9911,6 +9911,11 @@
   border-radius: 10px 13px 13px 10px;
 }
 
+/* Gallery view leaves the view toggle as the pill's only button */
+.shelf-carousel-controls .shelf-carousel-ctrl:only-child {
+  border-radius: 13px;
+}
+
 .shelf-carousel-ctrl svg {
   width: 13px;
   height: 13px;
@@ -10159,6 +10164,82 @@
   color: var(--text-tertiary);
   font-size: 0.8125rem;
   text-align: center;
+}
+
+/* Gallery view — masonry grid of every shelf item at once. Breaks out a
+   little past the site's 580px column, centered on the viewport. */
+.shelf-gallery {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(760px, calc(100vw - 32px));
+  columns: 3;
+  column-gap: 12px;
+  padding: 20px 0 8px;
+}
+
+.shelf-gallery-item {
+  break-inside: avoid;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--background, #fff);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .shelf-gallery-item {
+  background: var(--background-secondary, #161616);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.shelf-gallery-item.is-image {
+  cursor: zoom-in;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Let each card take its natural height (the carousel slides are
+   fixed-size; the grid is masonry) */
+.shelf-gallery-item .shelf-carousel-slide {
+  height: auto;
+}
+
+.shelf-gallery-item .shelf-carousel-slide-image img {
+  height: auto;
+  object-fit: unset;
+}
+
+.shelf-gallery-item .shelf-carousel-slide-quote,
+.shelf-gallery-item .shelf-carousel-slide-text {
+  padding: 20px 18px;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.shelf-gallery-item .shelf-carousel-slide-quote blockquote {
+  font-size: 0.875rem;
+}
+
+.shelf-gallery-item .shelf-carousel-slide-text p {
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 560px) {
+  .shelf-gallery {
+    columns: 2;
+    column-gap: 10px;
+  }
+
+  .shelf-gallery-item {
+    margin-bottom: 10px;
+  }
+}
+
+/* View toggle icons are drawn on a 20px grid; render a touch smaller
+   than the 13px chevrons so their visual weight matches */
+.shelf-carousel-view-toggle svg {
+  width: 14px;
+  height: 14px;
 }
 
 .shelf-expand-backdrop {

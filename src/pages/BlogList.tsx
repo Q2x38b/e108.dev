@@ -241,7 +241,7 @@ export default function BlogList() {
           <div className="blog-load-more">
             <button
               className="see-all-btn"
-              onClick={() => { haptics.soft(); play('loading'); loadMore(POSTS_PER_PAGE) }}
+              onClick={() => { haptics.soft(); play('press'); loadMore(POSTS_PER_PAGE) }}
               ref={cursorOriginRef}
             >
               <span className="see-all-label">Load more</span>
