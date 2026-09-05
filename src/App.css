@@ -3645,19 +3645,20 @@ html.is-splashing .stagger-in {
   align-items: center;
 }
 
+/* Small Rising Hook mark in the footer, coloured and faded exactly like
+   the time and copyright beside it */
 .footer-signature-inline {
   display: inline-flex;
   align-items: center;
   margin-right: 2px;
   color: var(--text-tertiary);
-  /* Match the rest of the footer text exactly. Parent opacity composes
-     with framer-motion's inline opacity on the SVG (which is locked to 1
-     while the draw animation runs), so this lands at the same value as
-     .footer-time / .footer-copyright. */
   opacity: 0.7;
-  /* small nudge so the EJ visually sits on the same baseline as the
-     tabular time numerals next to it */
-  transform: translateY(1px);
+}
+
+.footer-logo {
+  display: block;
+  width: 15px;
+  height: 15px;
 }
 
 .signature-img {

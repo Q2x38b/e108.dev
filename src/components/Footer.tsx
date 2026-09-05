@@ -5,7 +5,6 @@ import { api } from '../../convex/_generated/api'
 import { useAuth, SignedIn } from '../contexts/AuthContext'
 import { useEditMode } from '../contexts/EditModeContext'
 import { useHaptics } from '../hooks/useHaptics'
-import { Signature } from './Signature'
 
 // Tracks the cursor entry/exit point on a button so the ::before hover
 // background can scale out from where the pointer arrives. Mirrors the
@@ -190,14 +189,22 @@ export function Footer({
 
           <div className="footer-actions">
             {showSignature && (
-              <span className="footer-signature-inline">
-                <Signature
-                  text="EJ"
-                  fontSize={48}
-                  duration={1.2}
-                  displayHeight={20}
-                  className="signature-svg"
-                />
+              <span className="footer-signature-inline" aria-label="Ethan Jerla" role="img">
+                {/* Rising Hook mark, same geometry as the favicon */}
+                <svg
+                  className="footer-logo"
+                  viewBox="0 0 100 100"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="14"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M24 28H54" />
+                  <path d="M24 50H54" />
+                  <path d="M24 72H62C70 72 76 66 76 56" />
+                </svg>
               </span>
             )}
             <span className="footer-time">{formatTime(time)}</span>
