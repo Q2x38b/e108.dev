@@ -43,7 +43,7 @@ interface ShelfItem {
 const AUTOPLAY_DELAY = 4500
 // Gap between neighbouring cards, as a fraction of a card's width. One card
 // of drag travel equals this many pixels.
-const CARD_SPACING = 0.42
+const CARD_SPACING = 0.6
 
 const DARK_BG_VALUES = new Set([
   '#2d3748',
@@ -516,10 +516,12 @@ export function ShelfCarousel({ className }: { className?: string }) {
             // pointer has scrubbed past the nearest card (0 when idle).
             const offset = slot - dragFrac
             const absOffset = Math.abs(offset)
-            const lean = Math.max(-1, Math.min(1, offset))
-            // Fades to 0.7 one card out and to nothing two cards out — which
-            // is also where the wrap teleport happens, so the jump is never seen.
-            const opacity = absOffset <= 1 ? 1 - absOffset * 0.3 : Math.max(0, 0.7 * (2 - absOffset))
+            // Fan: neighbours tilt outward and sit lower along an arc, and
+            // soften with blur the further out they are. Gone by three deep,
+            // which is also where the wrap teleport happens, so the jump is
+            // never seen.
+            const opacity = Math.max(0, 1 - absOffset * 0.32)
+            const blur = Math.min(absOffset * 3.5, 12)
 
             return (
               <motion.div
@@ -528,14 +530,15 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 initial={false}
                 animate={{
                   x: `${offset * CARD_SPACING * 100}%`,
-                  rotateY: -lean * 38,
-                  z: 50 - Math.min(absOffset, 1) * 110 - Math.max(absOffset - 1, 0) * 60,
-                  scale: 1 - absOffset * 0.08,
+                  y: absOffset * absOffset * 9,
+                  rotate: offset * 9,
+                  scale: 1 - absOffset * 0.06,
                   opacity,
+                  filter: `blur(${blur.toFixed(2)}px)`,
                 }}
                 // 1:1 under the pointer; springs back into a slot on release
                 transition={isScrubbing ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 25 }}
-                style={{ zIndex: 100 - Math.round(absOffset * 10), pointerEvents: absOffset > 1.5 ? 'none' : 'auto' }}
+                style={{ zIndex: 100 - Math.round(absOffset * 10), pointerEvents: absOffset > 2.5 ? 'none' : 'auto' }}
                 onClick={() => handleCardClick(item, i)}
               >
                 <ShelfCarouselSlide

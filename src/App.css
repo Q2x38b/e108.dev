@@ -10066,13 +10066,14 @@ html.is-splashing .stagger-in {
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 28px 0 24px;
+  /* Extra room below: the fanned neighbours sit lower than the active card */
+  padding: 28px 0 48px;
   /* Let the fanned stack bleed past the section margins (cards have a
      higher z-index so they sit above neighbouring content) — no clipping. */
   overflow: visible;
 }
 
-/* 3D cover-flow stage: cards fan out from the centred active card */
+/* Fan stage: neighbours tilt, drop and blur away from the centred active card */
 .shelf-coverflow {
   position: relative;
   display: flex;
@@ -10080,8 +10081,6 @@ html.is-splashing .stagger-in {
   justify-content: center;
   width: var(--shelf-card-w);
   height: var(--shelf-card-h);
-  perspective: 1000px;
-  transform-style: preserve-3d;
   touch-action: pan-y;
 }
 
