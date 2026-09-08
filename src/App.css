@@ -10066,14 +10066,13 @@ html.is-splashing .stagger-in {
   display: flex;
   justify-content: center;
   width: 100%;
-  /* Extra room below: the fanned neighbours sit lower than the active card */
-  padding: 28px 0 48px;
+  padding: 28px 0 24px;
   /* Let the fanned stack bleed past the section margins (cards have a
      higher z-index so they sit above neighbouring content) — no clipping. */
   overflow: visible;
 }
 
-/* Fan stage: neighbours tilt, drop and blur away from the centred active card */
+/* Ring stage: cards recede round the back, shrinking and blurring with depth */
 .shelf-coverflow {
   position: relative;
   display: flex;

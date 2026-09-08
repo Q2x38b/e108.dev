@@ -41,9 +41,11 @@ interface ShelfItem {
 }
 
 const AUTOPLAY_DELAY = 4500
-// Gap between neighbouring cards, as a fraction of a card's width. One card
-// of drag travel equals this many pixels.
+// Drag travel per seat on the ring, as a fraction of a card's width.
 const CARD_SPACING = 0.6
+// Horizontal reach of the ring, in card widths. Cards at the sides of the
+// ring sit this far from centre; front and back sit on the centre line.
+const RING_REACH = 1.15
 
 const DARK_BG_VALUES = new Set([
   '#2d3748',
@@ -506,7 +508,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
           onDragEnd={handleDragEnd}
         >
           {items.map((item, i) => {
-            // Shortest path around the loop, so cards never sweep the long
+            // Shortest way round the ring, so cards never sweep the long
             // way when the index wraps past the end.
             let slot = i - activeIndex
             if (slot > count / 2) slot -= count
@@ -515,13 +517,16 @@ export function ShelfCarousel({ className }: { className?: string }) {
             // Continuous position: the wrapped slot, minus however far the
             // pointer has scrubbed past the nearest card (0 when idle).
             const offset = slot - dragFrac
-            const absOffset = Math.abs(offset)
-            // Fan: neighbours tilt outward and sit lower along an arc, and
-            // soften with blur the further out they are. Gone by three deep,
-            // which is also where the wrap teleport happens, so the jump is
-            // never seen.
-            const opacity = Math.max(0, 1 - absOffset * 0.32)
-            const blur = Math.min(absOffset * 3.5, 12)
+            // Ring: every card has a seat on a circle viewed from slightly
+            // above. The active card is at the front; the rest recede round
+            // the back, shrinking, rising and blurring with depth. Seats are
+            // 360°/count apart, so the wrap from +count/2 to -count/2 lands
+            // on the very same point at the back and is never seen.
+            const angle = (offset * 2 * Math.PI) / count
+            // 0 at the front, 1 at the back
+            const depth = (1 - Math.cos(angle)) / 2
+            const opacity = 1 - depth * 0.7
+            const blur = depth * 10
 
             return (
               <motion.div
@@ -529,16 +534,15 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 className="shelf-card"
                 initial={false}
                 animate={{
-                  x: `${offset * CARD_SPACING * 100}%`,
-                  y: absOffset * absOffset * 9,
-                  rotate: offset * 9,
-                  scale: 1 - absOffset * 0.06,
+                  x: `${Math.sin(angle) * RING_REACH * 100}%`,
+                  y: -depth * 36,
+                  scale: 1 - depth * 0.5,
                   opacity,
                   filter: `blur(${blur.toFixed(2)}px)`,
                 }}
-                // 1:1 under the pointer; springs back into a slot on release
+                // 1:1 under the pointer; springs back into a seat on release
                 transition={isScrubbing ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 25 }}
-                style={{ zIndex: 100 - Math.round(absOffset * 10), pointerEvents: absOffset > 2.5 ? 'none' : 'auto' }}
+                style={{ zIndex: Math.round(100 - depth * 100), pointerEvents: depth > 0.75 ? 'none' : 'auto' }}
                 onClick={() => handleCardClick(item, i)}
               >
                 <ShelfCarouselSlide
