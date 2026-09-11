@@ -668,9 +668,9 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
               <svg className="header-name-badge" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
                 <path fillRule="evenodd" d="M12.00 1.00A4.62 4.62 0 0 1 14.58 3.22A3.84 3.84 0 0 1 17.95 2.75A4.62 4.62 0 0 1 18.92 6.01A3.84 3.84 0 0 1 22.01 7.43A4.62 4.62 0 0 1 21.06 10.70A3.84 3.84 0 0 1 22.89 13.57A4.62 4.62 0 0 1 20.32 15.80A3.84 3.84 0 0 1 20.31 19.20A4.62 4.62 0 0 1 16.95 19.70A3.84 3.84 0 0 1 15.10 22.55A4.62 4.62 0 0 1 12.00 21.15A3.84 3.84 0 0 1 8.90 22.55A4.62 4.62 0 0 1 7.05 19.70A3.84 3.84 0 0 1 3.69 19.20A4.62 4.62 0 0 1 3.68 15.80A3.84 3.84 0 0 1 1.11 13.57A4.62 4.62 0 0 1 2.94 10.70A3.84 3.84 0 0 1 1.99 7.43A4.62 4.62 0 0 1 5.08 6.01A3.84 3.84 0 0 1 6.05 2.75A4.62 4.62 0 0 1 9.42 3.22A3.84 3.84 0 0 1 12.00 1.00Z M10.55 16.05 L6.95 12.45 L8.6 10.8 L10.55 12.75 L15.4 7.9 L17.05 9.55 Z" />
               </svg>
+              {/* IPA pronunciation, revealed to the right of the name on hover */}
+              <span className="header-name-ipa" aria-hidden="true">/ˈiːθən ˈdʒɜːrlə/</span>
             </button>
-            {/* IPA pronunciation on its own line, dictionary-headword style */}
-            <p className="header-name-ipa" aria-label="Pronounced EE-thən JER-lə">/ˈiːθən ˈdʒɜːrlə/</p>
             <p className="header-title">{profileTitle}</p>
           </div>
         </EditableSection>

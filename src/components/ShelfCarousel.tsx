@@ -46,6 +46,10 @@ const CARD_SPACING = 0.6
 // Horizontal reach of the ring, in card widths. Cards at the sides of the
 // ring sit this far from centre; front and back sit on the centre line.
 const RING_REACH = 1.15
+// Seats around the ring never sit closer than 360°/RING_SEATS apart, and
+// only the active card plus RING_VISIBLE neighbours each side are rendered.
+const RING_SEATS = 6
+const RING_VISIBLE = 2
 
 const DARK_BG_VALUES = new Set([
   '#2d3748',
@@ -64,15 +68,20 @@ function isDarkBg(color?: string) {
 function ShelfCarouselSlide({
   item,
   isExpanded,
+  morph = true,
 }: {
   item: ShelfItem
   isExpanded?: boolean
+  // Only cards that can open the lightbox carry a layoutId; every layoutId
+  // is re-measured on each render, which made scrubbing stutter.
+  morph?: boolean
 }) {
   if (item.type === 'image' && item.url) {
     return (
       <div className="shelf-carousel-slide shelf-carousel-slide-image">
         <motion.img
-          layoutId={`shelf-img-${item._id}`}
+          key={morph ? 'morph' : 'plain'}
+          layoutId={morph ? `shelf-img-${item._id}` : undefined}
           src={item.url}
           alt={item.caption || item.fileName || 'Shelf image'}
           draggable={false}
@@ -517,16 +526,19 @@ export function ShelfCarousel({ className }: { className?: string }) {
             // Continuous position: the wrapped slot, minus however far the
             // pointer has scrubbed past the nearest card (0 when idle).
             const offset = slot - dragFrac
+            // Only a short window round the front is rendered at all; cards
+            // beyond it are fully faded, so they enter and leave unseen.
+            if (Math.abs(offset) > RING_VISIBLE + 0.5) return null
+
             // Ring: every card has a seat on a circle viewed from slightly
             // above. The active card is at the front; the rest recede round
-            // the back, shrinking, rising and blurring with depth. Seats are
-            // 360°/count apart, so the wrap from +count/2 to -count/2 lands
-            // on the very same point at the back and is never seen.
-            const angle = (offset * 2 * Math.PI) / count
+            // the back, shrinking, rising and blurring with depth.
+            const angle = (offset * 2 * Math.PI) / Math.max(count, RING_SEATS)
             // 0 at the front, 1 at the back
             const depth = (1 - Math.cos(angle)) / 2
-            const opacity = 1 - depth * 0.7
+            const opacity = Math.max(0, Math.min(1, 1.02 - depth * 1.1))
             const blur = depth * 10
+            const isActive = slot === 0
 
             return (
               <motion.div
@@ -540,13 +552,26 @@ export function ShelfCarousel({ className }: { className?: string }) {
                   opacity,
                   filter: `blur(${blur.toFixed(2)}px)`,
                 }}
-                // 1:1 under the pointer; springs back into a seat on release
-                transition={isScrubbing ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 25 }}
+                // 1:1 under the pointer; on release the transform springs into
+                // its seat while blur and opacity ease on a plain tween.
+                transition={
+                  isScrubbing
+                    ? { duration: 0 }
+                    : {
+                        type: 'spring',
+                        stiffness: 260,
+                        damping: 30,
+                        mass: 0.8,
+                        filter: { type: 'tween', duration: 0.35, ease: [0.23, 1, 0.32, 1] },
+                        opacity: { type: 'tween', duration: 0.35, ease: [0.23, 1, 0.32, 1] },
+                      }
+                }
                 style={{ zIndex: Math.round(100 - depth * 100), pointerEvents: depth > 0.75 ? 'none' : 'auto' }}
                 onClick={() => handleCardClick(item, i)}
               >
                 <ShelfCarouselSlide
                   item={item}
+                  morph={isActive}
                   isExpanded={expandedItem?._id === item._id || closingId === item._id}
                 />
               </motion.div>

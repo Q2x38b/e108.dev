@@ -175,15 +175,29 @@ html.is-splashing .stagger-in {
   letter-spacing: -.00563rem;
 }
 
-/* Pronunciation under the name: italic, a notch darker than tertiary text */
-.header-name-ipa {
+/* Pronunciation: sits just right of the name button, out of the layout,
+   and fades in when the name is hovered or focused */
+.header-name-btn > .header-name-ipa {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  translate: 4px -50%;
   font-size: 0.8125rem;
   font-style: italic;
   font-weight: 400;
   letter-spacing: 0.01em;
-  line-height: 1.1rem;
+  line-height: 1;
+  white-space: nowrap;
   color: color-mix(in srgb, var(--text-tertiary) 60%, var(--text-secondary));
-  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-out), translate 0.2s var(--ease-out);
+}
+
+.header-name-btn:hover > .header-name-ipa,
+.header-name-btn:focus-visible > .header-name-ipa {
+  opacity: 1;
+  translate: 8px -50%;
 }
 
 .header-title {
@@ -10098,6 +10112,7 @@ html.is-splashing .stagger-in {
   position: absolute;
   width: var(--shelf-card-w);
   height: var(--shelf-card-h);
+  will-change: transform, opacity, filter;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   border-radius: 18px;
