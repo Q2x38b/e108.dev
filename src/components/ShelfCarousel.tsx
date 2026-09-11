@@ -533,7 +533,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
             // Ring: every card has a seat on a circle viewed from slightly
             // above. The active card is at the front; the rest recede round
             // the back, shrinking, rising and blurring with depth.
-            const angle = (offset * 2 * Math.PI) / Math.max(count, RING_SEATS)
+            // Seats are 360°/count apart for small shelves and never tighter
+            // than 360°/RING_SEATS, so neighbours always recede properly.
+            const angle = (offset * 2 * Math.PI) / Math.min(count, RING_SEATS)
             // 0 at the front, 1 at the back
             const depth = (1 - Math.cos(angle)) / 2
             const opacity = Math.max(0, Math.min(1, 1.02 - depth * 1.1))
