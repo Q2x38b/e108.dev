@@ -175,6 +175,23 @@ html.is-splashing .stagger-in {
   letter-spacing: -.00563rem;
 }
 
+/* Pronunciation after the name: italic, a notch darker than tertiary text */
+.header-name-ipa {
+  font-size: 0.8125rem;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--text-tertiary) 60%, var(--text-secondary));
+  margin-left: 3px;
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .header-name-ipa {
+    display: none;
+  }
+}
+
 .header-title {
   font-size: .875rem;
   font-weight: 460;
