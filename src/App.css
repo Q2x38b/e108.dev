@@ -16,31 +16,7 @@
   animation: staggerIn 0.4s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
-/* Held at their first frame while the splash is up so they all play
-   together the moment it lifts (class managed by SplashContext). */
-html.is-splashing .stagger-in {
-  animation-play-state: paused;
-}
 
-/* Favicon splash — sits under the custom cursor, above everything else.
-   Same frosted surface as the bottom page blur: a translucent tint over
-   a heavy backdrop blur. */
-.splash {
-  position: fixed;
-  inset: 0;
-  z-index: 100000;
-  display: grid;
-  place-items: center;
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  color: var(--text);
-}
-
-.splash-mark {
-  width: 44px;
-  height: 44px;
-}
 
 .stagger-in-1 { animation-delay: 0s; }
 .stagger-in-2 { animation-delay: 0.05s; }
@@ -10105,6 +10081,8 @@ html.is-splashing .stagger-in {
   justify-content: center;
   width: var(--shelf-card-w);
   height: var(--shelf-card-h);
+  /* Depth for the backward lean of the cards behind */
+  perspective: 900px;
   touch-action: pan-y;
 }
 
@@ -10305,48 +10283,6 @@ html.is-splashing .stagger-in {
   height: 14px;
 }
 
-.shelf-expand-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(10, 10, 12, 0.72);
-  backdrop-filter: blur(18px) saturate(1.1);
-  -webkit-backdrop-filter: blur(18px) saturate(1.1);
-  cursor: pointer;
-}
-
-.shelf-expand-image {
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  z-index: 10000;
-  max-width: min(90vw, 1100px);
-  max-height: 85vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 14px;
-  box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.6);
-  cursor: default;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.shelf-expand-caption {
-  position: fixed;
-  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  /* framer drives transform (x: '-50%' + y) — don't set it here */
-  z-index: 10000;
-  margin: 0;
-  padding: 0 24px;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.82);
-  text-align: center;
-  letter-spacing: -0.005em;
-  max-width: 600px;
-  line-height: 1.45;
-}
 
 .shelf-carousel-description {
   display: flex;
@@ -10433,6 +10369,7 @@ html.is-splashing .stagger-in {
 
 /* Single-column list: icon, name / use, then the domain right-aligned */
 .stack-grid {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2px;

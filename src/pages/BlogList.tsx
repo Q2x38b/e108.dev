@@ -8,7 +8,8 @@ import { motion } from 'framer-motion'
 import { play } from 'cuelume'
 import { Footer } from '../components/Footer'
 import { useHaptics } from '../hooks/useHaptics'
-import { useSplash } from '../contexts/SplashContext'
+import { SkeletonSwap } from '../components/interior/skeleton-swap'
+import { BlurUpImage } from '../components/interior/blur-up-image'
 
 // Tracks pointer entry/exit on an element so its ::before hover
 // background can scale out from the cursor origin.
@@ -86,12 +87,6 @@ export default function BlogList() {
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [searchQuery, setSearchQuery] = useState('')
   const haptics = useHaptics()
-  const { isSplashing, markPageReady } = useSplash()
-
-  // First page in hand → the splash can lift
-  useEffect(() => {
-    if (status !== 'LoadingFirstPage') markPageReady()
-  }, [status, markPageReady])
 
   // Search filters client-side, so pull in the remaining pages while a
   // query is active to keep results complete.
@@ -118,9 +113,6 @@ export default function BlogList() {
     // Sort by publishedAt (or createdAt as fallback) descending
     return [...result].sort((a, b) => getDisplayDate(b) - getDisplayDate(a))
   }, [posts, searchQuery])
-
-  // Nothing behind the splash; the whole page staggers in once it's gone
-  if (isSplashing) return null
 
   return (
     <div className="blog-list-layout">
@@ -197,6 +189,9 @@ export default function BlogList() {
       </div>
 
       <main className="blog-list-content">
+        {/* On in-app navigation the first page arrives after the shell is
+            visible; placeholder rows crossfade into the real list. */}
+        <SkeletonSwap ready={status !== 'LoadingFirstPage'} lines={5} lineHeight={44} barHeight={12} label="Posts">
         {status === 'LoadingFirstPage' ? null : filteredPosts.length === 0 ? (
           <p className="blog-empty">{searchQuery ? 'No posts found.' : 'No posts yet.'}</p>
         ) : viewMode === 'card' ? (
@@ -220,7 +215,7 @@ export default function BlogList() {
                   </div>
                   {post.titleImage && (
                     <div className="blog-card-image">
-                      <img src={post.titleImage} alt="" />
+                      <BlurUpImage src={post.titleImage} alt="" width={1} height={1} radius={6} />
                     </div>
                   )}
                 </Link>
@@ -246,6 +241,7 @@ export default function BlogList() {
             ))}
           </div>
         )}
+        </SkeletonSwap>
 
         {status === 'CanLoadMore' && !searchQuery && (
           <div className="blog-load-more">

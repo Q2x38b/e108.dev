@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useInView } from "motion/react";
+import { useInView } from "framer-motion";
 import React from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 

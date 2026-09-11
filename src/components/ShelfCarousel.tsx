@@ -1,11 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
+import { motion, type PanInfo } from 'framer-motion'
 import { useQuery } from 'convex/react'
 import { play } from 'cuelume'
 import { api } from '../../convex/_generated/api'
 import { useHaptics } from '../hooks/useHaptics'
 import { useAuth } from '../contexts/AuthContext'
+import { StreamingText } from './interior/streaming-text'
+import { BlurUpImage } from './interior/blur-up-image'
+import { Lightbox } from './interior/lightbox'
 
 
 // Cursor-origin tracker for the scale-in hover background on prev/next buttons
@@ -45,10 +47,11 @@ const AUTOPLAY_DELAY = 4500
 const CARD_SPACING = 0.6
 // Horizontal reach of the ring, in card widths. Cards at the sides of the
 // ring sit this far from centre; front and back sit on the centre line.
-const RING_REACH = 1.15
+// Short reach + many seats = a dense stack that peeks out behind the front.
+const RING_REACH = 0.8
 // Seats around the ring never sit closer than 360°/RING_SEATS apart, and
 // only the active card plus RING_VISIBLE neighbours each side are rendered.
-const RING_SEATS = 6
+const RING_SEATS = 8
 const RING_VISIBLE = 2
 
 const DARK_BG_VALUES = new Set([
@@ -67,29 +70,25 @@ function isDarkBg(color?: string) {
 
 function ShelfCarouselSlide({
   item,
-  isExpanded,
-  morph = true,
+  eager = false,
+  natural = false,
 }: {
   item: ShelfItem
-  isExpanded?: boolean
-  // Only cards that can open the lightbox carry a layoutId; every layoutId
-  // is re-measured on each render, which made scrubbing stutter.
-  morph?: boolean
+  // Slideshow cards are always in view, so they fetch at high priority
+  eager?: boolean
+  // Gallery tiles take the image's own height (the slides are a fixed box)
+  natural?: boolean
 }) {
   if (item.type === 'image' && item.url) {
     return (
       <div className="shelf-carousel-slide shelf-carousel-slide-image">
-        <motion.img
-          key={morph ? 'morph' : 'plain'}
-          layoutId={morph ? `shelf-img-${item._id}` : undefined}
+        <BlurUpImage
           src={item.url}
           alt={item.caption || item.fileName || 'Shelf image'}
-          draggable={false}
-          loading="eager"
-          // @ts-expect-error -- fetchpriority is a valid img attribute but React types lag
-          fetchpriority="high"
-          decoding="async"
-          style={{ visibility: isExpanded ? 'hidden' : 'visible' }}
+          width={natural ? undefined : 4}
+          height={natural ? undefined : 5}
+          loading={eager ? 'eager' : 'lazy'}
+          fetchPriority={eager ? 'high' : undefined}
         />
       </div>
     )
@@ -211,9 +210,8 @@ export function ShelfCarousel({ className }: { className?: string }) {
   const [isPlaying, setIsPlaying] = useState(true)
   const [view, setView] = useState<'slideshow' | 'gallery'>('slideshow')
   const [expandedItem, setExpandedItem] = useState<ShelfItem | null>(null)
-  // Keeps the source card image hidden while the zoomed clone flies back,
-  // so the two never overlap during the close morph.
-  const [closingId, setClosingId] = useState<string | null>(null)
+  // The image that was clicked; the lightbox flies in from and back to it
+  const originRef = useRef<HTMLElement | null>(null)
   const isDragging = useRef(false)
   // Live scrub: while the pointer is down the deck tracks it 1:1, stepping
   // the active index each time the drag crosses a card boundary.
@@ -234,17 +232,16 @@ export function ShelfCarousel({ className }: { className?: string }) {
     setActiveIndex((prev) => (count ? (prev + delta + count) % count : 0))
   }
 
-  const handleImageClick = (item: ShelfItem) => {
+  const handleImageClick = (item: ShelfItem, origin?: HTMLElement | null) => {
     haptics.selection()
     play('loading')
-    setClosingId(null)
+    originRef.current = origin ?? null
     setExpandedItem(item)
   }
 
   const closeExpanded = () => {
     haptics.soft()
     play('release')
-    setClosingId(expandedItem?._id ?? null)
     setExpandedItem(null)
   }
 
@@ -266,40 +263,24 @@ export function ShelfCarousel({ className }: { className?: string }) {
   }, [autoplayActive, activeIndex, count])
 
   useLayoutEffect(() => {
-    if (view !== 'gallery' || !galleryRef.current) {
-      setGalleryDelays(null)
-      return
+    const grid = galleryRef.current
+    if (view !== 'gallery' || !grid) {
+      const id = requestAnimationFrame(() => setGalleryDelays(null))
+      return () => cancelAnimationFrame(id)
     }
-    const origin = galleryRef.current.getBoundingClientRect()
-    const placed = Array.from(galleryRef.current.children).map((child, i) => {
+    // Measured before paint (tiles are still hidden); the state write is
+    // deferred a frame so it never cascades inside the layout effect.
+    const origin = grid.getBoundingClientRect()
+    const placed = Array.from(grid.children).map((child, i) => {
       const r = child.getBoundingClientRect()
       return { i, top: Math.round(r.top - origin.top), left: r.left - origin.left }
     })
     placed.sort((a, b) => a.top - b.top || a.left - b.left)
     const delays: number[] = []
     placed.forEach((tile, rank) => { delays[tile.i] = Math.min(rank * 0.04, 0.6) })
-    setGalleryDelays(delays)
+    const id = requestAnimationFrame(() => setGalleryDelays(delays))
+    return () => cancelAnimationFrame(id)
   }, [view, count])
-
-  // Lock body scroll + close on Escape while modal is open
-  useEffect(() => {
-    if (!expandedItem) return
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-    const prevOverflow = document.body.style.overflow
-    const prevPadding = document.body.style.paddingRight
-    document.body.style.overflow = 'hidden'
-    document.body.style.paddingRight = `${scrollbarWidth}px`
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeExpanded()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      document.body.style.overflow = prevOverflow
-      document.body.style.paddingRight = prevPadding
-      window.removeEventListener('keydown', onKey)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expandedItem])
 
   // Hide the section entirely for visitors when there's nothing to show.
   // Authenticated admins still see it so they can open the editor.
@@ -370,7 +351,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
     window.setTimeout(() => { isDragging.current = false }, 0)
   }
 
-  const handleCardClick = (item: ShelfItem, index: number) => {
+  const handleCardClick = (item: ShelfItem, index: number, card: HTMLElement) => {
     if (isDragging.current) return
     if (index !== activeIndex) {
       haptics.soft()
@@ -378,7 +359,7 @@ export function ShelfCarousel({ className }: { className?: string }) {
       setActiveIndex(index)
       return
     }
-    if (item.type === 'image') handleImageClick(item)
+    if (item.type === 'image') handleImageClick(item, card.querySelector('img'))
   }
 
   return (
@@ -488,12 +469,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
             // Held hidden until the layout pass has ranked every tile
             animate={galleryDelays ? 'visible' : 'hidden'}
             transition={{ duration: 0.4, delay: galleryDelays?.[i] ?? 0, ease: [0.23, 1, 0.32, 1] }}
-            onClick={() => { if (item.type === 'image') handleImageClick(item) }}
+            onClick={(e) => { if (item.type === 'image') handleImageClick(item, e.currentTarget.querySelector('img')) }}
           >
-            <ShelfCarouselSlide
-              item={item}
-              isExpanded={expandedItem?._id === item._id || closingId === item._id}
-            />
+            <ShelfCarouselSlide item={item} natural />
           </motion.div>
         ))}
       </div>
@@ -538,9 +516,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
             const angle = (offset * 2 * Math.PI) / Math.min(count, RING_SEATS)
             // 0 at the front, 1 at the back
             const depth = (1 - Math.cos(angle)) / 2
-            const opacity = Math.max(0, Math.min(1, 1.02 - depth * 1.1))
+            // Fades out exactly at the edge of the rendered window
+            const opacity = Math.max(0, Math.min(1, 1.02 - depth * 1.5))
             const blur = depth * 10
-            const isActive = slot === 0
 
             return (
               <motion.div
@@ -549,7 +527,10 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 initial={false}
                 animate={{
                   x: `${Math.sin(angle) * RING_REACH * 100}%`,
-                  y: -depth * 36,
+                  // Cards behind rise and lean back, so their tops show
+                  // above the front card as they go round
+                  y: -depth * 56,
+                  rotateX: depth * 22,
                   scale: 1 - depth * 0.5,
                   opacity,
                   filter: `blur(${blur.toFixed(2)}px)`,
@@ -569,13 +550,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
                       }
                 }
                 style={{ zIndex: Math.round(100 - depth * 100), pointerEvents: depth > 0.75 ? 'none' : 'auto' }}
-                onClick={() => handleCardClick(item, i)}
+                onClick={(e) => handleCardClick(item, i, e.currentTarget)}
               >
-                <ShelfCarouselSlide
-                  item={item}
-                  morph={isActive}
-                  isExpanded={expandedItem?._id === item._id || closingId === item._id}
-                />
+                <ShelfCarouselSlide item={item} eager />
               </motion.div>
             )
           })}
@@ -584,68 +561,27 @@ export function ShelfCarousel({ className }: { className?: string }) {
       )}
 
       {items.length > 0 && view === 'slideshow' && (
-      <div className="shelf-carousel-description" aria-live="polite">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.p
-            key={activeItem?._id || activeIndex}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-          >
-            {description || ' '}
-          </motion.p>
-        </AnimatePresence>
+      <div className="shelf-carousel-description">
+        {/* Keyed by slide so each caption streams in fresh; the component
+            announces the finished text itself. */}
+        <StreamingText
+          key={activeItem?._id || activeIndex}
+          text={description || ' '}
+          tokensPerSecond={28}
+          showSkip={false}
+          label="Slide caption"
+        />
       </div>
       )}
 
-      {createPortal(
-        <AnimatePresence onExitComplete={() => setClosingId(null)}>
-          {expandedItem && expandedItem.type === 'image' && expandedItem.url && [
-            <motion.div
-              key="shelf-expand-backdrop"
-              className="shelf-expand-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] } }}
-              transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
-              onClick={closeExpanded}
-            />,
-            <motion.img
-              key="shelf-expand-image"
-              layoutId={`shelf-img-${expandedItem._id}`}
-              src={expandedItem.url}
-              alt={expandedItem.caption || expandedItem.fileName || 'Shelf image'}
-              className="shelf-expand-image"
-              draggable={false}
-              onClick={(e) => e.stopPropagation()}
-              transition={{ type: 'spring', stiffness: 240, damping: 32 }}
-              exit={{
-                boxShadow: '0 24px 60px -16px rgba(0, 0, 0, 0)',
-                transition: { type: 'spring', stiffness: 320, damping: 34 },
-              }}
-              // Un-hide the card the moment the return morph lands, while
-              // the clone still covers it exactly — clearing on unmount
-              // instead leaves a blank frame (the "blip").
-              onLayoutAnimationComplete={() => setClosingId(null)}
-            />,
-            expandedItem.caption ? (
-              <motion.p
-                key="shelf-expand-caption"
-                className="shelf-expand-caption"
-                initial={{ opacity: 0, x: '-50%', y: 8 }}
-                animate={{ opacity: 1, x: '-50%', y: 0 }}
-                exit={{ opacity: 0, x: '-50%', y: 8 }}
-                transition={{ duration: 0.18, delay: 0.05 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {expandedItem.caption}
-              </motion.p>
-            ) : null,
-          ]}
-        </AnimatePresence>,
-        document.body,
-      )}
+      <Lightbox
+        open={!!expandedItem && expandedItem.type === 'image' && !!expandedItem.url}
+        onClose={closeExpanded}
+        src={expandedItem?.url ?? ''}
+        alt={expandedItem?.caption || expandedItem?.fileName || 'Shelf image'}
+        caption={expandedItem?.caption || undefined}
+        originRef={originRef}
+      />
     </section>
   )
 }

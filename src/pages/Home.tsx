@@ -41,10 +41,15 @@ import { play } from 'cuelume'
 import { api } from '../../convex/_generated/api'
 import { SignedIn, useAuth } from '../contexts/AuthContext'
 import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
-import { useSplash } from '../contexts/SplashContext'
 import { EditableSection } from '../components/EditableSection'
 import { ProfileEditor, AboutEditor, SkillEditor, StackEditor, ProjectEditor, ExperienceEditor, ShelfEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
+
+// Stack filter motion, from interior.dev's filter-grid: rows that stay slide
+// to their new place on MOVE, rows that leave drop out on LEAVE, and rows
+// that arrive keep the site's own blur trickle.
+const STACK_MOVE = { type: 'spring', stiffness: 260, damping: 34, mass: 0.8 } as const
+const STACK_LEAVE = { duration: 0.14, ease: [0.4, 0, 1, 1] } as const
 import { Footer } from '../components/Footer'
 import { Carousel_002 } from '../components/ui/skiper-ui/skiper48'
 import { ShelfCarousel } from '../components/ShelfCarousel'
@@ -1028,13 +1033,8 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
               </div>
             )}
 
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={activeCategory}
-                className="stack-grid"
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.12, ease: [0.23, 1, 0.32, 1] }}
-              >
+            <div className="stack-grid">
+              <AnimatePresence mode="popLayout">
                 {visibleItems.map((item, index) => {
                   const hasUrl = item.url && (item.url.startsWith('http://') || item.url.startsWith('https://'))
                   const domain = hasUrl ? stackDomain(item.url) : null
@@ -1055,14 +1055,17 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
                   )
                   // Same trickle as the blog list. First render trails the
                   // section's stagger-in (0.3s) so the heading lands first;
-                  // a filter change re-streams the list top-down, quicker.
+                  // on a filter change new rows stream in quicker while the
+                  // rows already there slide to their new positions.
                   const delay = hasFiltered
                     ? Math.min(index * 0.03, 0.3)
                     : Math.min(0.35 + index * 0.05, 0.8)
                   const motionProps = {
+                    layout: 'position' as const,
                     initial: { opacity: 0, y: 8, scale: 0.98, filter: 'blur(8px)' },
                     animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
-                    transition: { duration: 0.4, delay, ease: [0.23, 1, 0.32, 1] as const },
+                    exit: { opacity: 0, scale: 0.98, transition: STACK_LEAVE },
+                    transition: { layout: STACK_MOVE, duration: 0.4, delay, ease: [0.23, 1, 0.32, 1] as const },
                   }
 
                   return hasUrl ? (
@@ -1083,8 +1086,8 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
                     </motion.div>
                   )
                 })}
-              </motion.div>
-            </AnimatePresence>
+              </AnimatePresence>
+            </div>
           </>
         )}
       </section>
@@ -1507,7 +1510,6 @@ function EditModeIndicator() {
 function HomeContent() {
   const { theme: resolvedTheme, preference, setPreference } = useTheme()
   const { setEditingSection } = useEditMode()
-  const { isSplashing, markPageReady } = useSplash()
 
   // Fetch all content from Convex
   const profile = useQuery(api.content.getProfile)
@@ -1534,7 +1536,7 @@ function HomeContent() {
     const id = window.location.hash.slice(1)
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [skills, projects, experiences, isSplashing])
+  }, [skills, projects, experiences])
 
   // Eagerly warm the browser image cache for shelf photos the moment the
   // shelf query resolves — so by the time the user scrolls down to the
@@ -1554,15 +1556,9 @@ function HomeContent() {
     stack !== undefined && projects !== undefined && experiences !== undefined &&
     footer !== undefined
 
-  // Tell the splash it can lift; the queries above keep loading behind it.
-  useEffect(() => {
-    if (dataLoaded) markPageReady()
-  }, [dataLoaded, markPageReady])
-
-  // While the Convex data is loading (or the splash is still up) render
-  // nothing — the real content fades in via its own stagger-in animations
-  // the moment the splash lifts, no skeleton placeholder.
-  if (!dataLoaded || isSplashing) {
+  // While the Convex data is loading render nothing — the real content
+  // fades in via its own stagger-in animations once ready.
+  if (!dataLoaded) {
     return null
   }
 

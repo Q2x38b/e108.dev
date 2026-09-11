@@ -3,7 +3,6 @@ import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { SignedIn } from '../contexts/AuthContext'
 import { useTheme } from './Home'
-import { useSplash } from '../contexts/SplashContext'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
@@ -1023,13 +1022,7 @@ export default function BlogPost() {
   const { shortId } = useParams<{ shortId: string }>()
   const navigate = useNavigate()
   const { theme } = useTheme()
-  const { isSplashing, markPageReady } = useSplash()
   const post = useQuery(api.posts.getByShortId, shortId ? { shortId } : 'skip')
-
-  // Post resolved (found or not) → the splash can lift
-  useEffect(() => {
-    if (post !== undefined) markPageReady()
-  }, [post, markPageReady])
   const allPosts = useQuery(api.posts.listWithViews)
   const deletePost = useMutation(api.posts.remove)
   const recordView = useMutation(api.views.recordView)
@@ -1150,7 +1143,7 @@ export default function BlogPost() {
     }
   }, [headings])
 
-  if (post === undefined || isSplashing) {
+  if (post === undefined) {
     return null
   }
 
