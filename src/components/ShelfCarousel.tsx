@@ -108,6 +108,10 @@ function ShelfCarouselSlide({
           fetchPriority={eager ? 'high' : undefined}
           onReady={onReady}
           onError={onReady}
+          // A carousel card is a fixed box; fill it outright rather than
+          // derive the height from 4:5, which misses by half a pixel once the
+          // card's border comes off the width and lets the backdrop show.
+          className={natural ? '' : 'h-full'}
         />
       </div>
     )

@@ -10300,7 +10300,9 @@
   height: auto;
 }
 
-.shelf-gallery-item .shelf-carousel-slide-image img {
+/* Only photos without a saved aspect ratio size themselves; the rest fill
+   the box reserved for them, so no sliver of backdrop shows at the edge. */
+.shelf-gallery-item .shelf-carousel-slide-image img:not([height]) {
   height: auto;
   object-fit: unset;
 }
