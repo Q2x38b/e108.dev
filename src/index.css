@@ -103,6 +103,38 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Surface elevation: a soft stacked shadow that reads in light and dark.
+     Tint it by overriding --shadow-color with space-separated RGB. */
+  --shadow-color: 0 0 0;
+  --shadow-surface:
+    0px 1px 1px rgb(var(--shadow-color) / 0.04),
+    0px 3px 2px rgb(var(--shadow-color) / 0.03),
+    0px 6px 3px rgb(var(--shadow-color) / 0.02),
+    0px 10px 4px rgb(var(--shadow-color) / 0.01);
+
+  /* Hairline edge drawn as a ring (no layout cost), halved on retina so it
+     stays one physical pixel. Pair with --shadow-surface. */
+  --ring-hairline-width: 1px;
+  --ring-hairline-color: rgb(0 0 0 / 0.06);
+  --ring-hairline: 0 0 0 var(--ring-hairline-width) var(--ring-hairline-color);
+  --surface-elevation: var(--ring-hairline), var(--shadow-surface);
+
+  /* Hover wash: translucent so it borrows whatever panel it sits on,
+     instead of a steady gray that blotches on tinted surfaces. */
+  --hover-wash: rgb(0 0 0 / 0.05);
+
+  /* Concentric radii: a panel sets --radius-panel and --radius-panel-gap,
+     its children use --radius-panel-inner (see "Concentric radii" in App.css). */
+  --radius-panel: 50px;
+  --radius-panel-gap: 20px;
+  --radius-panel-inner: calc(var(--radius-panel) - var(--radius-panel-gap));
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx) {
+  :root {
+    --ring-hairline-width: 0.5px;
+  }
 }
 
 [data-theme="dark"] {
@@ -115,6 +147,8 @@
   --accent: #3a3a3a;
   --hover-bg: #1f1f1f;
   --accent-color: #60a5fa;
+  --ring-hairline-color: rgb(255 255 255 / 0.1);
+  --hover-wash: rgb(255 255 255 / 0.08);
 }
 
 html {
@@ -326,6 +360,19 @@ select {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --shadow-surface: var(--shadow-surface);
+  --radius-panel: var(--radius-panel);
+  --radius-panel-inner: var(--radius-panel-inner);
+}
+
+@custom-variant retina {
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx) {
+    @slot;
+  }
+}
+
+@utility ring-hairline {
+  @apply ring retina:ring-[0.5px];
 }
 
 @layer base {

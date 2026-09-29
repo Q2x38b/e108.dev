@@ -9,10 +9,11 @@ import rehypeSlug from 'rehype-slug'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { AnimatePresence, motion, useDragControls, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, animate, motion, useDragControls, useMotionValue, useReducedMotion } from 'framer-motion'
 import { play } from 'cuelume'
 import { Footer } from '../components/Footer'
 import { useHaptics } from '../hooks/useHaptics'
+import { TooltipGroup, TooltipGroupTrigger, createTooltipGroup } from '../components/TooltipGroup'
 
 function setCursorOrigin(el: HTMLElement, e: PointerEvent) {
   const { clientX, clientY } = e
@@ -26,6 +27,9 @@ function cursorOriginRef(el: HTMLElement | null) {
   el.addEventListener('pointerenter', (e) => setCursorOrigin(el, e))
   el.addEventListener('pointerleave', (e) => setCursorOrigin(el, e))
 }
+
+// Listen and Share share one tooltip that glides between them.
+const articleActionsTooltip = createTooltipGroup()
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -1028,6 +1032,9 @@ export default function BlogPost() {
   const recordView = useMutation(api.views.recordView)
   const viewCount = useQuery(api.views.getViewCount, post ? { postId: post._id } : 'skip')
   const [linkCopied, setLinkCopied] = useState(false)
+  const linkCopiedRef = useRef(false)
+  const linkCopiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const toastScale = useMotionValue(1)
   const [showAudioPlayer, setShowAudioPlayer] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [tocOpen, setTocOpen] = useState(false)
@@ -1049,13 +1056,28 @@ export default function BlogPost() {
     }
   }, [post, recordView])
 
+  // The "Copied" toast has a stable identity: copying again while it is up
+  // restarts its timer and pulses the same card, rather than letting the
+  // first copy's timer cut the second one short.
   const copyLink = useCallback(() => {
     haptics.rigid()
     navigator.clipboard.writeText(window.location.href)
     play('success')
+    if (linkCopiedRef.current) {
+      animate(toastScale, [1, 1.08, 1], { duration: 0.3, ease: [0.23, 1, 0.32, 1] })
+    }
+    linkCopiedRef.current = true
     setLinkCopied(true)
-    setTimeout(() => setLinkCopied(false), 2000)
-  }, [haptics])
+    if (linkCopiedTimer.current) clearTimeout(linkCopiedTimer.current)
+    linkCopiedTimer.current = setTimeout(() => {
+      linkCopiedRef.current = false
+      setLinkCopied(false)
+    }, 2000)
+  }, [haptics, toastScale])
+
+  useEffect(() => () => {
+    if (linkCopiedTimer.current) clearTimeout(linkCopiedTimer.current)
+  }, [])
 
   const copyHeaderLink = useCallback((id: string, e?: React.MouseEvent) => {
     e?.preventDefault()
@@ -1211,63 +1233,71 @@ export default function BlogPost() {
               className="article-author-image article-author-image-bg"
             />
             <span className="article-author-name">Ethan Jerla</span>
-            <div className="article-author-actions">
-              <button
-                className="listen-btn-small"
-                onClick={() => { haptics.selection(); setShowAudioPlayer((v) => !v) }}
-                aria-label={showAudioPlayer ? 'Hide audio player' : 'Listen to article'}
-                aria-pressed={showAudioPlayer}
-                ref={cursorOriginRef}
-              >
-                <span className="listen-btn-icon-swap">
-                  <span
-                    className={`shelf-icon-anim shelf-icon-anim-overlay ${showAudioPlayer ? 'is-shown' : ''}`}
-                    aria-hidden={!showAudioPlayer}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M4 6C4 4.34315 5.34315 3 7 3C8.65685 3 10 4.34315 10 6V18C10 19.6569 8.65685 21 7 21C5.34315 21 4 19.6569 4 18V6Z"
-                        fill="currentColor"
-                      />
-                      <path
-                        d="M14 6C14 4.34315 15.3431 3 17 3C18.6569 3 20 4.34315 20 6V18C20 19.6569 18.6569 21 17 21C15.3431 21 14 19.6569 14 18V6Z"
-                        fill="currentColor"
-                      />
-                    </svg>
+            <TooltipGroup handle={articleActionsTooltip}>
+              <div className="article-author-actions">
+                <TooltipGroupTrigger
+                  handle={articleActionsTooltip}
+                  payload={showAudioPlayer ? 'Hide player' : 'Listen'}
+                  type="button"
+                  className="listen-btn-small"
+                  onClick={() => { haptics.selection(); setShowAudioPlayer((v) => !v) }}
+                  aria-label={showAudioPlayer ? 'Hide audio player' : 'Listen to article'}
+                  aria-pressed={showAudioPlayer}
+                  ref={cursorOriginRef}
+                >
+                  <span className="listen-btn-icon-swap">
+                    <span
+                      className={`shelf-icon-anim shelf-icon-anim-overlay ${showAudioPlayer ? 'is-shown' : ''}`}
+                      aria-hidden={!showAudioPlayer}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M4 6C4 4.34315 5.34315 3 7 3C8.65685 3 10 4.34315 10 6V18C10 19.6569 8.65685 21 7 21C5.34315 21 4 19.6569 4 18V6Z"
+                          fill="currentColor"
+                        />
+                        <path
+                          d="M14 6C14 4.34315 15.3431 3 17 3C18.6569 3 20 4.34315 20 6V18C20 19.6569 18.6569 21 17 21C15.3431 21 14 19.6569 14 18V6Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      className={`shelf-icon-anim ${showAudioPlayer ? '' : 'is-shown'}`}
+                      aria-hidden={showAudioPlayer}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M11.1967 2.71828C8.53683 0.970354 5 2.8783 5 6.0611V17.9387C5 21.1215 8.53684 23.0294 11.1967 21.2815L20.234 15.3427C22.6384 13.7627 22.6384 10.2371 20.234 8.65706L11.1967 2.71828Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </span>
                   </span>
-                  <span
-                    className={`shelf-icon-anim ${showAudioPlayer ? '' : 'is-shown'}`}
-                    aria-hidden={showAudioPlayer}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M11.1967 2.71828C8.53683 0.970354 5 2.8783 5 6.0611V17.9387C5 21.1215 8.53684 23.0294 11.1967 21.2815L20.234 15.3427C22.6384 13.7627 22.6384 10.2371 20.234 8.65706L11.1967 2.71828Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </span>
-                </span>
-              </button>
-              <button
-                className={`share-btn-icon ${linkCopied ? 'copied' : ''}`}
-                onClick={() => { haptics.soft(); setShowShareModal(true) }}
-                aria-label="Share"
-                ref={cursorOriginRef}
-              >
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="7.25 5.75 10 3 12.75 5.75" />
-                  <line x1="10" y1="13" x2="10" y2="3" />
-                  <path d="m6,9.07c-1.216.268-2.168,1.277-2.328,2.557l-.25,2c-.224,1.791,1.172,3.372,2.977,3.372h7.203c1.804,0,3.201-1.582,2.977-3.372l-.25-2c-.16-1.281-1.113-2.289-2.328-2.557" />
-                </svg>
-              </button>
-              <div className="article-views-pill">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="article-views-icon">
-                  <path d="m3.361,11.314c-.481-.8-.481-1.829,0-2.629.962-1.714,3.175-4.686,6.639-4.686s5.677,2.971,6.639,4.686c.481.8.481,1.829,0,2.629-.962,1.714-3.175,4.686-6.639,4.686s-5.677-2.857-6.639-4.686Z" />
-                  <circle cx="10" cy="10" r="3" fill="currentColor" strokeWidth="0" />
-                </svg>
-                {viewCount || 0}
+                </TooltipGroupTrigger>
+                <TooltipGroupTrigger
+                  handle={articleActionsTooltip}
+                  payload="Share"
+                  type="button"
+                  className={`share-btn-icon ${linkCopied ? 'copied' : ''}`}
+                  onClick={() => { haptics.soft(); setShowShareModal(true) }}
+                  aria-label="Share"
+                  ref={cursorOriginRef}
+                >
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="7.25 5.75 10 3 12.75 5.75" />
+                    <line x1="10" y1="13" x2="10" y2="3" />
+                    <path d="m6,9.07c-1.216.268-2.168,1.277-2.328,2.557l-.25,2c-.224,1.791,1.172,3.372,2.977,3.372h7.203c1.804,0,3.201-1.582,2.977-3.372l-.25-2c-.16-1.281-1.113-2.289-2.328-2.557" />
+                  </svg>
+                </TooltipGroupTrigger>
+                <div className="article-views-pill">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="article-views-icon">
+                    <path d="m3.361,11.314c-.481-.8-.481-1.829,0-2.629.962-1.714,3.175-4.686,6.639-4.686s5.677,2.971,6.639,4.686c.481.8.481,1.829,0,2.629-.962,1.714-3.175,4.686-6.639,4.686s-5.677-2.857-6.639-4.686Z" />
+                    <circle cx="10" cy="10" r="3" fill="currentColor" strokeWidth="0" />
+                  </svg>
+                  {viewCount || 0}
+                </div>
               </div>
-            </div>
+            </TooltipGroup>
           </div>
 
           <SignedIn>
@@ -1410,6 +1440,7 @@ export default function BlogPost() {
         {linkCopied && (
           <motion.div
             className="toast"
+            style={{ scale: toastScale }}
             initial={{ opacity: 0, y: -16, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: -16, x: '-50%' }}

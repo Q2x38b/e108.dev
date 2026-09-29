@@ -79,7 +79,7 @@ function CalloutComponent({ node, updateAttributes, selected }: CalloutComponent
               <button
                 key={v}
                 onClick={() => updateAttributes({ variant: v })}
-                className={`p-1 rounded ${variant === v ? 'bg-white shadow-sm' : 'hover:bg-white/50'} ${vConfig.iconColor}`}
+                className={`p-1 rounded ${variant === v ? 'bg-white shadow-surface ring-hairline ring-black/6' : 'hover:bg-white/50'} ${vConfig.iconColor}`}
                 title={v.charAt(0).toUpperCase() + v.slice(1)}
               >
                 <VIcon className="w-4 h-4" />

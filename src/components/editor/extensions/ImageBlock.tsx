@@ -65,10 +65,10 @@ function ImageBlockComponent({ node, updateAttributes, deleteNode, selected }: I
 
           {/* Controls overlay */}
           {showControls && (
-            <div className="absolute top-2 right-2 flex gap-1 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-1">
+            <div className="absolute top-2 right-2 flex gap-1 bg-white/90 backdrop-blur-sm rounded-lg shadow-surface ring-hairline ring-black/6 p-1">
               <button
                 onClick={() => setShowLightbox(true)}
-                className="p-1.5 hover:bg-gray-100 rounded"
+                className="p-1.5 hover:bg-black/5 rounded-[6px]"
                 title="View full size"
               >
                 <ZoomIn className="w-4 h-4" />
@@ -76,21 +76,21 @@ function ImageBlockComponent({ node, updateAttributes, deleteNode, selected }: I
               <div className="w-px bg-gray-200" />
               <button
                 onClick={() => updateAttributes({ align: 'left' })}
-                className={`p-1.5 rounded ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                className={`p-1.5 rounded-[6px] ${align === 'left' ? 'bg-black/10' : 'hover:bg-black/5'}`}
                 title="Align left"
               >
                 <AlignLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => updateAttributes({ align: 'center' })}
-                className={`p-1.5 rounded ${align === 'center' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                className={`p-1.5 rounded-[6px] ${align === 'center' ? 'bg-black/10' : 'hover:bg-black/5'}`}
                 title="Align center"
               >
                 <AlignCenter className="w-4 h-4" />
               </button>
               <button
                 onClick={() => updateAttributes({ align: 'right' })}
-                className={`p-1.5 rounded ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                className={`p-1.5 rounded-[6px] ${align === 'right' ? 'bg-black/10' : 'hover:bg-black/5'}`}
                 title="Align right"
               >
                 <AlignRight className="w-4 h-4" />
@@ -98,7 +98,7 @@ function ImageBlockComponent({ node, updateAttributes, deleteNode, selected }: I
               <div className="w-px bg-gray-200" />
               <button
                 onClick={deleteNode}
-                className="p-1.5 hover:bg-red-100 text-red-500 rounded"
+                className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-[6px]"
                 title="Remove image"
               >
                 <Trash2 className="w-4 h-4" />

@@ -53,6 +53,7 @@ const STACK_LEAVE = { duration: 0.14, ease: [0.4, 0, 1, 1] } as const
 import { Footer } from '../components/Footer'
 import { Carousel_002 } from '../components/ui/skiper-ui/skiper48'
 import { ShelfCarousel } from '../components/ShelfCarousel'
+import { TooltipGroup, TooltipGroupTrigger, createTooltipGroup } from '../components/TooltipGroup'
 
 // Navigation links
 const navLinks: string[] = []
@@ -575,6 +576,10 @@ const profileExpandLinks = [
   )}
 ]
 
+// Header nav icons share one tooltip that glides between them.
+const navTooltip = createTooltipGroup()
+const NAV_LOCATION_TRIGGER = 'header-nav-location'
+
 function Header({ preference, setPreference, resolvedTheme, location, profileImageUrl, profileName, profileTitle, onEditProfile }: {
   preference: ThemePreference
   setPreference: (theme: ThemePreference, origin?: ThemeOrigin) => void
@@ -680,35 +685,62 @@ function Header({ preference, setPreference, resolvedTheme, location, profileIma
           </div>
         </EditableSection>
 
-        <nav className="header-nav">
-          <Link to="/blog" className="header-nav-btn nav-tooltip-btn" aria-label="Writing" ref={cursorOriginRef} draggable={false} data-cuelume-hover="tick">
-            <svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
-              <line x1="17" y1="17" x2="12" y2="17" fill="none" />
-              <path d="m3,17l1-4.5L12.914,3.586c.781-.781,2.047-.781,2.828,0l.672.672c.781.781.781,2.047,0,2.828l-8.914,8.914-4.5,1Z" />
-            </svg>
-            <div className="nav-tooltip">Writing</div>
-          </Link>
-          <button type="button" className="header-nav-btn nav-tooltip-btn" aria-label="Shelf" onClick={handleShelfClick} ref={cursorOriginRef} data-cuelume-hover="tick">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-              <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
-              <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
-            </svg>
-            <div className="nav-tooltip">Shelf</div>
-          </button>
-          <button className="header-nav-btn location-btn" aria-label="Location" ref={cursorOriginRef} data-cuelume-hover="tick">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-              <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0zm-8 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fillRule="evenodd" />
-            </svg>
-            <div className="location-tooltip">
-              {location}
-            </div>
-          </button>
-          <ThemeDropdown
-            preference={preference}
-            setPreference={setPreference}
-            resolvedTheme={resolvedTheme}
-          />
-        </nav>
+        <TooltipGroup handle={navTooltip}>
+          <nav className="header-nav">
+            <TooltipGroupTrigger
+              handle={navTooltip}
+              payload="Writing"
+              render={<Link to="/blog" draggable={false} />}
+              className="header-nav-btn"
+              aria-label="Writing"
+              ref={cursorOriginRef}
+              data-cuelume-hover="tick"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+                <line x1="17" y1="17" x2="12" y2="17" fill="none" />
+                <path d="m3,17l1-4.5L12.914,3.586c.781-.781,2.047-.781,2.828,0l.672.672c.781.781.781,2.047,0,2.828l-8.914,8.914-4.5,1Z" />
+              </svg>
+            </TooltipGroupTrigger>
+            <TooltipGroupTrigger
+              handle={navTooltip}
+              payload="Shelf"
+              type="button"
+              className="header-nav-btn"
+              aria-label="Shelf"
+              onClick={handleShelfClick}
+              ref={cursorOriginRef}
+              data-cuelume-hover="tick"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+                <path d="M12 17v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+              </svg>
+            </TooltipGroupTrigger>
+            {/* Tooltips open on hover only, so a tap on touch opens this one
+                explicitly — the location has no other way to be read there. */}
+            <TooltipGroupTrigger
+              handle={navTooltip}
+              payload={location}
+              id={NAV_LOCATION_TRIGGER}
+              closeOnClick={false}
+              type="button"
+              className="header-nav-btn location-btn"
+              aria-label={`Location: ${location}`}
+              onClick={() => navTooltip.open(NAV_LOCATION_TRIGGER)}
+              ref={cursorOriginRef}
+              data-cuelume-hover="tick"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0zm-8 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fillRule="evenodd" />
+              </svg>
+            </TooltipGroupTrigger>
+            <ThemeDropdown
+              preference={preference}
+              setPreference={setPreference}
+              resolvedTheme={resolvedTheme}
+            />
+          </nav>
+        </TooltipGroup>
       </div>
     </header>
 
@@ -1115,6 +1147,69 @@ interface ProjectData {
   order: number
 }
 
+// Work modal images vary in shape — landscape screenshots, portrait mockups —
+// so the carousel card takes its aspect ratio from the images instead of a
+// fixed portrait box that would crop them. The median keeps one odd image in a
+// set from skewing the card.
+const CARD_FALLBACK_RATIO = 4 / 3
+
+function medianRatio(ratios: number[]) {
+  if (ratios.length === 0) return null
+  const sorted = [...ratios].sort((a, b) => a - b)
+  return sorted[Math.floor(sorted.length / 2)]
+}
+
+// Images are preloaded on row hover, so by the time the modal opens they are
+// usually decoded already and the ratio is known before the first paint.
+function measureLoaded(images: string[]) {
+  const ratios: number[] = []
+  for (const src of images) {
+    const img = new Image()
+    img.src = src
+    if (img.complete && img.naturalWidth > 0) ratios.push(img.naturalWidth / img.naturalHeight)
+  }
+  return medianRatio(ratios)
+}
+
+function WorkModalCarousel({ images, name }: { images: string[]; name: string }) {
+  const [ratio, setRatio] = useState<number | null>(() => measureLoaded(images))
+
+  useEffect(() => {
+    let alive = true
+    const ratios: number[] = []
+    let pending = images.length
+    const settle = (img: HTMLImageElement) => {
+      if (img.naturalWidth > 0) ratios.push(img.naturalWidth / img.naturalHeight)
+      if (--pending > 0 || !alive) return
+      const next = medianRatio(ratios)
+      if (next) setRatio(next)
+    }
+    for (const src of images) {
+      const img = new Image()
+      img.onload = () => settle(img)
+      img.onerror = () => settle(img)
+      img.src = src
+    }
+    return () => { alive = false }
+  }, [images])
+
+  return (
+    <div
+      className="work-modal-carousel"
+      style={{ '--carousel-ratio': String(ratio ?? CARD_FALLBACK_RATIO) } as React.CSSProperties}
+    >
+      <Carousel_002
+        images={images.map((src, idx) => ({
+          src,
+          alt: `${name} image ${idx + 1}`
+        }))}
+        showPagination={true}
+        loop={true}
+      />
+    </div>
+  )
+}
+
 function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selectedProject = projects.find(p => p.name === selectedId)
@@ -1287,16 +1382,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
               </button>
 
               {selectedProject.images && selectedProject.images.length > 0 && (
-                <div className="work-modal-carousel">
-                  <Carousel_002
-                    images={selectedProject.images.map((src, idx) => ({
-                      src,
-                      alt: `${selectedProject.name} image ${idx + 1}`
-                    }))}
-                    showPagination={true}
-                    loop={true}
-                  />
-                </div>
+                <WorkModalCarousel images={selectedProject.images} name={selectedProject.name} />
               )}
 
               <div className="work-modal-content">

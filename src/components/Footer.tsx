@@ -5,10 +5,14 @@ import { api } from '../../convex/_generated/api'
 import { useAuth, SignedIn } from '../contexts/AuthContext'
 import { useEditMode } from '../contexts/EditModeContext'
 import { useHaptics } from '../hooks/useHaptics'
+import { TooltipGroup, TooltipGroupTrigger, createTooltipGroup } from '../components/TooltipGroup'
 
 // Tracks the cursor entry/exit point on a button so the ::before hover
 // background can scale out from where the pointer arrives. Mirrors the
 // helper used by the header nav buttons in Home.tsx.
+// The footer's icon buttons share one tooltip that glides between them.
+const footerTooltip = createTooltipGroup()
+
 function setCursorOrigin(el: HTMLElement, e: PointerEvent) {
   const { clientX, clientY } = e
   const { top, left } = el.getBoundingClientRect()
@@ -209,60 +213,71 @@ export function Footer({
             )}
             <span className="footer-time">{formatTime(time)}</span>
 
-            {showEditControls && editModeContext && (
-              <SignedIn>
-                <div className="footer-edit-controls">
-                  <motion.button
-                    className={`footer-btn ${editModeContext.isEditMode ? 'active' : ''}`}
-                    onClick={handleToggleEditMode}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label={editModeContext.isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
-                    aria-pressed={editModeContext.isEditMode}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </motion.button>
-                  <motion.button
-                    className="footer-btn"
-                    onClick={handleExport}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Export data"
-                    disabled={exporting}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                  </motion.button>
-                  <motion.button
-                    className="footer-btn"
-                    onClick={handleLogout}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Logout"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                      <polyline points="16 17 21 12 16 7" />
-                      <line x1="21" y1="12" x2="9" y2="12" />
-                    </svg>
-                  </motion.button>
-                </div>
-              </SignedIn>
-            )}
+            <TooltipGroup handle={footerTooltip}>
+              {showEditControls && editModeContext && (
+                <SignedIn>
+                  <div className="footer-edit-controls">
+                    <TooltipGroupTrigger
+                      handle={footerTooltip}
+                      payload={editModeContext.isEditMode ? 'Exit edit mode' : 'Edit'}
+                      render={<motion.button whileTap={{ scale: 0.95 }} />}
+                      className={`footer-btn ${editModeContext.isEditMode ? 'active' : ''}`}
+                      onClick={handleToggleEditMode}
+                      aria-label={editModeContext.isEditMode ? 'Exit edit mode' : 'Enter edit mode'}
+                      aria-pressed={editModeContext.isEditMode}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </TooltipGroupTrigger>
+                    <TooltipGroupTrigger
+                      handle={footerTooltip}
+                      payload="Export"
+                      render={<motion.button whileTap={{ scale: 0.95 }} />}
+                      className="footer-btn"
+                      onClick={handleExport}
+                      aria-label="Export data"
+                      disabled={exporting}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </TooltipGroupTrigger>
+                    <TooltipGroupTrigger
+                      handle={footerTooltip}
+                      payload="Log out"
+                      render={<motion.button whileTap={{ scale: 0.95 }} />}
+                      className="footer-btn"
+                      onClick={handleLogout}
+                      aria-label="Logout"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                    </TooltipGroupTrigger>
+                  </div>
+                </SignedIn>
+              )}
 
-            <button
-              className="footer-btn footer-top"
-              onClick={scrollToTop}
-              aria-label="Back to top"
-              ref={cursorOriginRef}
-            >
-              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="10.25 7.75 6 3.5 1.75 7.75" />
-              </svg>
-            </button>
+              <TooltipGroupTrigger
+                handle={footerTooltip}
+                payload="Back to top"
+                type="button"
+                className="footer-btn footer-top"
+                onClick={scrollToTop}
+                aria-label="Back to top"
+                ref={cursorOriginRef}
+              >
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="10.25 7.75 6 3.5 1.75 7.75" />
+                </svg>
+              </TooltipGroupTrigger>
+            </TooltipGroup>
           </div>
         </div>
 
