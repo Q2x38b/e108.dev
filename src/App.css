@@ -1702,6 +1702,117 @@
   background: var(--border);
 }
 
+/* Snake layout (wide screens). Entries alternate between two lanes and the
+   rail swings between them in S-bends drawn by .timeline-snake. Each entry's
+   top comes from Experience's layout pass; the rails the stacked layout draws
+   with pseudo-elements are drawn by the SVG here, only the elbows remain. */
+.timeline.is-snake {
+  position: relative;
+  display: block;
+}
+
+.timeline.is-snake .timeline-company-group {
+  position: absolute;
+  left: 0;
+  width: calc(50% - 12px);
+}
+
+.timeline.is-snake .timeline-company-group.lane-right {
+  left: calc(50% + 12px);
+}
+
+.timeline.is-snake .timeline-company-group::after,
+.timeline.is-snake .timeline-role::after {
+  display: none;
+}
+
+/* A name that wraps in the narrower lane keeps the node beside its first line */
+.timeline.is-snake .timeline-company-header {
+  align-items: flex-start;
+}
+
+.timeline.is-snake .timeline-company-name {
+  padding-top: 1px;
+}
+
+/* Left lane mirrors: node on the inner edge, elbows bend outward and the
+   text reads right-aligned toward the margin */
+.timeline.is-snake .lane-left .timeline-company-header,
+.timeline.is-snake .lane-left .timeline-role {
+  flex-direction: row-reverse;
+}
+
+.timeline.is-snake .lane-left .timeline-company-name {
+  text-align: right;
+}
+
+.timeline.is-snake .lane-left .timeline-role {
+  padding: 14px 33px 0 0;
+}
+
+.timeline.is-snake .lane-left .timeline-role::before {
+  left: auto;
+  right: 12px;
+  border-left: none;
+  border-right: 1.5px solid var(--border);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 12px;
+}
+
+.timeline.is-snake .lane-left .timeline-role-content {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Lanes (and phones) are narrow: the detail takes its own line rather than
+   wrapping after a separator left dangling at the end of the date */
+.timeline.is-snake .timeline-role-meta {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.timeline.is-snake .timeline-role-sep {
+  display: none;
+}
+
+@media (max-width: 520px) {
+  .timeline-role-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .timeline-role-sep {
+    display: none;
+  }
+}
+
+.timeline.is-snake .lane-left .timeline-role-meta {
+  align-items: flex-end;
+}
+
+.timeline-snake {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.timeline-snake path {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* The way on from a goal not reached yet */
+.timeline-snake path.is-dashed {
+  stroke-dasharray: 3 4;
+}
+
 /* Skills - minimal grid cards */
 .skills-grid {
   display: grid;

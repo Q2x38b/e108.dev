@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { flushSync } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup, useMotionValue, useTransform, animate, type PanInfo } from 'framer-motion'
@@ -1484,6 +1484,22 @@ function dateBounds(date: string): { start: number; end: number } {
   return { start, end }
 }
 
+// Snake layout: on wide screens entries alternate between two lanes and the
+// rail swings between them in S-bends, so each entry starts partway down the
+// one before instead of below it. Narrow screens keep the single column.
+const SNAKE_MIN_WIDTH = 480
+const SNAKE_GUTTER = 24 // between the lanes; the S-bends cross it
+const SNAKE_BRANCH = 12 // the bend leaves the rail where the last elbow curves off
+const SNAKE_STEP = 40 // vertical run of each bend
+const SNAKE_LANE_GAP = 22 // clearance under the previous entry in the same lane
+const RAIL_INSET = 12.75 // rail centre from the lane's inner edge (matches the elbows)
+
+type SnakeLayout = {
+  tops: number[]
+  height: number
+  segments: { d: string; dashed: boolean }[]
+}
+
 function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; onEdit: () => void }) {
   // Sort: pending (no date) first, then open-ended ranges ("2026 - Now"),
   // then by end year newest-first. Ties break on start year, then order.
@@ -1509,6 +1525,80 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
     }
   }
 
+  const timelineRef = useRef<HTMLDivElement>(null)
+  // First guess from the viewport so wide screens paint the snake straight
+  // away; the layout pass below corrects it from the real column width.
+  const [snake, setSnake] = useState(() => window.innerWidth >= SNAKE_MIN_WIDTH + 48)
+  const [snakeLayout, setSnakeLayout] = useState<SnakeLayout | null>(null)
+  const groupKey = groups.map((g) => g.roles.map((r) => r._id).join('+')).join(',')
+
+  // Lays the entries out from their measured heights. ResizeObserver reports
+  // before paint, so the positioned layout is what first shows on screen,
+  // and it re-runs when fonts, text or the column width change.
+  useLayoutEffect(() => {
+    const el = timelineRef.current
+    if (!el) return
+
+    const measure = () => {
+      const width = el.clientWidth
+      const wantSnake = width >= SNAKE_MIN_WIDTH
+      setSnake(wantSnake)
+      if (!wantSnake || !el.classList.contains('is-snake')) return
+
+      const lane = (width - SNAKE_GUTTER) / 2
+      const entries = Array.from(el.querySelectorAll<HTMLElement>(':scope > .timeline-company-group')).map((g, i) => {
+        const avatar = g.querySelector<HTMLElement>('.timeline-company-avatar')
+        const roles = g.querySelectorAll<HTMLElement>('.timeline-role')
+        const last = roles[roles.length - 1]
+        return {
+          height: g.offsetHeight,
+          avatarY: avatar ? avatar.offsetTop + avatar.offsetHeight / 2 : 13,
+          lastRoleTop: last ? last.offsetTop : g.offsetHeight,
+          railX: i % 2 === 0 ? lane - RAIL_INSET : lane + SNAKE_GUTTER + RAIL_INSET,
+          pending: g.classList.contains('pending'),
+        }
+      })
+
+      const tops: number[] = []
+      entries.forEach((entry, i) => {
+        if (i === 0) { tops.push(0); return }
+        const prev = entries[i - 1]
+        const afterBend = tops[i - 1] + prev.lastRoleTop + SNAKE_BRANCH + SNAKE_STEP - entry.avatarY
+        const sameLane = i >= 2 ? tops[i - 2] + entries[i - 2].height + SNAKE_LANE_GAP : 0
+        tops.push(Math.round(Math.max(afterBend, sameLane)))
+      })
+
+      const segments: SnakeLayout['segments'] = []
+      entries.forEach((entry, i) => {
+        const x = entry.railX
+        const y0 = tops[i] + entry.avatarY
+        const y1 = tops[i] + entry.lastRoleTop
+        // Rail from the node down to its last elbow
+        segments.push({ d: `M${x} ${y0}V${y1}`, dashed: false })
+        const next = entries[i + 1]
+        if (!next) return
+        // S-bend across the gutter into the next node, vertical at both ends.
+        // It forks off where the last elbow curves outward, bending inward.
+        const yb = y1 + SNAKE_BRANCH
+        const y2 = tops[i + 1] + next.avatarY
+        const k = (y2 - yb) / 2
+        segments.push({
+          d: `M${x} ${y1}V${yb}C${x} ${yb + k} ${next.railX} ${y2 - k} ${next.railX} ${y2}`,
+          dashed: entry.pending,
+        })
+      })
+
+      const height = Math.max(...entries.map((entry, i) => tops[i] + entry.height))
+      const nextLayout = { tops, height, segments }
+      setSnakeLayout((prev) => (prev && JSON.stringify(prev) === JSON.stringify(nextLayout) ? prev : nextLayout))
+    }
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    el.querySelectorAll(':scope > .timeline-company-group').forEach((g) => observer.observe(g))
+    return () => observer.disconnect()
+  }, [snake, groupKey])
+
   return (
     <EditableSection sectionId="experience" onEdit={onEdit}>
       <section id="experience" className="section stagger-in stagger-in-5">
@@ -1519,9 +1609,24 @@ function Experience({ experiences, onEdit }: { experiences: ExperienceData[]; on
           </svg>
           Timeline
         </h2>
-        <div className="timeline">
-          {groups.map((group) => (
-            <div key={group.roles[0]._id} className="timeline-company-group">
+        <div
+          ref={timelineRef}
+          className={`timeline ${snake ? 'is-snake' : ''}`}
+          style={snake && snakeLayout ? { height: snakeLayout.height } : undefined}
+        >
+          {snake && snakeLayout && (
+            <svg className="timeline-snake" aria-hidden="true">
+              {snakeLayout.segments.map((segment, i) => (
+                <path key={i} d={segment.d} className={segment.dashed ? 'is-dashed' : undefined} />
+              ))}
+            </svg>
+          )}
+          {groups.map((group, gi) => (
+            <div
+              key={group.roles[0]._id}
+              className={`timeline-company-group ${snake ? (gi % 2 === 0 ? 'lane-left' : 'lane-right') : ''} ${!group.roles[0].date ? 'pending' : ''}`}
+              style={snake ? { top: snakeLayout?.tops[gi] ?? 0 } : undefined}
+            >
               <div className="timeline-company-header">
                 <span className="timeline-company-avatar" aria-hidden="true">
                   {CompanyIcons[getCompanyIconKey(group.company, group.roles[0].role, !group.roles[0].date)] ??
