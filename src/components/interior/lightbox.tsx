@@ -607,7 +607,7 @@ function Stage({
         aria-labelledby={titleId}
         aria-describedby={hintId}
         style={{ touchAction: "none", WebkitTouchCallout: "none" }}
-        className={`absolute inset-0 overflow-hidden outline-none select-none focus-visible:shadow-[inset_0_0_0_1px_#93B0FF] ${
+        className={`absolute inset-0 overflow-hidden outline-none select-none ${
           zoomed ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
         }`}
         {...bind}
@@ -650,14 +650,16 @@ function Stage({
           id={titleId}
           className={
             caption
-              ? "pointer-events-auto max-w-[65%] truncate rounded-[9px] border px-2.5 py-1.5 text-[12.5px]"
+              ? "pointer-events-auto max-w-[65%] truncate rounded-[9px] border px-2.5 py-1.5 text-[12.5px] leading-[18px]"
               : "sr-only"
           }
           style={caption ? CHROME_STYLE : undefined}
         >
           {caption ?? alt}
         </p>
-        <div className="pointer-events-auto flex items-center gap-2">
+        {/* ml-auto keeps the controls right even when there's no caption
+            (the title is then sr-only and takes no room in the row) */}
+        <div className="pointer-events-auto ml-auto flex items-center gap-2">
           <button
             data-lightbox-focus="1"
             type="button"

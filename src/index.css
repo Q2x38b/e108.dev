@@ -23,10 +23,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Layered so Tailwind's spacing utilities (p-3, mt-2…) can still win:
+   an unlayered reset outranks every layered rule and silently zeroed them. */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
 /* Custom scrollbar */
