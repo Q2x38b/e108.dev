@@ -176,8 +176,11 @@ export function BlurUpImage({
         className={sized ? 'absolute inset-0 h-full w-full object-cover' : 'block h-auto w-full'}
         initial={false}
         animate={
+          // The still path must also settle filter and scale: a cached image
+          // mounts as "loading" (blurred, scaled) and then jumps straight to
+          // ready, so animating opacity alone would leave it blurred.
           still
-            ? { opacity: shown ? 1 : 0 }
+            ? { opacity: shown ? 1 : 0, filter: 'blur(0px) saturate(1)', scale: 1 }
             : shown
               ? { opacity: 1, filter: 'blur(0px) saturate(1)', scale: 1 }
               : { opacity: 0, filter: 'blur(18px) saturate(0.6)', scale: 1.06 }

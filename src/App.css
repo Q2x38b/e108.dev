@@ -10144,8 +10144,6 @@
   justify-content: center;
   width: var(--shelf-card-w);
   height: var(--shelf-card-h);
-  /* Depth for the backward lean of the cards behind */
-  perspective: 900px;
   touch-action: pan-y;
 }
 

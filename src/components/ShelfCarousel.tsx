@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { motion, type PanInfo } from 'framer-motion'
+import { motion, useReducedMotion, type PanInfo } from 'framer-motion'
 import { useQuery } from 'convex/react'
 import { play } from 'cuelume'
 import { api } from '../../convex/_generated/api'
@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { StreamingText } from './interior/streaming-text'
 import { BlurUpImage } from './interior/blur-up-image'
 import { Lightbox } from './interior/lightbox'
+import { TooltipGroup, TooltipGroupTrigger, createTooltipGroup } from './TooltipGroup'
 
 
 // Cursor-origin tracker for the scale-in hover background on prev/next buttons
@@ -40,6 +41,8 @@ interface ShelfItem {
   textLabel?: string
   caption?: string
   backgroundColor?: string
+  // width / height, saved on upload
+  aspectRatio?: number
 }
 
 const AUTOPLAY_DELAY = 4500
@@ -53,6 +56,14 @@ const RING_REACH = 0.8
 // only the active card plus RING_VISIBLE neighbours each side are rendered.
 const RING_SEATS = 8
 const RING_VISIBLE = 2
+
+// Gallery stream: tiles reveal one after another in visual order, top to
+// bottom then left to right. A tile on screen waits for its photo — up to
+// STREAM_MAX_WAIT ms — so the wave never runs ahead of the images.
+const STREAM_STEP = 45
+const STREAM_MAX_WAIT = 700
+
+const viewToggleTooltip = createTooltipGroup()
 
 const DARK_BG_VALUES = new Set([
   '#2d3748',
@@ -72,23 +83,31 @@ function ShelfCarouselSlide({
   item,
   eager = false,
   natural = false,
+  onReady,
 }: {
   item: ShelfItem
   // Slideshow cards are always in view, so they fetch at high priority
   eager?: boolean
-  // Gallery tiles take the image's own height (the slides are a fixed box)
+  // Gallery tiles take the image's own shape (the slides are a fixed box)
   natural?: boolean
+  // Called once the photo has loaded (or failed), for the gallery stream
+  onReady?: () => void
 }) {
   if (item.type === 'image' && item.url) {
+    // A gallery tile reserves its height from the saved aspect ratio, so the
+    // masonry is laid out before any photo arrives and the stream order holds
+    const ratio = natural ? item.aspectRatio : undefined
     return (
       <div className="shelf-carousel-slide shelf-carousel-slide-image">
         <BlurUpImage
           src={item.url}
           alt={item.caption || item.fileName || 'Shelf image'}
-          width={natural ? undefined : 4}
-          height={natural ? undefined : 5}
+          width={natural ? (ratio ? Math.round(ratio * 1000) : undefined) : 4}
+          height={natural ? (ratio ? 1000 : undefined) : 5}
           loading={eager ? 'eager' : 'lazy'}
           fetchPriority={eager ? 'high' : undefined}
+          onReady={onReady}
+          onError={onReady}
         />
       </div>
     )
@@ -220,12 +239,43 @@ export function ShelfCarousel({ className }: { className?: string }) {
   const coverflowRef = useRef<HTMLDivElement>(null)
   const scrub = useRef({ startIndex: 0, nearest: 0, stepPx: 84 })
   // Gallery tiles flow down CSS columns, so DOM order would trickle the
-  // left column first. Measure where each tile actually landed and stagger
+  // left column first. Measure where each tile actually landed and reveal
   // by visual rank (top to bottom, left to right) instead.
   const galleryRef = useRef<HTMLDivElement>(null)
-  const [galleryDelays, setGalleryDelays] = useState<number[] | null>(null)
+  const [galleryStream, setGalleryStream] = useState<{
+    order: number[] // item indices in reveal order
+    rank: number[] // reveal position of each item index
+    waitFor: boolean[] // on screen when the gallery opened: wait for the photo
+  } | null>(null)
+  const [revealed, setRevealed] = useState(0)
+  const [readyIds, setReadyIds] = useState<ReadonlySet<string>>(() => new Set())
+  const reducedMotion = useReducedMotion()
 
   const count = items?.length ?? 0
+
+  const markReady = (id: string) => {
+    setReadyIds((prev) => {
+      if (prev.has(id)) return prev
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
+  }
+
+  // The next tile in line goes once its photo is ready, or after
+  // STREAM_MAX_WAIT so one slow image can't stall the rest.
+  const nextIndex = galleryStream && revealed < galleryStream.order.length ? galleryStream.order[revealed] : -1
+  const nextItem = nextIndex >= 0 ? items?.[nextIndex] : undefined
+  const nextReady = !nextItem || nextItem.type !== 'image' || !nextItem.url
+    || !galleryStream?.waitFor[nextIndex] || readyIds.has(nextItem._id)
+  useEffect(() => {
+    if (nextIndex < 0) return
+    const id = window.setTimeout(
+      () => setRevealed((r) => r + 1),
+      reducedMotion ? 0 : nextReady ? STREAM_STEP : STREAM_MAX_WAIT,
+    )
+    return () => window.clearTimeout(id)
+  }, [nextIndex, nextReady, reducedMotion])
 
   // Wrap so autoplay loops forever, matching the previous Swiper behaviour
   const step = (delta: number) => {
@@ -265,20 +315,29 @@ export function ShelfCarousel({ className }: { className?: string }) {
   useLayoutEffect(() => {
     const grid = galleryRef.current
     if (view !== 'gallery' || !grid) {
-      const id = requestAnimationFrame(() => setGalleryDelays(null))
+      const id = requestAnimationFrame(() => {
+        setGalleryStream(null)
+        setRevealed(0)
+      })
       return () => cancelAnimationFrame(id)
     }
-    // Measured before paint (tiles are still hidden); the state write is
-    // deferred a frame so it never cascades inside the layout effect.
+    // Measured before paint (tiles are still hidden, but hold their size);
+    // the state write is deferred a frame so it never cascades inside the
+    // layout effect.
     const origin = grid.getBoundingClientRect()
     const placed = Array.from(grid.children).map((child, i) => {
       const r = child.getBoundingClientRect()
-      return { i, top: Math.round(r.top - origin.top), left: r.left - origin.left }
+      return { i, top: Math.round(r.top - origin.top), left: r.left - origin.left, onScreen: r.top < window.innerHeight }
     })
+    const waitFor = placed.map((tile) => tile.onScreen)
     placed.sort((a, b) => a.top - b.top || a.left - b.left)
-    const delays: number[] = []
-    placed.forEach((tile, rank) => { delays[tile.i] = Math.min(rank * 0.04, 0.6) })
-    const id = requestAnimationFrame(() => setGalleryDelays(delays))
+    const order = placed.map((tile) => tile.i)
+    const rank: number[] = []
+    order.forEach((index, position) => { rank[index] = position })
+    const id = requestAnimationFrame(() => {
+      setRevealed(0)
+      setGalleryStream({ order, rank, waitFor })
+    })
     return () => cancelAnimationFrame(id)
   }, [view, count])
 
@@ -425,12 +484,17 @@ export function ShelfCarousel({ className }: { className?: string }) {
             </button>
             </div>
             )}
+            <TooltipGroup handle={viewToggleTooltip}>
             <div className="shelf-carousel-controls">
-            <button
+            <TooltipGroupTrigger
+              handle={viewToggleTooltip}
+              payload={view === 'slideshow' ? 'Gallery view' : 'Carousel view'}
+              // Stay open across the click so the label visibly flips
+              closeOnClick={false}
               type="button"
               className="shelf-carousel-ctrl shelf-carousel-step shelf-carousel-view-toggle"
               onClick={toggleView}
-              aria-label={view === 'slideshow' ? 'Gallery view' : 'Slideshow view'}
+              aria-label={view === 'slideshow' ? 'Gallery view' : 'Carousel view'}
               aria-pressed={view === 'gallery'}
               ref={cursorOriginRef}
             >
@@ -448,8 +512,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
                   <GalleryViewIcon />
                 </span>
               </span>
-            </button>
+            </TooltipGroupTrigger>
             </div>
+            </TooltipGroup>
           </div>
         )}
       </div>
@@ -466,12 +531,13 @@ export function ShelfCarousel({ className }: { className?: string }) {
             className={`shelf-gallery-item ${item.type === 'image' ? 'is-image' : ''}`}
             variants={galleryFadeInUp}
             initial="hidden"
-            // Held hidden until the layout pass has ranked every tile
-            animate={galleryDelays ? 'visible' : 'hidden'}
-            transition={{ duration: 0.4, delay: galleryDelays?.[i] ?? 0, ease: [0.23, 1, 0.32, 1] }}
+            // Held hidden until the layout pass has ranked every tile, then
+            // revealed as the stream reaches it
+            animate={galleryStream && galleryStream.rank[i] < revealed ? 'visible' : 'hidden'}
+            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
             onClick={(e) => { if (item.type === 'image') handleImageClick(item, e.currentTarget.querySelector('img')) }}
           >
-            <ShelfCarouselSlide item={item} natural />
+            <ShelfCarouselSlide item={item} natural onReady={() => markReady(item._id)} />
           </motion.div>
         ))}
       </div>
@@ -510,7 +576,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
 
             // Ring: every card has a seat on a circle viewed from slightly
             // above. The active card is at the front; the rest recede round
-            // the back, shrinking, rising and blurring with depth.
+            // the back, shrinking, rising and blurring with depth. Every
+            // card stays square to the viewer — depth reads from size, lift
+            // and blur, never from a tilt.
             // Seats are 360°/count apart for small shelves and never tighter
             // than 360°/RING_SEATS, so neighbours always recede properly.
             const angle = (offset * 2 * Math.PI) / Math.min(count, RING_SEATS)
@@ -527,10 +595,9 @@ export function ShelfCarousel({ className }: { className?: string }) {
                 initial={false}
                 animate={{
                   x: `${Math.sin(angle) * RING_REACH * 100}%`,
-                  // Cards behind rise and lean back, so their tops show
-                  // above the front card as they go round
+                  // Cards behind rise, so their tops show above the front
+                  // card as they go round
                   y: -depth * 56,
-                  rotateX: depth * 22,
                   scale: 1 - depth * 0.5,
                   opacity,
                   filter: `blur(${blur.toFixed(2)}px)`,
