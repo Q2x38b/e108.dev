@@ -2195,6 +2195,19 @@
   }
 }
 
+/* Sound toggle: back-to-top's hover, with the shelf's cross-fade icon swap */
+.footer-sound-icon {
+  position: relative;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.footer-sound-icon .shelf-icon-anim {
+  width: 14px;
+  height: 14px;
+}
+
 /* Legacy classes for backwards compatibility */
 .back-to-top {
   width: 28px;

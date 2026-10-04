@@ -5,6 +5,8 @@ import { api } from '../../convex/_generated/api'
 import { useAuth, SignedIn } from '../contexts/AuthContext'
 import { useEditMode } from '../contexts/EditModeContext'
 import { useHaptics } from '../hooks/useHaptics'
+import { play } from 'cuelume'
+import { readSoundEnabled, applySoundEnabled } from '../lib/soundPreference'
 import { TooltipGroup, TooltipGroupTrigger, createTooltipGroup } from '../components/TooltipGroup'
 
 // Tracks the cursor entry/exit point on a button so the ::before hover
@@ -27,6 +29,20 @@ function cursorOriginRef(el: HTMLElement | null) {
   el.addEventListener('pointerenter', (e) => setCursorOrigin(el, e))
   el.addEventListener('pointerleave', (e) => setCursorOrigin(el, e))
 }
+
+const SoundOnIcon = () => (
+  <svg viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+    <path d="M11.35,1.567c-.4-.219-.889-.203-1.273,.044l-5.295,3.389H2.25c-1.241,0-2.25,1.009-2.25,2.25v3.5c0,1.241,1.009,2.25,2.25,2.25h2.531l5.295,3.389c.205,.131,.439,.198,.675,.198,.206,0,.412-.051,.599-.153,.401-.219,.65-.64,.65-1.097V2.664c0-.457-.249-.877-.65-1.097Z" />
+    <path d="M14.444,7.056c-.293-.293-.769-.293-1.061,0-.293,.293-.293,.768,0,1.061,.236,.236,.366,.55,.366,.884s-.13,.647-.366,.884c-.293,.292-.293,.768,0,1.061,.146,.146,.338,.22,.53,.22s.384-.073,.53-.22c.52-.519,.806-1.209,.806-1.944s-.286-1.425-.806-1.944Z" />
+    <path d="M15.329,5.111c-.293,.293-.293,.768,0,1.061,1.56,1.56,1.56,4.098,0,5.657-.293,.293-.293,.768,0,1.061,.146,.146,.338,.22,.53,.22s.384-.073,.53-.22c1.039-1.039,1.611-2.42,1.611-3.889s-.572-2.851-1.611-3.889c-.293-.293-.768-.293-1.061,0Z" />
+  </svg>
+)
+
+const SoundOffIcon = () => (
+  <svg viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+    <path d="M14.35,1.567c-.4-.219-.889-.203-1.273,.044l-5.295,3.389h-3.531c-1.241,0-2.25,1.009-2.25,2.25v3.5c0,1.241,1.009,2.25,2.25,2.25h3.531l5.295,3.389c.205,.131,.439,.198,.675,.198,.206,0,.412-.051,.599-.153,.401-.219,.65-.64,.65-1.097V2.664c0-.457-.249-.877-.65-1.097Z" />
+  </svg>
+)
 
 function LoginModal({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState('')
@@ -110,6 +126,7 @@ export function Footer({
   const [clickCount, setClickCount] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [soundOn, setSoundOn] = useState(readSoundEnabled)
   const { isAuthenticated, logout } = useAuth()
   const editModeContext = useEditMode()
   const haptics = useHaptics()
@@ -162,6 +179,15 @@ export function Footer({
   const handleLogout = async () => {
     haptics.nudge()
     await logout()
+  }
+
+  const toggleSound = () => {
+    const next = !soundOn
+    haptics.selection()
+    applySoundEnabled(next)
+    setSoundOn(next)
+    // Confirms unmuting audibly; muting is silent by definition
+    if (next) play('toggle')
   }
 
   const handleToggleEditMode = () => {
@@ -263,6 +289,34 @@ export function Footer({
                   </div>
                 </SignedIn>
               )}
+
+              <TooltipGroupTrigger
+                handle={footerTooltip}
+                payload={soundOn ? 'Mute sounds' : 'Unmute sounds'}
+                // Stay open across the click so the label visibly flips
+                closeOnClick={false}
+                type="button"
+                className="footer-btn footer-top footer-sound"
+                onClick={toggleSound}
+                aria-label="Sound effects"
+                aria-pressed={soundOn}
+                ref={cursorOriginRef}
+              >
+                <span className="footer-sound-icon">
+                  <span
+                    className={`shelf-icon-anim shelf-icon-anim-overlay ${soundOn ? 'is-shown' : ''}`}
+                    aria-hidden="true"
+                  >
+                    <SoundOnIcon />
+                  </span>
+                  <span
+                    className={`shelf-icon-anim ${soundOn ? '' : 'is-shown'}`}
+                    aria-hidden="true"
+                  >
+                    <SoundOffIcon />
+                  </span>
+                </span>
+              </TooltipGroupTrigger>
 
               <TooltipGroupTrigger
                 handle={footerTooltip}

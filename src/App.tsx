@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
-import { bind as bindSounds } from 'cuelume'
+import { bind as bindSounds, setEnabled as setSoundEnabled } from 'cuelume'
 import { Agentation } from 'agentation'
 import { Analytics } from '@vercel/analytics/react'
 import Home from './pages/Home'
@@ -10,12 +10,14 @@ import BlogPost from './pages/BlogPost'
 import BlogEditor from './pages/BlogEditor'
 import { BottomBlur } from './components/BottomBlur'
 import { CustomCursor } from './components/CustomCursor'
+import { readSoundEnabled } from './lib/soundPreference'
 import './App.css'
 
 function App() {
   // Delegated listeners for data-cuelume-* hover ticks; imperative
   // play() calls live next to their haptic counterparts.
   useEffect(() => {
+    setSoundEnabled(readSoundEnabled())
     bindSounds()
   }, [])
 
