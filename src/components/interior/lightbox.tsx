@@ -15,6 +15,7 @@ import {
   AnimatePresence,
   animate,
   motion,
+  useIsPresent,
   useMotionValue,
   useReducedMotion,
 } from "framer-motion";
@@ -58,14 +59,19 @@ const SLOP = 8;
 const NEAR_HOME = 1.02;
 const SNAP_HOME = 1.05;
 
-const CHROME_BUTTON =
-  "grid size-8 place-items-center rounded-[9px] border outline-none transition-[border-color,color,box-shadow] duration-150 focus-visible:border-[#4568FF] focus-visible:shadow-[0_1px_2px_rgba(28,25,23,0.08),0_10px_20px_-14px_rgba(69,104,255,0.6)]";
-
+// Same segmented pill as the shelf carousel's transport controls
+// (.shelf-carousel-controls in App.css), so the lightbox chrome matches the page.
 const CHROME_STYLE = {
-  background: "var(--bg)",
-  borderColor: "var(--border)",
+  background: "var(--hover-bg)",
   color: "var(--text-secondary)",
 } as const;
+
+function setCursorOrigin(e: React.PointerEvent<HTMLElement>) {
+  const el = e.currentTarget;
+  const { top, left } = el.getBoundingClientRect();
+  el.style.setProperty("--x", `${e.clientX - left}px`);
+  el.style.setProperty("--y", `${e.clientY - top}px`);
+}
 
 type Spring = {
   type: "spring";
@@ -406,6 +412,10 @@ function Stage({
   className = "",
 }: LightboxProps) {
   const reduced = useReducedMotion();
+  // False once closing starts: the stage stays mounted for its exit
+  // animation, but must stop catching the wheel and pointer so a scroll
+  // during the fade reaches the page instead of zooming the departing image.
+  const live = useIsPresent();
   const titleId = useId();
   const hintId = useId();
 
@@ -414,6 +424,10 @@ function Stage({
   const fs = useMotionValue(1);
   const fo = useMotionValue(0);
   const fr = useMotionValue(14);
+  // How far the page has scrolled since closing began. The exit flies to
+  // where the origin was at that moment; this keeps it pinned to the
+  // origin as the page moves underneath.
+  const drift = useMotionValue(0);
 
   const {
     frameRef,
@@ -426,9 +440,10 @@ function Stage({
     settledZoom,
     reset,
     zoomAt,
-  } = useLightbox({ maxScale, onDismiss: onClose });
+  } = useLightbox({ maxScale, disabled: !live, onDismiss: onClose });
 
   const shellRef = useRef<HTMLDivElement>(null);
+  const unlockRef = useRef<(() => void) | null>(null);
 
   const toggleZoom = useCallback(() => {
     const frame = frameRef.current;
@@ -533,12 +548,27 @@ function Stage({
     body.style.overflow = "hidden";
     if (gap > 0) body.style.paddingRight = `${base + gap}px`;
     frame?.focus({ preventScroll: true });
-    return () => {
+    let locked = true;
+    const release = () => {
+      if (!locked) return;
+      locked = false;
       body.style.overflow = overflow;
       body.style.paddingRight = padding;
       if (previous?.isConnected) previous.focus({ preventScroll: true });
     };
+    unlockRef.current = release;
+    return release;
   }, [frameRef]);
+
+  // Closing: hand scrolling back to the page straight away, and follow it.
+  useEffect(() => {
+    if (live) return;
+    unlockRef.current?.();
+    const start = window.scrollY;
+    const onScroll = () => drift.set(start - window.scrollY);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [drift, live]);
 
   useEffect(() => {
     const shell = shellRef.current;
@@ -581,7 +611,7 @@ function Stage({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      className={`fixed inset-0 z-[9999] ${className}`}
+      className={`fixed inset-0 z-[9999] ${live ? "" : "pointer-events-none"} ${className}`}
     >
       <motion.div
         aria-hidden
@@ -612,6 +642,7 @@ function Stage({
         }`}
         {...bind}
       >
+        <motion.div style={{ y: drift }} className="absolute inset-0">
         <motion.div
           style={{ x: fx, y: fy, scale: fs, opacity: fo }}
           initial={reduced ? false : { filter: "blur(6px)" }}
@@ -638,6 +669,7 @@ function Stage({
             className="max-h-full max-w-full object-contain"
           />
         </motion.div>
+        </motion.div>
       </div>
       <motion.div
         initial={{ opacity: 0 }}
@@ -650,7 +682,7 @@ function Stage({
           id={titleId}
           className={
             caption
-              ? "pointer-events-auto max-w-[65%] truncate rounded-[9px] border px-2.5 py-1.5 text-[12.5px] leading-[18px]"
+              ? `${live ? "pointer-events-auto" : ""} max-w-[65%] truncate rounded-full px-3 py-1 text-[12.5px] leading-[24px]"`
               : "sr-only"
           }
           style={caption ? CHROME_STYLE : undefined}
@@ -659,21 +691,23 @@ function Stage({
         </p>
         {/* ml-auto keeps the controls right even when there's no caption
             (the title is then sr-only and takes no room in the row) */}
-        <div className="pointer-events-auto ml-auto flex items-center gap-2">
+        <div
+          className={`${live ? "pointer-events-auto" : ""} shelf-carousel-controls ml-auto`}
+        >
           <button
             data-lightbox-focus="1"
             type="button"
             onClick={toggleZoom}
+            onPointerEnter={setCursorOrigin}
+            onPointerLeave={setCursorOrigin}
             aria-label={zoomed ? "Zoom out" : "Zoom in"}
-            className={CHROME_BUTTON}
-            style={CHROME_STYLE}
+            className="shelf-carousel-ctrl shelf-carousel-step"
           >
             <svg
               viewBox="0 0 256 256"
-              className="size-[15px]"
               fill="none"
               stroke="currentColor"
-              strokeWidth={16}
+              strokeWidth={28}
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden
@@ -692,16 +726,16 @@ function Stage({
             data-lightbox-focus="1"
             type="button"
             onClick={onClose}
+            onPointerEnter={setCursorOrigin}
+            onPointerLeave={setCursorOrigin}
             aria-label="Close"
-            className={CHROME_BUTTON}
-            style={CHROME_STYLE}
+            className="shelf-carousel-ctrl shelf-carousel-step"
           >
             <svg
               viewBox="0 0 256 256"
-              className="size-[15px]"
               fill="none"
               stroke="currentColor"
-              strokeWidth={16}
+              strokeWidth={28}
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden
