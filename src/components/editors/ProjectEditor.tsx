@@ -4,6 +4,7 @@ import { api } from '../../../convex/_generated/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ImageCropModal } from '../editor/ImageCropModal'
+import { normalizeUrl } from '../../lib/url'
 
 interface ProjectLink {
   label: string
@@ -202,7 +203,9 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
 
       for (const project of localProjects) {
         const tech = project.techString.split(',').map(t => t.trim()).filter(Boolean)
-        const links = project.links.filter(l => l.label.trim() && l.url.trim())
+        const links = project.links
+          .filter(l => l.label.trim() && l.url.trim())
+          .map(l => ({ ...l, url: normalizeUrl(l.url) }))
         const images = project.images.filter(Boolean)
 
         if (project.isNew) {
@@ -214,7 +217,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
             month: parseMonth(project.month),
             details: project.details,
             tech,
-            url: project.url || undefined,
+            url: project.url ? normalizeUrl(project.url) : undefined,
             links: links.length > 0 ? links : undefined,
             images: images.length > 0 ? images : undefined,
             noModal: project.noModal || undefined,
@@ -231,7 +234,7 @@ export function ProjectEditor({ projects, onClose }: ProjectEditorProps) {
               month: parseMonth(project.month),
               details: project.details,
               tech,
-              url: project.url || undefined,
+              url: project.url ? normalizeUrl(project.url) : undefined,
               links: links.length > 0 ? links : undefined,
               images: images.length > 0 ? images : undefined,
               noModal: project.noModal || undefined,

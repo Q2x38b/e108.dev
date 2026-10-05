@@ -4,6 +4,7 @@ import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion } from 'framer-motion'
+import { normalizeUrl } from '../../lib/url'
 
 interface StackItemData {
   _id: string
@@ -80,7 +81,7 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
             name: item.name.trim(),
             category: item.category.trim(),
             note: item.note.trim(),
-            url: item.url.trim(),
+            url: normalizeUrl(item.url),
             iconUrl: item.iconUrl.trim()
           })
         } else {
@@ -98,7 +99,7 @@ export function StackEditor({ items, onClose }: StackEditorProps) {
               name: item.name.trim(),
               category: item.category.trim(),
               note: item.note.trim(),
-              url: item.url.trim(),
+              url: normalizeUrl(item.url),
               iconUrl: item.iconUrl.trim()
             })
           }

@@ -44,6 +44,7 @@ import { EditModeProvider, useEditMode } from '../contexts/EditModeContext'
 import { EditableSection } from '../components/EditableSection'
 import { ProfileEditor, AboutEditor, SkillEditor, StackEditor, ProjectEditor, ExperienceEditor, ShelfEditor } from '../components/editors'
 import { useHaptics } from '../hooks/useHaptics'
+import { isExternalUrl, normalizeUrl } from '../lib/url'
 
 // Stack filter motion, from interior.dev's filter-grid: rows that stay slide
 // to their new place on MOVE, rows that leave drop out on LEAVE, and rows
@@ -1068,11 +1069,12 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
             <div className="stack-grid">
               <AnimatePresence mode="popLayout">
                 {visibleItems.map((item, index) => {
-                  const hasUrl = item.url && (item.url.startsWith('http://') || item.url.startsWith('https://'))
-                  const domain = hasUrl ? stackDomain(item.url) : null
+                  const href = item.url ? normalizeUrl(item.url) : ''
+                  const hasUrl = isExternalUrl(href)
+                  const domain = hasUrl ? stackDomain(href) : null
                   const content = (
                     <>
-                      <StackItemIcon name={item.name} iconUrl={item.iconUrl} url={item.url} />
+                      <StackItemIcon name={item.name} iconUrl={item.iconUrl} url={href} />
                       <span className="stack-item-text">
                         <span className="stack-item-name">{item.name}</span>
                         {item.note && (
@@ -1103,7 +1105,7 @@ function Stack({ items, onEdit }: { items: StackItemData[]; onEdit: () => void }
                   return hasUrl ? (
                     <motion.a
                       key={item._id}
-                      href={item.url}
+                      href={href}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="stack-item stack-item-link"
@@ -1275,9 +1277,10 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                   <div className="work-year-entries">
                     {projectsByYear[year].map((project) => {
                       const hasDetails = project.details && project.details.trim() !== ''
-                      const primaryLink = project.url || (project.links && project.links.length > 0 ? project.links[0].url : null)
-                      // Only treat as external link if URL is valid (starts with http/https)
-                      const isValidExternalUrl = primaryLink && (primaryLink.startsWith('http://') || primaryLink.startsWith('https://'))
+                      const rawLink = project.url || (project.links && project.links.length > 0 ? project.links[0].url : null)
+                      const primaryLink = rawLink ? normalizeUrl(rawLink) : null
+                      // Only treat as external link if URL is valid (http/https, bare domains included)
+                      const isValidExternalUrl = isExternalUrl(primaryLink)
                       const shouldLinkDirectly = !hasDetails && isValidExternalUrl
 
                       if (project.noModal) {
@@ -1403,7 +1406,7 @@ function Work({ projects, onEdit }: { projects: ProjectData[]; onEdit: () => voi
                     {selectedProject.links.map((link, index) => (
                       <a
                         key={index}
-                        href={link.url}
+                        href={normalizeUrl(link.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="work-modal-link"
