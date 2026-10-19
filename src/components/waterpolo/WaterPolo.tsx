@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { play } from 'cuelume'
-import { frame, ballImage, playHead, W, H, BALL_SIZE } from './scene'
+import { frame, ballImage, playHead, W, H, BALL_SIZE, GRASS_EDGE } from './scene'
 import { useHaptics } from '../../hooks/useHaptics'
 
 // Pixel-art water polo pool under the footer. Players swim up the pool and
@@ -31,6 +31,24 @@ const CARRY_Y = 14
 
 type Mode = 'scene' | 'held' | 'flying'
 
+// Bloom around the grass. A copy of each frame is drawn to a canvas behind
+// the scene and blurred with a CSS filter, which fades out gradually with no
+// boundary, so it glows past the edges. The crisp scene on top fades out
+// across the grass band, opaque at the deck and transparent at the outer
+// edge, so the grass dissolves into that glow.
+const GLOW_BLUR = 14 // CSS px
+
+const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`
+
+// Opaque inside the deck, fading to transparent at the grass's outer edge:
+// a horizontal and a vertical ramp, intersected
+const GRASS_FADE = (() => {
+  const g = GRASS_EDGE
+  const across = `linear-gradient(to right, transparent ${pct(g.left, W)}, #000 ${pct(g.left + g.width, W)}, #000 ${pct(g.right - g.width, W)}, transparent ${pct(g.right, W)})`
+  const down = `linear-gradient(to bottom, transparent ${pct(g.top, H)}, #000 ${pct(g.top + g.width, H)}, #000 ${pct(g.bottom - g.width, H)}, transparent ${pct(g.bottom, H)})`
+  return `${across}, ${down}`
+})()
+
 interface Ball {
   x: number
   y: number
@@ -42,6 +60,7 @@ interface Ball {
 
 export function WaterPolo() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const glowRef = useRef<HTMLCanvasElement>(null)
   const ballRef = useRef<HTMLCanvasElement>(null)
   const haptics = useHaptics()
 
@@ -65,6 +84,7 @@ export function WaterPolo() {
     if (!canvas || !ctx) return
 
     const image = ctx.createImageData(W, H)
+    const glow = glowRef.current?.getContext('2d')
     let lastT = 0
     let lastS = 0
     const draw = (time: number, s: number) => {
@@ -75,6 +95,10 @@ export function WaterPolo() {
         ballHover: hover.current && mode.current === 'scene',
       })
       ctx.putImageData(image, 0, 0)
+      if (glow) {
+        glow.clearRect(0, 0, W, H)
+        glow.drawImage(canvas, 0, 0)
+      }
     }
     redraw.current = () => draw(lastT, lastS)
 
@@ -334,15 +358,30 @@ export function WaterPolo() {
 
   return (
     <div className="waterpolo" aria-hidden="true">
-      <canvas
-        ref={canvasRef}
-        width={W}
-        height={H}
-        className="waterpolo-canvas"
-        onPointerMove={onCanvasMove}
-        onPointerLeave={onCanvasLeave}
-        onPointerDown={onCanvasDown}
-      />
+      <div className="waterpolo-frame">
+        <canvas
+          ref={glowRef}
+          width={W}
+          height={H}
+          className="waterpolo-glow"
+          style={{ filter: `blur(${GLOW_BLUR}px)` }}
+        />
+        <canvas
+          ref={canvasRef}
+          width={W}
+          height={H}
+          className="waterpolo-canvas"
+          style={{
+            maskImage: GRASS_FADE,
+            WebkitMaskImage: GRASS_FADE,
+            maskComposite: 'intersect',
+            WebkitMaskComposite: 'source-in',
+          }}
+          onPointerMove={onCanvasMove}
+          onPointerLeave={onCanvasLeave}
+          onPointerDown={onCanvasDown}
+        />
+      </div>
       {free &&
         createPortal(
           <canvas

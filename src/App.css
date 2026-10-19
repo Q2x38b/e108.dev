@@ -11092,14 +11092,31 @@
 .waterpolo {
   display: flex;
   justify-content: center;
-  padding: 8px 0 0;
+  /* Room below for the grass blur to bloom without reaching the footer rule */
+  padding: 8px 0 16px;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.waterpolo-canvas {
-  display: block;
+.waterpolo-frame {
+  position: relative;
   width: min(100%, 600px);
+}
+
+/* Blurred copy of the scene behind it, for the bloom around the grass */
+.waterpolo-glow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.waterpolo-canvas {
+  position: relative;
+  display: block;
+  width: 100%;
   height: auto;
   aspect-ratio: 212 / 94;
   image-rendering: pixelated;

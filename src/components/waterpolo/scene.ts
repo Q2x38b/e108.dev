@@ -24,6 +24,17 @@ const COPING = 1.6
 const DECK = 5.5
 const GRASS = 3.6
 
+// Outer edge of the grass and its width, in canvas pixels, so the page can
+// line effects up with it
+const GRASS_PX = GRASS * SX
+export const GRASS_EDGE = {
+  left: OX - (COPING + DECK) * SX - GRASS_PX,
+  right: OX + PU * SX + (COPING + DECK) * SX + GRASS_PX,
+  top: OY - (COPING + DECK) * SY - GRASS_PX,
+  bottom: OY + PV * SY + (COPING + DECK) * SY + GRASS_PX,
+  width: GRASS_PX,
+}
+
 type RGB = readonly [number, number, number]
 
 const hex = (h: string): RGB => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]
@@ -120,7 +131,7 @@ function floor(cv: Canvas, time: number) {
   const inner = COPING + DECK
   // Grass is measured in screen pixels so it is as wide along the long sides
   // as at the short ends, where a world unit is wider on screen
-  const grassPx = GRASS * SX
+  const grassPx = GRASS_PX
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const v = (y + 0.5 - OY) / SY
