@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import BlogList from './pages/BlogList'
 import BlogPost from './pages/BlogPost'
 import BlogEditor from './pages/BlogEditor'
+import Brand from './pages/Brand'
 import { BottomBlur } from './components/BottomBlur'
 import { CustomCursor } from './components/CustomCursor'
 import { readSoundEnabled } from './lib/soundPreference'
@@ -26,6 +27,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/blog" element={<BlogList />} />
+        <Route path="/brand" element={<Brand />} />
         <Route path="/blog/new" element={<BlogEditor />} />
         <Route path="/blog/edit/:shortId" element={<BlogEditor />} />
         <Route path="/blog/:shortId" element={<BlogPost />} />

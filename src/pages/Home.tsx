@@ -54,6 +54,7 @@ const STACK_LEAVE = { duration: 0.14, ease: [0.4, 0, 1, 1] } as const
 import { Footer } from '../components/Footer'
 import { Carousel_002 } from '../components/ui/skiper-ui/skiper48'
 import { ShelfCarousel } from '../components/ShelfCarousel'
+import { WaterPolo } from '../components/waterpolo/WaterPolo'
 import { TooltipGroup, TooltipGroupTrigger, createTooltipGroup } from '../components/TooltipGroup'
 
 // Navigation links
@@ -1803,6 +1804,7 @@ function HomeContent() {
       <EditableSection sectionId="shelf" onEdit={() => { setEditingShelf(true); setEditingSection('shelf') }}>
         <ShelfCarousel />
       </EditableSection>
+      <WaterPolo />
       <Footer showEditControls={true} showSignature={true} showQuote={true} className="stagger-in stagger-in-8" />
 
       {/* Editors */}

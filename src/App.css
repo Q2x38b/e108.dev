@@ -3846,6 +3846,26 @@
   height: 15px;
 }
 
+/* The mark links to /brand */
+.footer-brand-link {
+  text-decoration: none;
+  border-radius: 4px;
+  transition: color 0.15s ease, opacity 0.15s ease;
+  -webkit-user-drag: none;
+}
+
+.footer-brand-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-color, #3b82f6);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footer-brand-link:hover {
+    color: var(--text);
+    opacity: 1;
+  }
+}
+
 .signature-img {
   height: 36px;
   width: auto;
@@ -10750,4 +10770,350 @@
   .custom-cursor svg {
     transition-property: opacity;
   }
+}
+
+/* ── Brand page (/brand) ─────────────────────────────────────────────
+   A graphics-standards sheet: a cover, then short sections. Cells that
+   show the identity on a fixed ground keep their own colours in both
+   themes; everything else reads from the tokens. */
+.brand-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+.brand-cover {
+  margin-bottom: 64px;
+}
+
+.brand-cover-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 112px;
+  font-size: 0.8125rem;
+  font-weight: 460;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  letter-spacing: -0.005rem;
+}
+
+.brand-cover-meta span:last-child {
+  text-align: right;
+}
+
+.brand-cover-logo {
+  display: block;
+  width: 86%;
+  height: auto;
+  margin: 0 auto;
+  color: var(--text);
+}
+
+.brand-main {
+  flex: 1 0 auto;
+}
+
+.brand-section {
+  margin-bottom: 56px;
+}
+
+.brand-h {
+  margin: 0 0 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01rem;
+}
+
+.brand-section p {
+  max-width: 62ch;
+  margin: 0 0 18px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  letter-spacing: -0.005rem;
+  text-wrap: pretty;
+}
+
+.brand-caption {
+  margin-top: 14px !important;
+  font-size: 0.8125rem !important;
+  color: var(--text-tertiary) !important;
+}
+
+/* Four versions in a row, captions under each like the manual */
+.brand-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.brand-cell {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brand-cell svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  padding: 18%;
+  box-sizing: border-box;
+}
+
+.brand-cell figcaption {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.brand-cell--paper svg { background: #fdfdfc; color: #171717; box-shadow: inset 0 0 0 1px #e5e5e5; }
+.brand-cell--night svg { background: #141414; color: #e5e5e5; }
+.brand-cell--signal svg { background: #3b82f6; color: #fdfdfc; }
+.brand-cell--signal-paper svg { background: #fdfdfc; color: #3b82f6; box-shadow: inset 0 0 0 1px #e5e5e5; }
+
+/* Gapless 2×2, protected space in the first cell */
+.brand-quad {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.brand-quad-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  padding: 10%;
+  box-sizing: border-box;
+}
+
+.brand-quad-cell svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.brand-quad-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 9%;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #a3a3a3;
+}
+
+.brand-quad-cell--paper { background: #fdfdfc; color: #171717; }
+.brand-quad-cell--mist { background: #a3a3a3; color: #171717; }
+.brand-quad-cell--night { background: #141414; color: #e5e5e5; }
+.brand-quad-cell--signal { background: #3b82f6; color: #fdfdfc; }
+
+.brand-figure {
+  margin: 0;
+  padding: 24px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  overflow: hidden;
+}
+
+.brand-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Colour blocks with the specs on the colour, after the manual's tables */
+.brand-colors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.brand-color {
+  padding: 14px 14px 12px;
+  border-radius: 10px;
+  color: #171717;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  font-variant-numeric: tabular-nums;
+}
+
+.brand-color.is-dark {
+  color: #fdfdfc;
+  box-shadow: none;
+}
+
+.brand-color-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+
+.brand-color dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.75rem;
+}
+
+.brand-color dl > div {
+  display: flex;
+  gap: 12px;
+}
+
+.brand-color dt {
+  width: 38px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.brand-color dd {
+  margin: 0;
+}
+
+.brand-type {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-type-row {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+
+.brand-type-row:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.brand-type-label {
+  font-size: 0.8125rem;
+  font-weight: 460;
+  color: var(--text-tertiary);
+  padding-top: 2px;
+}
+
+.brand-type-sample {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  letter-spacing: -0.005rem;
+}
+
+.brand-type-sample strong {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.brand-type-sample--quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  color: var(--text);
+  letter-spacing: 0;
+}
+
+.brand-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.brand-files a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 460;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.brand-files a span {
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .brand-files a:hover {
+    border-color: var(--text-tertiary);
+  }
+}
+
+@media (max-width: 560px) {
+  .brand-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brand-colors {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brand-type-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .brand-cover-meta {
+    margin-bottom: 72px;
+  }
+
+  .brand-cover-logo {
+    width: 100%;
+  }
+}
+
+/* ── Water polo pool, just above the footer's top rule ──────────────
+   A pixel canvas scaled up with nearest-neighbour. */
+.waterpolo {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.waterpolo-canvas {
+  display: block;
+  width: min(100%, 600px);
+  height: auto;
+  aspect-ratio: 212 / 94;
+  image-rendering: pixelated;
+}
+
+/* The ball once it's been picked up out of the pool: fixed to the window,
+   moved and spun by transform from the physics loop */
+.waterpolo-free-ball {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 9998;
+  image-rendering: pixelated;
+  touch-action: none;
+  will-change: transform;
+  filter: drop-shadow(2px 3px 0 rgb(0 0 0 / 0.18));
 }

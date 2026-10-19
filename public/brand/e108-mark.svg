@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- e108 mark: the Rising Hook. -->
+  <g fill="none" stroke="#171717" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24 28H54"/>
+    <path d="M24 50H54"/>
+    <path d="M24 72H62C70 72 76 66 76 56"/>
+  </g>
+</svg>

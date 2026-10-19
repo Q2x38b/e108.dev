@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-17 -17 478 134" width="478" height="134">
+  <!-- e108 lockup: mark scaled so its stroke matches the ribbon, a stroke and a half before the logotype. -->
+  <g fill="none" stroke="#171717" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(-20.64 -10.71) scale(1.2143)" stroke-width="14">
+      <path d="M24 28H54"/>
+      <path d="M24 50H54"/>
+      <path d="M24 72H62C70 72 76 66 76 56"/>
+    </g>
+    <g transform="translate(105.64 0)" stroke-width="17">
+      <path d="M 8.5 50 H 70.75 A 20.75 20.75 0 0 0 70.75 8.5 H 50 A 41.5 41.5 0 0 0 50 91.5 H 70.75 A 20.75 20.75 0 0 0 85.42 85.42"/>
+      <path transform="translate(113 0)" d="M 10.5 32.5 L 34.5 8.5 V 91.5"/>
+      <path transform="translate(173 0)" d="M 8.5 36 A 27.5 27.5 0 0 1 63.5 36 V 64 A 27.5 27.5 0 0 1 8.5 64 Z"/>
+      <path transform="translate(262 0)" d="M 34.25 8.5 H 41.75 A 20.75 20.75 0 0 1 41.75 50 H 34.25 A 20.75 20.75 0 0 1 34.25 8.5 Z M 29.25 50 H 46.75 A 20.75 20.75 0 0 1 46.75 91.5 H 29.25 A 20.75 20.75 0 0 1 29.25 50 Z"/>
+    </g>
+  </g>
+</svg>

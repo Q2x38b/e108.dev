@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useConvex } from 'convex/react'
 import { api } from '../../convex/_generated/api'
@@ -14,6 +15,9 @@ import { TooltipGroup, TooltipGroupTrigger, createTooltipGroup } from '../compon
 // helper used by the header nav buttons in Home.tsx.
 // The footer's icon buttons share one tooltip that glides between them.
 const footerTooltip = createTooltipGroup()
+// The brand mark sits before the clock, outside the button group, so it
+// gets its own tooltip rather than one that would glide across the time.
+const brandTooltip = createTooltipGroup()
 
 function setCursorOrigin(el: HTMLElement, e: PointerEvent) {
   const { clientX, clientY } = e
@@ -219,7 +223,16 @@ export function Footer({
 
           <div className="footer-actions">
             {showSignature && (
-              <span className="footer-signature-inline" aria-label="Ethan Jerla" role="img">
+              <TooltipGroup handle={brandTooltip}>
+              <TooltipGroupTrigger
+                handle={brandTooltip}
+                payload="Brand"
+                render={<Link to="/brand" />}
+                className="footer-signature-inline footer-brand-link"
+                aria-label="Brand guidelines"
+                draggable={false}
+                onClick={() => haptics.soft()}
+              >
                 {/* Rising Hook mark, same geometry as the favicon */}
                 <svg
                   className="footer-logo"
@@ -235,7 +248,8 @@ export function Footer({
                   <path d="M24 50H54" />
                   <path d="M24 72H62C70 72 76 66 76 56" />
                 </svg>
-              </span>
+              </TooltipGroupTrigger>
+              </TooltipGroup>
             )}
             <span className="footer-time">{formatTime(time)}</span>
 
